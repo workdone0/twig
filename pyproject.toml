@@ -1,0 +1,20 @@
+[project]
+name = "twg"
+version = "1.0.0"
+description = "Inspect. Navigate. Understand. A terminal-based data explorer."
+readme = "README.md"
+requires-python = ">=3.8"
+dependencies = [
+    "textual>=0.41.0",
+    "ujson>=5.11.0",
+    "pyperclip>=1.8.2",
+]
+
+[project.scripts]
+twig = "twg.ui.app:run"
+twg = "twg.ui.app:run"
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+

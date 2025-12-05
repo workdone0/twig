@@ -1,0 +1,103 @@
+/* Global Styles */
+Screen {
+    background: $background;
+    color: $text;
+}
+
+ScrollBar {
+    background: $surface;
+    color: $text-muted;
+}
+
+/* Header Styling */
+Header {
+    height: 1.5;
+    background: $background;
+    color: $text;
+    padding: 0 0;
+    margin: 0 0;
+}
+
+Header.-screen-header {
+    /* Ensure it overlays correctly if needed, but default is usually fine */
+}
+
+/* Main Layout */
+
+
+#content-view {
+    width: 100%;
+    height: 1fr;
+}
+
+#main-container {
+    width: 100%;
+    height: 1fr;
+}
+
+/* Breadcrumbs Styling */
+Breadcrumbs {
+    height: 3;
+    background: $background;
+    border-top: solid $secondary;
+    border-bottom: solid $secondary;
+    padding: 0 0;
+    color: $primary; /* cyan */
+}
+
+/* Column Navigator Styling */
+ColumnNavigator {
+    width: 75%;
+    height: 100%;
+    scrollbar-size-vertical: 0;
+    scrollbar-size-horizontal: 0;
+}
+
+Column {
+    width: 40;
+    height: 100%;
+    border-right: solid $secondary;
+    background: $background;
+}
+
+TwigOptionList {
+    background: $background;
+    border: none;
+    color: $text;
+}
+
+TwigOptionList:focus {
+    border-left: solid $accent;
+}
+
+/* Inspector Styling */
+Inspector {
+    width: 25%;
+    height: 100%;
+    border-left: solid $secondary;
+    background: $background;
+    padding: 1;
+}
+
+#inspector-title {
+    text-align: center;
+    text-style: bold;
+    border-bottom: solid $secondary;
+    margin-bottom: 1;
+    color: $warning; /* orange */
+}
+
+.label {
+    color: $text-muted; /* secondary/base01/base1 */
+}
+
+.value {
+    color: $text;
+}
+
+/* Highlight Styles */
+TwigOptionList > .option-list--highlight {
+    background: $surface;
+    color: $text; 
+    text-style: bold;
+}
