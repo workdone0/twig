@@ -115,7 +115,7 @@ def run():
     parser.add_argument(
         "-v", "--version",
         action="version",
-        version="%(prog)s 0.1.0"
+        version="%(prog)s 0.2.3"
     )
     
     args = parser.parse_args()
