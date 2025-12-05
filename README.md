@@ -50,7 +50,7 @@ We are building the ultimate terminal-based data explorer with four core pillars
 
 
 ### Using pipx (Recommended)
-`pipx` is the recommended way to install Python CLI applications as it isolates dependencies.
+`pipx` is the recommended way to install Python CLI applications as it isolates dependencies. If you don't have `pipx` installed, check out the [official installation guide](https://pipx.pypa.io/stable/installation/).
 
 ```bash
 pipx install twg
