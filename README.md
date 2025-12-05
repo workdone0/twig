@@ -92,4 +92,10 @@ twig data.json
 
 ## Contributing
 
-We welcome contributions! Please see [design.md](design.md) for architectural details and contribution guidelines.
+We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for architectural details and contribution guidelines.
+
+## Contributors
+
+<a href="https://github.com/workdone0/twig/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=workdone0/twig" />
+</a>
