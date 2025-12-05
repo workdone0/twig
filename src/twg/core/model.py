@@ -86,4 +86,7 @@ class TwigModel:
                 # TODO: Handle keys with special characters (add quotes)
                 parts.append(f".{node.key}")
                 
-        return "".join(parts) if parts else "."
+        path = "".join(parts) if parts else "."
+        if not path.startswith("."):
+            path = "." + path
+        return path
