@@ -3,7 +3,7 @@ name = "twg"
 version = "0.2.0"
 description = "Inspect. Navigate. Understand. A terminal-based data explorer."
 readme = "README.md"
-requires-python = ">=3.8"
+requires-python = ">=3.10"
 dependencies = [
     "textual>=0.41.0",
     "ujson>=5.11.0",

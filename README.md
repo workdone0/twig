@@ -7,7 +7,8 @@
 [![PyPI version](https://badge.fury.io/py/twg.svg)](https://badge.fury.io/py/twg)
 > **Inspect. Navigate. Understand.**
 >
-> A terminal-based environment (TUI) for exploring, editing, and understanding structured data files.
+> A terminal-based environment (TUI) for exploring and understanding structured data files.
+> Planned: safe inline editing and diffs.
 
 ![Twig Demo](asset/demo.gif)
 
@@ -20,9 +21,9 @@ Modern development involves wrestling with massive JSON, YAML, and TOML files. `
 ## Goals
 We are building the ultimate terminal-based data explorer with four core pillars:
 
-1.  **Universal Support**: Open *any* structured file (JSON, YAML, TOML, XML, etc.) and treat it as a unified data structure.
+1.  **Universal Support**: Open *any* structured file (JSON today; YAML, TOML, XML planned) and treat it as a unified data structure.
 2.  **Miller Column Navigation**: Traverse deep hierarchies effortlessly using a Finder-like column layout.
-3.  **Safe Editing**: Modify values and keys with confidence.
+3.  **Safe Editing** (Planned): Modify values and keys with confidence.
 4.  **Powerful Search**: Find exactly what you need with fuzzy search and query capabilities.
 
 ## Features
@@ -46,7 +47,7 @@ We are building the ultimate terminal-based data explorer with four core pillars
 
 ## Installation
 
-## Installation
+
 
 ### Using pipx (Recommended)
 `pipx` is the recommended way to install Python CLI applications as it isolates dependencies.
