@@ -4,7 +4,8 @@
 
 # Twig 🌿
 
-[![PyPI version](https://badge.fury.io/py/twg.svg)](https://badge.fury.io/py/twg)
+[![PyPI version](https://img.shields.io/pypi/v/twg.svg)](https://pypi.org/project/twg/)
+[![PyPI downloads](https://img.shields.io/pypi/dw/twg.svg)](https://pypi.org/project/twg/)
 > **Inspect. Navigate. Understand.**
 >
 > A terminal-based environment (TUI) for exploring and understanding structured data files.
