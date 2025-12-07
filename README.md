@@ -85,12 +85,31 @@ twig data.json
 | `t` | Cycle through themes |
 | `q` | Quit the application |
 
-## Roadmap
+## Roadmap to v1.0.0
 
-- [x] **Phase 1**: Core Navigation & Visualization (Miller Columns, Inspector, Themes)
-- [ ] **Phase 2**: Search & Filtering (Fuzzy search, JMESPath/jq queries)
-- [ ] **Phase 3**: Editing (Modify values, rename keys, save changes)
-- [ ] **Phase 4**: Multiple File Support & Diffing
+We are focused on shipping a rock-solid **read-only** JSON viewer. Editing and diffing are planned for v1.x.
+
+### Core Experience
+- [ ] **Rock-solid JSON viewing**: No crashes, graceful error handling for malformed files.
+- [ ] **Large File Support**: Graceful handling or warnings for large files.
+- [ ] **Cross-platform**: Verified on macOS, Linux, and Windows.
+
+### UX & Polish
+- [ ] **Inline Help**: `?` or `h` cheat sheet.
+- [ ] **Status Bar**: Show filename, path, node type/size.
+- [ ] **Basic Search**: `/` to search keys/values, `n`/`N` to navigate matches.
+- [ ] **Jump-to-path**: `:` input to jump to a specific jq path (e.g., `.users[0].name`).
+
+### Developer Experience
+- [ ] **CLI Polish**: Robust `--help`, `--version`, and sensible exit codes.
+- [ ] **Config**: `~/.config/twig/config.toml` for themes and keybindings.
+- [ ] **Tests & CI**: Basic unit tests and CI workflow.
+- [ ] **Documentation**: Positioning, workflows, and stability guarantees.
+
+### Future (Post-v1.0)
+- [ ] **Editing**: Modify values, safe writes.
+- [ ] **Advanced Search**: Full jq/JMESPath queries.
+- [ ] **Multi-file**: Diffing and side-by-side comparison.
 
 ## Contributing
 
