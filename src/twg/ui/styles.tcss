@@ -97,18 +97,41 @@ Inspector {
     margin-top: 1;
     margin-bottom: 0;
     text-align: center;
+    color: $accent; /* Theme aware accent color */
+    text-style: bold;
+}
+
+.dim {
+    color: $text;
+    text-opacity: 70%;
 }
 
 #insp-path {
     height: auto;
     margin-bottom: 1;
     text-align: center;
-    color: $text-muted;
+    color: $text;
+    text-opacity: 70%;
 }
 
-#insp-details {
+#insp-details-grid {
+    layout: grid;
+    grid-size: 2;
+    grid-columns: 1fr 2fr;
+    grid-gutter: 1;
     height: auto;
     margin-bottom: 1;
+    padding: 0 2;
+}
+
+.insp-label {
+    color: $text;
+    text-align: right;
+    text-style: bold;
+}
+
+.insp-value {
+    color: $text;
 }
 
 #insp-content {
@@ -121,6 +144,32 @@ Inspector {
 
 .value {
     color: $text;
+}
+
+/* Status Bar Styling */
+StatusBar {
+    height: 1;
+    background: $surface;
+    color: $text-muted;
+    padding: 0 1;
+}
+
+#sb-file {
+    width: auto;
+    color: $primary;
+    margin-right: 2;
+}
+
+#sb-context {
+    width: 1fr;
+    text-align: center;
+    color: $text;
+}
+
+#sb-mode {
+    width: auto;
+    color: $warning;
+    text-style: bold;
 }
 
 /* Highlight Styles */

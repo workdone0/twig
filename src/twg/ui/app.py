@@ -9,6 +9,7 @@ from twg.core.model import TwigModel
 from twg.adapters.json_adapter import JsonAdapter
 from twg.ui.widgets.column_navigator import ColumnNavigator
 from twg.ui.widgets.inspector import Inspector
+from twg.ui.widgets.status_bar import StatusBar
 
 from twg.ui.widgets.breadcrumbs import Breadcrumbs
 from twg.core.model import Node
@@ -85,7 +86,7 @@ class TwigApp(App):
 
     def action_toggle_theme(self) -> None:
         """Cycles through all available themes and notifies the user."""
-        themes = list(self.available_themes.keys())
+        themes = [t for t in self.available_themes.keys() if t != "textual-ansi"]
         try:
             current_index = themes.index(self.theme)
         except ValueError:
@@ -111,13 +112,14 @@ class TwigApp(App):
             yield Center(Middle(LoadingIndicator()))
             yield Center(Middle(Label(f"Loading {os.path.basename(self.file_path)}...")))
         
+        yield StatusBar(self.file_path, id="status-bar")
         yield Footer()
 
     def on_column_navigator_node_selected(self, message: ColumnNavigator.NodeSelected) -> None:
         """
         Handler for node selection events from the ColumnNavigator.
         
-        Updates the Inspector and Breadcrumbs with the selected node details.
+        Updates the Inspector, Breadcrumbs, and Status Bar with the selected node details.
         """
         node = self.model.get_node(message.node_id)
         self.current_node = node
@@ -127,6 +129,9 @@ class TwigApp(App):
         
         breadcrumbs = self.query_one(Breadcrumbs)
         breadcrumbs.selected_node = node
+        
+        status_bar = self.query_one(StatusBar)
+        status_bar.selected_node = node
 
     def action_copy_path(self) -> None:
         """Copies the jq-style path of the currently selected node to the clipboard."""
