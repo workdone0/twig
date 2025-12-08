@@ -9,22 +9,23 @@
 > **Inspect. Navigate. Understand.**
 >
 > A terminal-based environment (TUI) for exploring and understanding structured data files.
-> Planned: safe inline editing and diffs.
+> Fast, secure, and local.
 
 ![Twig Demo](asset/demo.gif)
 
 ## Why Twig?
 
-Modern development involves wrestling with massive JSON, YAML, and TOML files. `cat` is too raw, `less` is too passive, and `jq` requires learning a query language.
+Modern development involves wrestling with massive JSON files. `cat` is too raw, `less` is too passive, and `jq` requires learning a query language.
 
-**Twig** bridges the gap. It gives you rich, context-aware visualization with the speed and security of a local terminal application.
+**Twig** bridges the gap. It provides rich, context-aware visualization with the speed and security of a local terminal application. No data leaves your machine.
 
-## Guidelines
-We are building the ultimate terminal-based data explorer.
-1.  **Universal Support**: Open *any* structured file.
+[![Star History Chart](https://api.star-history.com/svg?repos=workdone0/twig&type=Date)](https://star-history.com/#workdone0/twig&Date)
+
+## Core Pillars
+1.  **JSON Support**: Optimized for JSON files.
 2.  **Miller Column Navigation**: Traverse deep hierarchies effortlessly.
-3.  **Safe Editing** (Planned): Modify values and keys with confidence.
-4.  **Powerful Search**: Find exactly what you need.
+3.  **Powerful Search**: Recursive deep search and jump-to-path.
+4.  **Privacy First**: 100% local execution.
 
 ## Features
 
@@ -93,30 +94,15 @@ twig data.json
 | `t` | Cycle through themes |
 | `q` | Quit the application |
 
-## Current Reality & Limitations
+## Current Status & Limitations
 
-**Status**: v1.0.0 (Stable)
+**Version**: v1.0.0 (Stable)
 
-- **Read-Only**: Twig is a viewer. Editing capabilities are planned for v1.1.
+Twig is a robust **read-only** viewer optimized for **JSON** files.
+
+- **Read-Only**: Twig safely opens files in read-only mode. You cannot modify data yet.
 - **Format Support**: Optimized for JSON.
-- **Large Files**: Capable of handling massive files via smart bucketization.
-
-## Roadmap
-
-We are currently planning v1.1 with editing capabilities.
-
-## Roadmap
-
-- [x] **Phase 1**: Core Navigation & Visualization (Miller Columns, Inspector, Themes)
-- [x] **Phase 2**: Search & Filtering (Deep Async Search, Jump-to-path)
-- [ ] **Phase 3**: Editing (Modify values, rename keys, save changes)
-- [ ] **Phase 4**: Multiple File Support & Diffing
-
-### Future
-
-- [ ] **Editing**: Modify values, safe writes.
-- [ ] **Advanced Search**: Full jq/JMESPath queries.
-- [ ] **Multi-file**: Diffing and side-by-side comparison.
+- **Large Files**: Capable of handling massive files (100MB+) via smart bucketization. The UI remains responsive.
 
 ## Contributing
 
