@@ -5,67 +5,62 @@
 # Twig 🌿
 
 [![PyPI version](https://img.shields.io/pypi/v/twg.svg)](https://pypi.org/project/twg/)
-[![PyPI downloads](https://img.shields.io/pypi/dw/twg.svg)](https://pypi.org/project/twg/)
+[![Supported Python versions](https://img.shields.io/pypi/pyversions/twg.svg)](https://pypi.org/project/twg/)
+[![Downloads](https://static.pepy.tech/badge/twg)](https://pepy.tech/project/twg)
+[![Code style: ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
+
 > **Inspect. Navigate. Understand.**
 >
-> A terminal-based environment (TUI) for exploring and understanding structured data files.
-> Fast, secure, and local.
+> A Calm Way to Explore JSON in Your Terminal
 
 ![Twig Demo](asset/demo.gif)
 
-## Why Twig?
+## The Story
 
-Modern development involves wrestling with massive JSON files. `cat` is too raw, `less` is too passive, and `jq` requires learning a query language.
+Every developer knows the nightmare of dealing with JSON files in the terminal. You try to `cat` a file, and you get a wall of unreadable text. You try `less`, but it's passive and hard to search.
 
-**Twig** bridges the gap. It provides rich, context-aware visualization with the speed and security of a local terminal application. No data leaves your machine.
+**The alternatives aren't ideal either:**
+*   **Editors**: Opening a heavy editor just to check a config file is overkill, and often not an option when you are SSH'd into a remote machine.
+*   **Online Formatters**: Pasting your data into "Pretty Print Online" websites works, but it forces you to send potentially sensitive or private data to an untrusted server.
 
-[![Star History Chart](https://api.star-history.com/svg?repos=workdone0/twig&type=Date)](https://star-history.com/#workdone0/twig&Date)
+I decided to solve this problem. I wanted a tool that was fast, local, and ran everywhere.
+
+**Why "Twig"?**
+The name represents a small, thin branch on a tree or bush—which is exactly how we visualize your JSON data. Just as a twig is part of a larger structure, this tool helps you navigate the branches of your data trees.
+
+**The Inspiration**
+The UI is heavily inspired by **macOS Finder's column view**. It's the most natural way to traverse deep hierarchies, and I wanted to bring that fluid experience to the terminal.
 
 ## Core Pillars
-1.  **JSON Support**: Optimized for JSON files.
-2.  **Miller Column Navigation**: Traverse deep hierarchies effortlessly.
-3.  **Powerful Search**: Recursive deep search and jump-to-path.
-4.  **Privacy First**: 100% local execution.
+
+1.  **JSON Optimized**: Built specifically to make JSON files readable and navigable.
+2.  **Privacy First**: 100% local execution. Your data never leaves your machine.
+3.  **SSH Friendly**: Runs entirely in the terminal. No GUI required.
+4.  **Finder-like Navigation**: Traverse deep nested structures effortlessly using Miller columns.
 
 ## Features
 
-### 🧭 Seamless Navigation
-- **Miller Column Navigation**: Navigate deep structures effortlessly using columns (like Finder or JSON Hero).
-- **Smart Truncation**: Large lists and objects (1000+ items) are automatically grouped into navigable buckets (e.g., `[0 ... 999]`) to keep performance instant.
-- **Intuitive Controls**: Use **Arrow Keys** to dive in (Right) or go back (Left).
-- **Breadcrumbs**: Always know where you are with a `jq`-compatible path display at the top.
+### Seamless Navigation
+- **Miller Columns**: Intuitively move right to drill down, left to go back.
+- **Smart Truncation**: Large lists (1000+ items) are automatically bucketed (e.g., `[0 ... 999]`) so the UI never freezes.
+- **Breadcrumbs**: Always know your location with a `jq`-compatible path display at the top.
 
-### 🔍 Smart Inspection
-- **Inspector Pane**: View detailed information about the selected node in a dedicated pane.
-- **Smart Types**: Automatically detects and formats:
-    - **Dates**: ISO 8601 timestamps are parsed and displayed in a readable format.
-    - **URLs**: Links are identified and labeled.
-- **jq Integration**: Copy the path to any node in `jq` syntax (e.g., `.users[0].name`) with a single keystroke.
+### Powerful Search
+- **Deep Search**: Press `/` to search for keys or values. Twig transparently drills down into nested structures to find matches.
+- **Jump-to-path**: Press `:` to instantly jump to any specific path (e.g., `.users[0].name`).
 
-### ⚡ Powerful Navigation
-- **Deep Search**: Press `/` to search for keys or values. Twig transparently expands deep structures to find matches.
-- **Direct Jump**: Press `:` to instantly jump to any `jq` path (e.g., `.data[0].id`). Validates paths and provides helpful errors.
-- **Async Engine**: Navigation is built on a non-blocking, async engine, ensuring the UI remains responsive even when traversing massive datasets.
-
-### 🎨 Beautiful & Customizable
-- **Themes**: Comes with `catppuccin-mocha` by default.
-- **Theme Cycling**: Cycle through all available Textual themes (Solarized, Monokai, Dracula, etc.) with the `t` key.
-- **Visual Polish**: Clean headers, clear dividers, and theme-aware highlighting.
+### Developer Essentials
+- **Instant Copy**: Press `c` to copy the current path to your clipboard (jq syntax ready).
+- **Themeable**: Toggle between themes (like `catppuccin-mocha`, `dracula`, `monokai`) with `t`.
+- **Inline Help**: Press `?` anytime to see a cheat sheet of keyboard shortcuts.
 
 ## Installation
 
-
-
 ### Using pipx (Recommended)
-`pipx` is the recommended way to install Python CLI applications as it isolates dependencies. If you don't have `pipx` installed, check out the [official installation guide](https://pipx.pypa.io/stable/installation/).
+`pipx` installs the application in an isolated environment, keeping your system clean.
 
 ```bash
 pipx install twg
-```
-
-### Using pip
-```bash
-pip install twg
 ```
 
 ### Using uv
@@ -73,13 +68,19 @@ pip install twg
 uv pip install twg
 ```
 
+### Using pip
+```bash
+pip install twg
+```
+
 ## Usage
 
 ```bash
 # Open a JSON file
-twg data.json
-# or use the alias
 twig data.json
+
+# You can also use the shorter alias
+twg data.json
 ```
 
 ### Keybindings
@@ -90,26 +91,17 @@ twig data.json
 | `/` | Search for keys or values |
 | `n` / `N` | Jump to next / previous search match |
 | `:` | Jump to a specific `jq` path |
-| `c` | Copy the current path (jq format) to clipboard |
+| `c` | Copy the current path to clipboard |
 | `t` | Cycle through themes |
-| `q` | Quit the application |
+| `?` | Show Help / Shortcuts |
+| `q` | Quit |
 
-## Current Status & Limitations
+## Project Stats
+
+[![Star History Chart](https://api.star-history.com/svg?repos=workdone0/twig&type=Date)](https://star-history.com/#workdone0/twig&Date)
+
+## Current Status
 
 **Version**: v1.0.0 (Stable)
 
-Twig is a robust **read-only** viewer optimized for **JSON** files.
-
-- **Read-Only**: Twig safely opens files in read-only mode. You cannot modify data yet.
-- **Format Support**: Optimized for JSON.
-- **Large Files**: Capable of handling massive files (100MB+) via smart bucketization. The UI remains responsive.
-
-## Contributing
-
-We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for architectural details and contribution guidelines.
-
-## Contributors
-
-<a href="https://github.com/workdone0/twig/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=workdone0/twig" />
-</a>
+Twig is currently optimized for **JSON** files and runs in **Read-Only** mode. I am actively working on making it even more stable and feature-rich.
