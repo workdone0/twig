@@ -25,32 +25,36 @@ class Inspector(Container):
     def compose(self) -> ComposeResult:
         yield Label("Inspector", id="inspector-title")
         yield Vertical(
-            Static(id="insp-header"),
-            Static(id="insp-path"),
-            Static(id="insp-details"),
+            Label("", id="insp-header"),
+            Label("", id="insp-path"),
+            Container(id="insp-details-grid"),
             Static(id="insp-content"),
             id="inspector-scroll"
         )
 
     def watch_selected_node(self, node: Node | None) -> None:
-        header = self.query_one("#insp-header", Static)
-        path_view = self.query_one("#insp-path", Static)
-        details = self.query_one("#insp-details", Static)
+        header = self.query_one("#insp-header", Label)
+        path_view = self.query_one("#insp-path", Label)
+        details_grid = self.query_one("#insp-details-grid", Container)
         content = self.query_one("#insp-content", Static)
         
+        # Clear details grid
+        details_grid.remove_children()
+        
         if node is None:
-            header.update(Text("No Selection", style="dim"))
+            header.update("No Selection")
+            header.add_class("dim")
             path_view.update("")
-            details.update("")
             content.update("")
             return
         
+        header.remove_class("dim")
+
         # 1. Header
-        key_text = Text(node.key if node.key else "root", style="bold cyan")
-        header.update(key_text)
+        key_display = node.key if node.key else "root"
+        header.update(key_display)
 
         # 2. Human Readable Path
-        # Traverse up to build path: root > users > 0 > name
         chain = []
         curr = node
         while curr:
@@ -62,15 +66,13 @@ class Inspector(Container):
                 curr = None
         
         human_path = " › ".join(reversed(chain))
-        path_view.update(Text(human_path, style="dim"))
+        path_view.update(human_path)
 
-        # 3. Details Table
-        # Type | Size | ID?
+        # 3. Details Grid (Native Widgets)
         type_str = node.type.value.capitalize()
         size_str = "-"
         
         if node.type == DataType.ARRAY:
-             # If exact bucket count logic is complex, just show len(children) or raw len
              if isinstance(node.raw_value, list):
                  size_str = f"{len(node.raw_value)} items"
         elif node.type == DataType.OBJECT:
@@ -79,31 +81,28 @@ class Inspector(Container):
         elif node.type == DataType.STRING:
              size_str = f"{len(str(node.value))} chars"
 
-        table = Table(show_header=False, box=None, padding=(0, 2))
-        table.add_row(Text("Type", style="bold"), Text(type_str, style="green"))
-        table.add_row(Text("Size", style="bold"), size_str)
+        # Helper to add row
+        def add_detail(label: str, value: str):
+            details_grid.mount(Label(label, classes="insp-label"))
+            details_grid.mount(Label(value, classes="insp-value"))
+
+        add_detail("Type", type_str)
+        add_detail("Size", size_str)
         
         # Smart Insight: Date
         if node.type == DataType.STRING:
             try:
-                # Basic ISO parsing
                 dt = datetime.fromisoformat(node.value.replace('Z', '+00:00'))
-                table.add_row(Text("Parsed", style="bold"), Text(dt.strftime('%Y-%m-%d %H:%M'), style="yellow"))
+                add_detail("Parsed", dt.strftime('%Y-%m-%d %H:%M'))
             except ValueError:
                 pass
-        
-        details.update(table)
 
         # 4. Content / Value
         if node.is_container:
-            # Maybe show a preview of first few items?
-            # For now just a description
             content.update(Panel(f"Container with {size_str}", title="Value"))
         else:
-            # Pretty print value
             val = node.value
             if isinstance(val, (dict, list)):
-                # Should not happen for leaf, but just in case
                 formatted = json.dumps(val, indent=2)
                 syntax = Syntax(formatted, "json", theme="monokai", word_wrap=True)
                 content.update(Panel(syntax, title="Value"))

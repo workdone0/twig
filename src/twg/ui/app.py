@@ -4,11 +4,20 @@ from textual.containers import Container, Horizontal, Vertical, Center, Middle
 import sys
 import os
 import asyncio
+import argparse
+import pyperclip
+
+from textual.binding import Binding
 
 from twg.core.model import TwigModel
 from twg.adapters.json_adapter import JsonAdapter
-from twg.ui.widgets.column_navigator import ColumnNavigator
+from twg.ui.widgets.navigator import ColumnNavigator
 from twg.ui.widgets.inspector import Inspector
+from twg.ui.widgets.status_bar import StatusBar
+from twg.ui.widgets.search import SearchModal
+from twg.ui.widgets.jump import JumpModal
+from twg.ui.widgets.help import HelpModal
+from twg.ui.widgets.loading import LoadingScreen
 
 from twg.ui.widgets.breadcrumbs import Breadcrumbs
 from twg.core.model import Node
@@ -28,6 +37,12 @@ class TwigApp(App):
         ("q", "quit", "Quit"),
         ("c", "copy_path", "Copy Path"),
         ("t", "toggle_theme", "Toggle Theme"),
+        ("/", "search", "Search"),
+        ("n", "next_match", "Next Match"),
+        ("N", "prev_match", "Prev Match"),
+        (":", "jump", "Jump to Path"),
+        ("?", "help", "Help"),
+        Binding("h", "help", "Help", show=False),
     ]
 
     def on_mount(self) -> None:
@@ -85,7 +100,7 @@ class TwigApp(App):
 
     def action_toggle_theme(self) -> None:
         """Cycles through all available themes and notifies the user."""
-        themes = list(self.available_themes.keys())
+        themes = [t for t in self.available_themes.keys() if t != "textual-ansi"]
         try:
             current_index = themes.index(self.theme)
         except ValueError:
@@ -101,6 +116,7 @@ class TwigApp(App):
         self.file_path = file_path
         self.model: TwigModel | None = None
         self.current_node: Node | None = None
+        self.last_search_query: str | None = None
         super().__init__()
 
     def compose(self) -> ComposeResult:
@@ -111,13 +127,14 @@ class TwigApp(App):
             yield Center(Middle(LoadingIndicator()))
             yield Center(Middle(Label(f"Loading {os.path.basename(self.file_path)}...")))
         
+        yield StatusBar(self.file_path, id="status-bar")
         yield Footer()
 
     def on_column_navigator_node_selected(self, message: ColumnNavigator.NodeSelected) -> None:
         """
         Handler for node selection events from the ColumnNavigator.
         
-        Updates the Inspector and Breadcrumbs with the selected node details.
+        Updates the Inspector, Breadcrumbs, and Status Bar with the selected node details.
         """
         node = self.model.get_node(message.node_id)
         self.current_node = node
@@ -127,6 +144,74 @@ class TwigApp(App):
         
         breadcrumbs = self.query_one(Breadcrumbs)
         breadcrumbs.selected_node = node
+        
+        status_bar = self.query_one(StatusBar)
+        status_bar.selected_node = node
+
+    def action_search(self) -> None:
+        """Open the search modal."""
+        async def check_search(query: str | None) -> None:
+            if query:
+                self.last_search_query = query
+                await self.action_next_match()
+        
+        self.push_screen(SearchModal(), check_search)
+            
+    def action_help(self) -> None:
+        """Open the help modal."""
+        self.push_screen(HelpModal())
+
+    async def action_jump(self) -> None:
+        """Open the jump modal."""
+        async def check_jump(path: str | None) -> None:
+            if path:
+                if not self.model: return
+                
+                try:
+                    node = self.model.resolve_path(path)
+                    if node:
+                        navigator = self.query_one(ColumnNavigator)
+                        await navigator.expand_to_node(node.id)
+                    else:
+                        self.notify(f"Path not found: {path}", severity="error")
+                except ValueError as e:
+                    self.notify(str(e), severity="error")
+        
+        self.push_screen(JumpModal(), check_jump)
+
+    async def action_next_match(self) -> None:
+        """Find next match for the last query."""
+        if not self.last_search_query:
+            self.notify("No active search query.", severity="warning")
+            return
+            
+        navigator = self.query_one(ColumnNavigator)
+        loading = LoadingScreen()
+        self.mount(loading)
+        
+        try:
+             found = await navigator.find_next(self.last_search_query, direction=1)
+             if not found:
+                 self.notify(f"not found '{self.last_search_query}'")
+        finally:
+             loading.remove()
+
+    async def action_prev_match(self) -> None:
+        """Find previous match for the last search query."""
+        if not self.last_search_query:
+            self.notify("No active search query.", severity="warning")
+            return
+
+        navigator = self.query_one(ColumnNavigator)
+        loading = LoadingScreen()
+        self.mount(loading)
+        
+        try:
+             found = await navigator.find_next(self.last_search_query, direction=-1)
+             if not found:
+                 self.notify(f"not found '{self.last_search_query}'")
+        finally:
+             loading.remove()
 
     def action_copy_path(self) -> None:
         """Copies the jq-style path of the currently selected node to the clipboard."""
@@ -135,7 +220,6 @@ class TwigApp(App):
             
         full_path = self.model.get_path(self.current_node.id)
         if full_path:
-            import pyperclip
             try:
                 pyperclip.copy(full_path)
                 self.notify(f"Copied path: {full_path}")
@@ -143,8 +227,6 @@ class TwigApp(App):
                 self.notify(f"Failed to copy: {e}", severity="error")
         else:
              self.notify("Root path copied")
-
-import argparse
 
 def run():
     parser = argparse.ArgumentParser(
@@ -162,6 +244,14 @@ def run():
     
     args = parser.parse_args()
     
+    if not os.path.exists(args.file):
+        print(f"Error: File not found: {args.file}", file=sys.stderr)
+        sys.exit(1)
+
+    if not args.file.lower().endswith(".json"):
+        print(f"Error: Invalid file type '{args.file}'. Twig currently only supports .json files.", file=sys.stderr)
+        sys.exit(1)
+        
     app = TwigApp(args.file)
     result = app.run()
     
