@@ -247,6 +247,10 @@ def run():
     if not os.path.exists(args.file):
         print(f"Error: File not found: {args.file}", file=sys.stderr)
         sys.exit(1)
+
+    if not args.file.lower().endswith(".json"):
+        print(f"Error: Invalid file type '{args.file}'. Twig currently only supports .json files.", file=sys.stderr)
+        sys.exit(1)
         
     app = TwigApp(args.file)
     result = app.run()
