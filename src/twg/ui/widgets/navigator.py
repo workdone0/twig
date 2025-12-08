@@ -303,35 +303,6 @@ class ColumnNavigator(HorizontalScroll):
                  
         # 3. Focus the final column
         final_col_idx = len(lineage) - 1
-        # Actually lineage includes Root.
-        # If Target is Root, len=1. Col 0 matches Root. Col 0 matches children of Root.
-        # Wait. Root node is effectively "virtual" parent of Col 0 items?
-        # compose() yields Column(root_id, 0).
-        # So Col 0 displays children of Root.
-        # So if Target is Root... we just show Col 0.
-        # If Target is Child (depth 1), len=2. [Root, Child].
-        # i=0. Parent=Root. Next=Child.
-        # expand_node(0, Child) -> Creates Col 1 (children of Child).
-        # But we want to select Child. Child is in Col 0.
-        # The loop highlights Child in Col 0.
-        # And creates Col 1.
-        
-        # So the target node is highlighted in the LAST column that was *processed* in the loop?
-        # No. 'next_node' is highlighted in 'Col i'.
-        # For last iteration, 'next_node' is 'Target'. 'Col i' is the column containing Target.
-        
-        # So we want to focus 'Col [len(lineage) - 2]'?
-        # Example: [R, A]. Target A.
-        # i=0. select A in Col 0. expand A -> Col 1.
-        # A is selected in Col 0.
-        # We want to focus Col 0? Or do we want to focus the expanded content?
-        # "Jump to node" usually means "Select this node".
-        # So we should focus the column *containing* the node.
-        # Which is Col[len(lineage) - 2].
-        
-        # But commonly we also want to see its children (preview).
-        # So focusing the column containing the node is correct.
-        
         target_col_idx = max(0, len(lineage) - 2)
         
         def focus_target():
@@ -359,10 +330,6 @@ class ColumnNavigator(HorizontalScroll):
             return False
 
         # 2. Iterate through subsequent columns (Child, Grandchild, etc.)
-        # We start searching from the deeper columns first? or just next?
-        # A simple approach: Try searching focused column FIRST (fallback), then children?
-        # No, user wants "row search" -> Drill down.
-        
         start_index = focused_col.index + 1
         # Find max index
         max_index = start_index - 1

@@ -111,11 +111,7 @@ class TwigModel:
                 for i in range(0, size, BUCKET_SIZE):
                     end = min(i + BUCKET_SIZE, size)
                     # Bucket key shows absolute range
-                    # Note: indices in label should be relative to parent if parent is list?
-                    # No, usually buckets are for the immediate large list.
-                    # But if we had recursive buckets (list of lists of lists), 
-                    # the start_index passed to _create_bucket handles the offset logic.
-                    # Here 'i' is relative to 'data', which is the slice if 'node' is a bucket.
+                    
                     
                     # Absolute start index for the new bucket
                     abs_start = start_index + i
@@ -158,8 +154,7 @@ class TwigModel:
 
     def _create_bucket(self, parent: Node, key: str, value: Any, start_index: int = 0) -> None:
         """Creates a virtual intermediate node."""
-        # Buckets are containers (we treat them as Arrays or Objects depending on context, 
-        # but simplistically ARRAY works well for the UI icon)
+        # Metadata tracks the original list offset
         child = Node(
             key=key,
             value=None,
@@ -167,24 +162,12 @@ class TwigModel:
             parent=parent.id,
             raw_value=value
         )
-        # Store start_index in the node context somehow if we want children to have absolute indices?
-        # A simple hack is to attach it to the instance dynamically or use a subclass.
-        # For now, let's update _expand_node to handle "offset" if the parent was valid list bucket.
-        # Actually, simpler: if raw_value is a slice, the child keys will range 0..N.
-        # But user wants [1000]. So we need the offset.
-        # Let's attach metadata to the node.
         child.metadata = {"start_index": start_index, "is_bucket": True}
         self.add_node(child)
 
     def _create_child(self, parent: Node, key: str, value: Any) -> None:
-        # If parent has start_index metadata and is a list bucket, offset the key?
-        # Actually, if we pass the correct key from _expand_node, we are good.
-        # But _expand_node calls _create_child with str(i) where i is 0..len(slice).
-        # We need to fix _expand_node logic for children of buckets to respect offset.
-        # Let's handle passing explicit keys in the caller.
         
         node_type = get_type_from_value(value)
-        # For leaf nodes, value is the actual value. For containers, it's None (or could be summary)
         display_value = value if node_type not in (DataType.OBJECT, DataType.ARRAY) else None
         
         child = Node(

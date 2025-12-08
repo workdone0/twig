@@ -7,6 +7,8 @@ import asyncio
 import argparse
 import pyperclip
 
+from textual.binding import Binding
+
 from twg.core.model import TwigModel
 from twg.adapters.json_adapter import JsonAdapter
 from twg.ui.widgets.navigator import ColumnNavigator
@@ -14,6 +16,7 @@ from twg.ui.widgets.inspector import Inspector
 from twg.ui.widgets.status_bar import StatusBar
 from twg.ui.widgets.search import SearchModal
 from twg.ui.widgets.jump import JumpModal
+from twg.ui.widgets.help import HelpModal
 from twg.ui.widgets.loading import LoadingScreen
 
 from twg.ui.widgets.breadcrumbs import Breadcrumbs
@@ -38,6 +41,8 @@ class TwigApp(App):
         ("n", "next_match", "Next Match"),
         ("N", "prev_match", "Prev Match"),
         (":", "jump", "Jump to Path"),
+        ("?", "help", "Help"),
+        Binding("h", "help", "Help", show=False),
     ]
 
     def on_mount(self) -> None:
@@ -152,6 +157,10 @@ class TwigApp(App):
         
         self.push_screen(SearchModal(), check_search)
             
+    def action_help(self) -> None:
+        """Open the help modal."""
+        self.push_screen(HelpModal())
+
     async def action_jump(self) -> None:
         """Open the jump modal."""
         async def check_jump(path: str | None) -> None:
@@ -235,6 +244,10 @@ def run():
     
     args = parser.parse_args()
     
+    if not os.path.exists(args.file):
+        print(f"Error: File not found: {args.file}", file=sys.stderr)
+        sys.exit(1)
+        
     app = TwigApp(args.file)
     result = app.run()
     
