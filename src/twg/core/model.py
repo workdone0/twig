@@ -3,6 +3,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 from typing import Any, Dict, List, Optional
 import uuid
+import re
 
 class DataType(Enum):
     OBJECT = "object"
@@ -172,7 +173,7 @@ class TwigModel:
         # Actually, simpler: if raw_value is a slice, the child keys will range 0..N.
         # But user wants [1000]. So we need the offset.
         # Let's attach metadata to the node.
-        child.metadata = {"start_index": start_index}
+        child.metadata = {"start_index": start_index, "is_bucket": True}
         self.add_node(child)
 
     def _create_child(self, parent: Node, key: str, value: Any) -> None:
@@ -226,3 +227,119 @@ class TwigModel:
         if not path.startswith("."):
             path = "." + path
         return path
+
+    def resolve_path(self, path: str) -> Optional[Node]:
+        """
+        Resolves a jq-style path (e.g. .users[0].name) to a Node (UUID).
+        Transparently traverses buckets if needed.
+        Raises ValueError if path syntax is invalid.
+        """
+        segments = self._parse_jq_path(path)
+        # Note: if path is ".", segments is []. Returns root node if exists.
+        
+        path = path.strip()
+        if not path:
+             # Empty string is invalid
+             raise ValueError("Path cannot be empty")
+             
+        if path != "." and not segments:
+             # Non-trivial string but no segments found -> Invalid
+             raise ValueError(f"Invalid jq path syntax: {path}")
+        
+        if not self.root_id:
+            return None
+            
+        current_node = self.get_node(self.root_id)
+        if not current_node:
+            return None
+            
+        if not segments:
+             # Just root
+             return current_node
+            
+        # Iterate through logical segments
+        seg_idx = 0
+        while seg_idx < len(segments):
+            segment = segments[seg_idx]
+            
+            # Ensure children are expanded
+            children = self.get_children(current_node.id)
+            
+            found = False
+            
+            # 1. Try finding direct match
+            for child in children:
+                # Compare keys. 
+                # Note: node.key is str. segment might be int or str.
+                if str(child.key) == str(segment):
+                    current_node = child
+                    found = True
+                    seg_idx += 1 # Consumed segment
+                    break
+            
+            if found:
+                continue
+                
+            # 2. Try finding in buckets (Bubbling down)
+            # If we didn't find specific key, maybe it's inside a bucket child?
+            bucket_found = False
+            for child in children:
+                if child.metadata.get("is_bucket"):
+                    # Check if this bucket contains our target.
+                    
+                    # Case A: List Bucket (has start_index)
+                    if isinstance(segment, int) and child.type == DataType.ARRAY:
+                         start = child.metadata.get("start_index", 0)
+                         # We need end index? 
+                         # We can infer from raw_value length if available
+                         if isinstance(child.raw_value, list):
+                             count = len(child.raw_value)
+                             if start <= segment < start + count:
+                                 # Found the right bucket!
+                                 current_node = child
+                                 bucket_found = True
+                                 # Do NOT increment seg_idx. We just moved into the bucket, 
+                                 # we still need to find the actual 'segment' inside it.
+                                 break
+                                 
+                    # Case B: Dict Bucket (keys based)
+                    elif isinstance(segment, str): # Dict keys are strings
+                         if isinstance(child.raw_value, dict):
+                             if segment in child.raw_value:
+                                 current_node = child
+                                 bucket_found = True
+                                 break
+            
+            if bucket_found:
+                continue
+                
+            # If we get here, neither direct child nor bucket contained it.
+            return None
+            
+        return current_node
+
+    def _parse_jq_path(self, path: str) -> List[str | int]:
+        """Parses a jq path string into specific segments."""
+        path = path.strip()
+        if path == "." or path == "":
+            return []
+            
+        # Correct regex for finding segments:
+        matches = re.finditer(r'(?:\.|^)([^.\[\]]+)|\[(\d+)\]|\["([^"]+)"\]|\[\'([^\']+)\'\]', path)
+        results = []
+        for m in matches:
+             if m.group(1): # key (no quotes)
+                 k = m.group(1)
+                 # Handle odd case where path starts with .key, group 1 is key.
+                 # If path starts with ., the first match might be empty group 1 if regex isn't careful.
+                 # My regex: (?:\.|^)([^.\[\]]+)
+                 # .foo -> matches .foo -> group 1 is foo.
+                 results.append(k)
+             elif m.group(2): # Int
+                 results.append(int(m.group(2)))
+             elif m.group(3): # Double quote
+                 results.append(m.group(3))
+             elif m.group(4): # Single quote
+                 results.append(m.group(4))
+                 
+        return results

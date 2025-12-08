@@ -29,10 +29,11 @@ The following is a set of guidelines for contributing to Twig. These are mostly 
 This section (formerly the Technical Design Document) outlines the core architecture to help you navigate the codebase.
 
 ### 1. Core Capabilities
-
-*   **Universal File Support:** Native ingestion of any structured format into a unified `TwigModel`.
-*   **Miller Column Navigation:** The primary interface for deep traversal.
-*   **Smart Content Awareness:** Inferred semantic types (e.g., ISO 8601 -> Relative time, Hex -> Color preview).
+ 
+ *   **Universal File Support:** Native ingestion of any structured format into a unified `TwigModel`.
+ *   **Miller Column Navigation:** The primary interface for deep traversal.
+ *   **Async Interaction Engine:** Non-blocking navigation and search using `asyncio` and `Textual` workers.
+ *   **Smart Content Awareness:** Inferred semantic types (e.g., ISO 8601 -> Relative time, Hex -> Color preview).
 
 ### 2. User Interface Design
 
@@ -103,6 +104,6 @@ The UI is built on **Textual (Python)**.
 ## Roadmap
 
 - [x] **Phase 1**: Core Navigation & Visualization (Miller Columns, Inspector, Themes)
-- [ ] **Phase 2**: Search & Filtering (Fuzzy search, JMESPath/jq queries)
+- [x] **Phase 2**: Search & Filtering (Deep Async Search, Jump-to-path)
 - [ ] **Phase 3**: Editing (Modify values, rename keys, save changes)
 - [ ] **Phase 4**: Multiple File Support & Diffing

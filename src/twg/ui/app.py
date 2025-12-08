@@ -13,6 +13,7 @@ from twg.ui.widgets.navigator import ColumnNavigator
 from twg.ui.widgets.inspector import Inspector
 from twg.ui.widgets.status_bar import StatusBar
 from twg.ui.widgets.search import SearchModal
+from twg.ui.widgets.jump import JumpModal
 from twg.ui.widgets.loading import LoadingScreen
 
 from twg.ui.widgets.breadcrumbs import Breadcrumbs
@@ -36,6 +37,7 @@ class TwigApp(App):
         ("/", "search", "Search"),
         ("n", "next_match", "Next Match"),
         ("N", "prev_match", "Prev Match"),
+        (":", "jump", "Jump to Path"),
     ]
 
     def on_mount(self) -> None:
@@ -149,6 +151,24 @@ class TwigApp(App):
                 await self.action_next_match()
         
         self.push_screen(SearchModal(), check_search)
+            
+    async def action_jump(self) -> None:
+        """Open the jump modal."""
+        async def check_jump(path: str | None) -> None:
+            if path:
+                if not self.model: return
+                
+                try:
+                    node = self.model.resolve_path(path)
+                    if node:
+                        navigator = self.query_one(ColumnNavigator)
+                        await navigator.expand_to_node(node.id)
+                    else:
+                        self.notify(f"Path not found: {path}", severity="error")
+                except ValueError as e:
+                    self.notify(str(e), severity="error")
+        
+        self.push_screen(JumpModal(), check_jump)
 
     async def action_next_match(self) -> None:
         """Find next match for the last query."""
@@ -157,18 +177,15 @@ class TwigApp(App):
             return
             
         navigator = self.query_one(ColumnNavigator)
+        loading = LoadingScreen()
+        self.mount(loading)
         
-        # Show loading screen
-        loading = LoadingScreen(f"Searching for '{self.last_search_query}'...")
-        self.push_screen(loading)
-        await asyncio.sleep(0.05) # Allow UI to render
-        
-        found = navigator.find_next(self.last_search_query, direction=1)
-        
-        loading.dismiss()
-        
-        if not found:
-            self.notify(f"not found '{self.last_search_query}'")
+        try:
+             found = await navigator.find_next(self.last_search_query, direction=1)
+             if not found:
+                 self.notify(f"not found '{self.last_search_query}'")
+        finally:
+             loading.remove()
 
     async def action_prev_match(self) -> None:
         """Find previous match for the last search query."""
@@ -177,18 +194,15 @@ class TwigApp(App):
             return
 
         navigator = self.query_one(ColumnNavigator)
-
-        # Show loading screen
-        loading = LoadingScreen(f"Searching for '{self.last_search_query}'...")
-        self.push_screen(loading)
-        await asyncio.sleep(0.05) # Allow UI to render
-
-        found = navigator.find_next(self.last_search_query, direction=-1)
+        loading = LoadingScreen()
+        self.mount(loading)
         
-        loading.dismiss()
-
-        if not found:
-            self.notify(f"not found '{self.last_search_query}'")
+        try:
+             found = await navigator.find_next(self.last_search_query, direction=-1)
+             if not found:
+                 self.notify(f"not found '{self.last_search_query}'")
+        finally:
+             loading.remove()
 
     def action_copy_path(self) -> None:
         """Copies the jq-style path of the currently selected node to the clipboard."""
