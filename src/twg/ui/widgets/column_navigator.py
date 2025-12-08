@@ -41,35 +41,50 @@ class Column(Vertical):
         super().__init__(classes="column")
 
     def compose(self) -> ComposeResult:
-        parent = self.model.get_node(self.parent_node_id)
-        if not parent:
-            return
+        try:
+            parent = self.model.get_node(self.parent_node_id)
+            if not parent:
+                return
 
-        options = []
-        self.node_map = {} # Map option index to node ID
+            options = []
+            self.node_map = {} # Map option index to node ID
+            
+            # Lazy load children
+            children = self.model.get_children(parent.id)
+            
+            for i, child in enumerate(children):
+                if child:
+                    # Icon logic
+                    icon = " "
+                    if child.type == DataType.OBJECT:
+                        icon = "▶" 
+                    elif child.type == DataType.ARRAY:
+                        icon = "▶" 
+                    
+                    # Value preview (truncated)
+                    val_str = ""
+                    if not child.is_container:
+                        val_str = f": {str(child.value)}"
+                        if len(val_str) > 20:
+                            val_str = val_str[:17] + "..."
+                    
+                    label = f"{icon} {child.key}{val_str}"
+                    options.append(label)
+                    self.node_map[i] = child.id
+            
+            opt_list = TwigOptionList(id=f"col-{self.index}")
+            opt_list.add_options(options)
+            yield opt_list
+            
+        except Exception as e:
+             from textual.widgets import Label
+             yield Label(f"Error loading column: {e}")
 
-        for i, child_id in enumerate(parent.children):
-            child = self.model.get_node(child_id)
-            if child:
-                # Icon logic
-                icon = " "
-                if child.type == DataType.OBJECT:
-                    icon = "▶" 
-                elif child.type == DataType.ARRAY:
-                    icon = "▶" 
-                
-                # Value preview (truncated)
-                val_str = ""
-                if not child.is_container:
-                    val_str = f": {str(child.value)}"
-                    if len(val_str) > 20:
-                        val_str = val_str[:17] + "..."
-                
-                label = f"{icon} {child.key}{val_str}"
-                options.append(label)
-                self.node_map[i] = child.id
-
-        yield TwigOptionList(*options, id=f"col-{self.index}")
+    def on_mount(self) -> None:
+        """Select the first item by default when the column is mounted."""
+        opt_list = self.query_one(TwigOptionList)
+        if opt_list.option_count > 0:
+            opt_list.highlighted = 0
 
     def on_option_list_option_highlighted(self, event: OptionList.OptionHighlighted) -> None:
         # Only emit highlighted event if this column has focus.

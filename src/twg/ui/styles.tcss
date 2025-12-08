@@ -87,6 +87,34 @@ Inspector {
     color: $warning; /* orange */
 }
 
+#inspector-scroll {
+    height: 1fr;
+    overflow-y: auto;
+}
+
+#insp-header {
+    height: auto;
+    margin-top: 1;
+    margin-bottom: 0;
+    text-align: center;
+}
+
+#insp-path {
+    height: auto;
+    margin-bottom: 1;
+    text-align: center;
+    color: $text-muted;
+}
+
+#insp-details {
+    height: auto;
+    margin-bottom: 1;
+}
+
+#insp-content {
+    height: auto;
+}
+
 .label {
     color: $text-muted; /* secondary/base01/base1 */
 }

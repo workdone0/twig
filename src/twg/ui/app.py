@@ -1,7 +1,9 @@
 from textual.app import App, ComposeResult
-from textual.widgets import Footer, Header
-from textual.containers import Container, Horizontal, Vertical
+from textual.widgets import Footer, Header, LoadingIndicator, Label, Static
+from textual.containers import Container, Horizontal, Vertical, Center, Middle
 import sys
+import os
+import asyncio
 
 from twg.core.model import TwigModel
 from twg.adapters.json_adapter import JsonAdapter
@@ -10,6 +12,8 @@ from twg.ui.widgets.inspector import Inspector
 
 from twg.ui.widgets.breadcrumbs import Breadcrumbs
 from twg.core.model import Node
+
+MAX_FILE_SIZE_WARNING = 100 * 1024 * 1024 # 100 MB
 
 class TwigApp(App):
     """
@@ -29,6 +33,55 @@ class TwigApp(App):
     def on_mount(self) -> None:
         self.theme = "catppuccin-mocha"
         self.title = "Twig"
+        self.run_worker(self.load_file, thread=True)
+
+    def load_file(self) -> None:
+        """Worker method to load the file in a background thread."""
+        try:
+            # check file size
+            try:
+                size = os.path.getsize(self.file_path)
+                if size > MAX_FILE_SIZE_WARNING:
+                    self.call_from_thread(
+                        self.notify, 
+                        f"Large file detected ({size / (1024*1024):.1f} MB). Performance may be degraded.", 
+                        severity="warning",
+                        timeout=5
+                    )
+            except OSError:
+                pass # safely ignore, adapter will handle file errors
+
+            adapter = JsonAdapter()
+            model = adapter.load_into_model(self.file_path)
+            self.call_from_thread(self.on_file_loaded, model)
+        except Exception as e:
+            self.call_from_thread(self.on_file_load_error, str(e))
+    
+    def on_file_loaded(self, model: TwigModel) -> None:
+        """Called when the file is successfully loaded."""
+        self.model = model
+        
+        # Remove loading indicator
+        content = self.query_one("#main-content")
+        content.remove_children()
+        
+        # Mount the actual UI
+        content.mount(
+            Vertical(
+                Breadcrumbs(self.model, id="breadcrumbs"),
+                Horizontal(
+                    ColumnNavigator(self.model),
+                    Inspector(self.model, id="inspector"),
+                    id="main-container"
+                ),
+                id="content-view"
+            )
+        )
+
+    def on_file_load_error(self, error_message: str) -> None:
+        """Called when file loading fails."""
+        # Exit the app and pass the error message back to the caller
+        self.exit(error_message)
 
     def action_toggle_theme(self) -> None:
         """Cycles through all available themes and notifies the user."""
@@ -53,21 +106,10 @@ class TwigApp(App):
     def compose(self) -> ComposeResult:
         yield Header(show_clock=False)
         
-        
-        if not self.model:
-            try:
-                adapter = JsonAdapter()
-                self.model = adapter.load_into_model(self.file_path)
-            except Exception as e:
-                yield Container()
-                self.notify(f"Error loading file: {e}", severity="error")
-                return
-
-        with Vertical(id="content-view"):
-            yield Breadcrumbs(self.model, id="breadcrumbs")
-            with Horizontal(id="main-container"):
-                yield ColumnNavigator(self.model)
-                yield Inspector(self.model, id="inspector")
+        # Initial state: Loading
+        with Container(id="main-content"):
+            yield Center(Middle(LoadingIndicator()))
+            yield Center(Middle(Label(f"Loading {os.path.basename(self.file_path)}...")))
         
         yield Footer()
 
@@ -115,13 +157,17 @@ def run():
     parser.add_argument(
         "-v", "--version",
         action="version",
-        version="%(prog)s 0.2.3"
+        version="%(prog)s 1.0.0"
     )
     
     args = parser.parse_args()
     
     app = TwigApp(args.file)
-    app.run()
+    result = app.run()
+    
+    if result is not None and isinstance(result, str):
+        print(f"Error: {result}", file=sys.stderr)
+        sys.exit(1)
 
 if __name__ == "__main__":
     run()
