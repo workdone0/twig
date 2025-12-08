@@ -31,6 +31,7 @@ We are building the ultimate terminal-based data explorer with four core pillars
 
 ### 🧭 Seamless Navigation
 - **Miller Column Navigation**: Navigate deep structures effortlessly using columns (like Finder or JSON Hero).
+- **Smart Truncation**: Large lists and objects (1000+ items) are automatically grouped into navigable buckets (e.g., `[0 ... 999]`) to keep performance instant.
 - **Intuitive Controls**: Use **Arrow Keys** to dive in (Right) or go back (Left).
 - **Breadcrumbs**: Always know where you are with a `jq`-compatible path display at the top.
 

@@ -1,16 +1,20 @@
 from textual.app import ComposeResult
-from textual.containers import Vertical, Container
+from textual.containers import Vertical, Container, Horizontal
 from textual.widgets import Static, Label
 from textual.reactive import reactive
+from rich.text import Text
+from rich.table import Table
+from rich.panel import Panel
+from rich.syntax import Syntax
+from datetime import datetime
+import json
+
 from twg.core.model import Node, DataType, TwigModel
 
 class Inspector(Container):
     """
-    Displays detailed information about the selected node.
-    
-    Shows the key, type, value, and any smart-detected information (e.g., ISO dates).
+    Displays detailed information about the selected node in a rich format.
     """
-    # CSS moved to styles.tcss
     
     selected_node: reactive[Node | None] = reactive(None)
 
@@ -20,45 +24,88 @@ class Inspector(Container):
 
     def compose(self) -> ComposeResult:
         yield Label("Inspector", id="inspector-title")
-        yield Static("Select a node to view details", id="inspector-content")
+        yield Vertical(
+            Static(id="insp-header"),
+            Static(id="insp-path"),
+            Static(id="insp-details"),
+            Static(id="insp-content"),
+            id="inspector-scroll"
+        )
 
     def watch_selected_node(self, node: Node | None) -> None:
-        content_widget = self.query_one("#inspector-content", Static)
+        header = self.query_one("#insp-header", Static)
+        path_view = self.query_one("#insp-path", Static)
+        details = self.query_one("#insp-details", Static)
+        content = self.query_one("#insp-content", Static)
         
         if node is None:
-            content_widget.update("Select a node to view details")
+            header.update(Text("No Selection", style="dim"))
+            path_view.update("")
+            details.update("")
+            content.update("")
             return
         
-        # 2. Smart Type Detection & Formatting
-        key_display = node.key if node.key else "(root)"
-        type_display = node.type.value
-        value_display = str(node.value)
-        
-        extra_info = ""
+        # 1. Header
+        key_text = Text(node.key if node.key else "root", style="bold cyan")
+        header.update(key_text)
 
-        if node.is_container:
-            value_display = f"<{len(node.children)} items>"
+        # 2. Human Readable Path
+        # Traverse up to build path: root > users > 0 > name
+        chain = []
+        curr = node
+        while curr:
+            label = curr.key if curr.key else "root"
+            chain.append(label)
+            if curr.parent:
+                curr = self.model.get_node(curr.parent)
+            else:
+                curr = None
+        
+        human_path = " › ".join(reversed(chain))
+        path_view.update(Text(human_path, style="dim"))
+
+        # 3. Details Table
+        # Type | Size | ID?
+        type_str = node.type.value.capitalize()
+        size_str = "-"
+        
+        if node.type == DataType.ARRAY:
+             # If exact bucket count logic is complex, just show len(children) or raw len
+             if isinstance(node.raw_value, list):
+                 size_str = f"{len(node.raw_value)} items"
+        elif node.type == DataType.OBJECT:
+             if isinstance(node.raw_value, dict):
+                 size_str = f"{len(node.raw_value)} keys"
         elif node.type == DataType.STRING:
-            # Check for Date
+             size_str = f"{len(str(node.value))} chars"
+
+        table = Table(show_header=False, box=None, padding=(0, 2))
+        table.add_row(Text("Type", style="bold"), Text(type_str, style="green"))
+        table.add_row(Text("Size", style="bold"), size_str)
+        
+        # Smart Insight: Date
+        if node.type == DataType.STRING:
             try:
-                # Basic ISO check (can be improved)
-                from datetime import datetime
+                # Basic ISO parsing
                 dt = datetime.fromisoformat(node.value.replace('Z', '+00:00'))
-                type_display = "Date (ISO8601)"
-                extra_info = f"\n[b]Parsed:[/b] {dt.strftime('%Y-%m-%d %H:%M:%S')}"
+                table.add_row(Text("Parsed", style="bold"), Text(dt.strftime('%Y-%m-%d %H:%M'), style="yellow"))
             except ValueError:
                 pass
-            
-            # Check for URL
-            if node.value.startswith("http://") or node.value.startswith("https://"):
-                type_display = "URL"
+        
+        details.update(table)
 
-        content = f"""
-[b]Key:[/b] {key_display}
-[b]Type:[/b] {type_display}
-
-[b]Value:[/b]
-{value_display}
-{extra_info}
-        """
-        content_widget.update(content)
+        # 4. Content / Value
+        if node.is_container:
+            # Maybe show a preview of first few items?
+            # For now just a description
+            content.update(Panel(f"Container with {size_str}", title="Value"))
+        else:
+            # Pretty print value
+            val = node.value
+            if isinstance(val, (dict, list)):
+                # Should not happen for leaf, but just in case
+                formatted = json.dumps(val, indent=2)
+                syntax = Syntax(formatted, "json", theme="monokai", word_wrap=True)
+                content.update(Panel(syntax, title="Value"))
+            else:
+                content.update(Panel(str(val), title="Value"))
