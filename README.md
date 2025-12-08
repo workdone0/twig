@@ -97,8 +97,8 @@ We are focused on shipping a rock-solid **read-only** JSON viewer. Editing and d
 
 ### UX & Polish
 - [ ] **Inline Help**: `?` or `h` cheat sheet.
-- [ ] **Status Bar**: Show filename, path, node type/size.
-- [ ] **Basic Search**: `/` to search keys/values, `n`/`N` to navigate matches.
+- [x] **Status Bar**: Show filename, path, node type/size.
+- [x] **Smart Search**: `/` to search keys/values, `n`/`N` to navigate matches. Handles recursive drill-down.
 - [ ] **Jump-to-path**: `:` input to jump to a specific jq path (e.g., `.users[0].name`).
 
 ### Developer Experience
