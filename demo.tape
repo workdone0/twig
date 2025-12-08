@@ -12,46 +12,53 @@ Enter
 
 Sleep 2s
 
-# Navigate down
+# 0. Setup
+Set TypingSpeed 100ms
+
+# 1. Basic Navigation
 Down
-Sleep 2s
-Up
-Sleep 2s
+Sleep 1s
 Right
-Sleep 2s
+Sleep 1s
 Right
+Sleep 1s
+Down
+Sleep 1s
+Down
 Sleep 2s
 
-# Navigate down in new column
-Down
-Sleep 2s
-Down
-Sleep 2s
-Down
-Sleep 2s
-Down
-Sleep 2s
-Up
-Sleep 2s
+# 2. Search
+Type "/"
+Sleep 1.5s
+Type "created_at"
+Sleep 1.5s
+Enter
+Sleep 3s
 
-# Show Inspector update
-Right
-Sleep 2s
-Right
-Sleep 2s
-Right
-Sleep 2s
+# 3. Jump to Path
+Type ":"
+Sleep 1.5s
+Type ".includes.tweets"
+Sleep 1.5s
+Enter
+Sleep 3s
 
-# Toggle Theme
+# 4. Inline Help
+Type "?"
+Sleep 4s
+Escape
+Sleep 1.5s
+
+# 5. Theme Toggle
 Type "t"
-Sleep 5s
+Sleep 3s
 Type "t"
-Sleep 5s
+Sleep 3s
 
-# Copy path
+# 6. Copy Path
 Type "c"
-Sleep 5s
+Sleep 2s
 
 # Quit
 Type "q"
-Sleep 5s
+Sleep 1s
