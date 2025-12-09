@@ -1,0 +1,156 @@
+{
+    "cloud_provider": "AWS",
+    "account_id": "1234-5678-9012",
+    "organization": "Global Tech Corp",
+    "regions": {
+        "us-east-1": {
+            "status": "active",
+            "vpcs": [
+                {
+                    "vpc_id": "vpc-0a1b2c3d",
+                    "name": "production-vpc",
+                    "cidr": "10.0.0.0/16",
+                    "tags": {
+                        "environment": "production",
+                        "cost_center": "engineering"
+                    },
+                    "subnets": [
+                        {
+                            "subnet_id": "subnet-public-1",
+                            "zone": "us-east-1a",
+                            "cidr": "10.0.1.0/24",
+                            "type": "public"
+                        },
+                        {
+                            "subnet_id": "subnet-private-1",
+                            "zone": "us-east-1a",
+                            "cidr": "10.0.2.0/24",
+                            "type": "private",
+                            "instances": [
+                                {
+                                    "instance_id": "i-0123456789abcdef0",
+                                    "name": "api-gateway",
+                                    "type": "t3.medium",
+                                    "state": "running",
+                                    "private_ip": "10.0.2.10",
+                                    "security_groups": [
+                                        "sg-web",
+                                        "sg-api"
+                                    ],
+                                    "monitoring": {
+                                        "cpu_utilization": 45.2,
+                                        "memory_used_mb": 2048
+                                    }
+                                },
+                                {
+                                    "instance_id": "i-0abcdef1234567890",
+                                    "name": "auth-service",
+                                    "type": "c5.large",
+                                    "state": "running",
+                                    "private_ip": "10.0.2.11",
+                                    "security_groups": [
+                                        "sg-app"
+                                    ],
+                                    "monitoring": {
+                                        "cpu_utilization": 12.5,
+                                        "memory_used_mb": 1024
+                                    }
+                                }
+                            ]
+                        }
+                    ],
+                    "databases": [
+                        {
+                            "db_id": "db-primary",
+                            "engine": "postgres",
+                            "version": "14.5",
+                            "status": "available",
+                            "endpoint": "prod-db.cluster-ro.us-east-1.rds.amazonaws.com",
+                            "multi_az": true
+                        },
+                        {
+                            "db_id": "db-redis-cache",
+                            "engine": "redis",
+                            "version": "6.2",
+                            "status": "available",
+                            "nodes": 3
+                        }
+                    ]
+                },
+                {
+                    "vpc_id": "vpc-0x9y8z7w",
+                    "name": "staging-vpc",
+                    "cidr": "10.1.0.0/16",
+                    "tags": {
+                        "environment": "staging"
+                    },
+                    "instances": []
+                }
+            ]
+        },
+        "eu-central-1": {
+            "status": "maintenance",
+            "vpcs": [
+                {
+                    "vpc_id": "vpc-eu1",
+                    "name": "eu-dr-site",
+                    "cidr": "172.16.0.0/16",
+                    "instances": [
+                        {
+                            "instance_id": "i-eu-backup-1",
+                            "name": "backup-node",
+                            "state": "stopped"
+                        }
+                    ]
+                }
+            ]
+        }
+    },
+    "iam_users": [
+        {
+            "username": "alice_dev",
+            "groups": [
+                "developers",
+                "admin"
+            ],
+            "mfa_enabled": true,
+            "last_login": "2024-03-15T10:30:00Z"
+        },
+        {
+            "username": "bob_ops",
+            "groups": [
+                "devops",
+                "billing"
+            ],
+            "mfa_enabled": true,
+            "last_login": "2024-03-14T09:15:00Z"
+        },
+        {
+            "username": "service_bot",
+            "groups": [
+                "bots"
+            ],
+            "mfa_enabled": false,
+            "last_login": "2024-03-15T12:00:00Z"
+        }
+    ],
+    "billing": {
+        "current_month_cost": 12500.50,
+        "forecast": 13200.00,
+        "currency": "USD",
+        "top_services": [
+            {
+                "service": "EC2",
+                "cost": 5000.00
+            },
+            {
+                "service": "RDS",
+                "cost": 3000.00
+            },
+            {
+                "service": "DataTransfer",
+                "cost": 1500.50
+            }
+        ]
+    }
+}
