@@ -23,13 +23,13 @@ Every developer knows the nightmare of dealing with JSON files in the terminal. 
 *   **Editors**: Opening a heavy editor just to check a config file is overkill, and often not an option when you are SSH'd into a remote machine.
 *   **Online Formatters**: Pasting your data into "Pretty Print Online" websites works, but it forces you to send potentially sensitive or private data to an untrusted server.
 
-I decided to solve this problem. I wanted a tool that was fast, local, and ran everywhere.
+Twig was created to solve this problem providing a tool that is fast, local, and runs everywhere.
 
 **Why "Twig"?**
 The name represents a small, thin branch on a tree or bush—which is exactly how Twig visualizes your JSON data. Just as a twig is part of a larger structure, this tool helps you navigate the branches of your data trees.
 
 **The Inspiration**
-The UI is heavily inspired by **macOS Finder's column view**. It's the most natural way to traverse deep hierarchies, and I wanted to bring that fluid experience to the terminal.
+The UI is heavily inspired by **macOS Finder's column view**. It's the most natural way to traverse deep hierarchies, bringing that fluid experience to the terminal.
 
 ## Core Pillars
 
@@ -96,12 +96,21 @@ twg data.json
 | `?` | Show Help / Shortcuts |
 | `q` | Quit |
 
-## Project Stats
+## FAQ
 
-[![Star History Chart](https://api.star-history.com/svg?repos=workdone0/twig&type=Date)](https://star-history.com/#workdone0/twig&Date)
+**Why is the package named `twg` instead of `twig`?**
+The name `twig` was already taken on PyPI. You can install it via `pipx install twg`, but the CLI command is still `twig` (or the alias `twg`).
+
+**What file sizes can it handle?**
+*   **8GB RAM Machine**: comfortably handles files up to **~100MB**.
+*   **Larger Files**: May cause the application to slow down or crash due to memory limits.
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=workdone0/twig&type=timeline&legend=bottom-right)](https://www.star-history.com/#workdone0/twig&type=timeline&legend=bottom-right)
 
 ## Current Status
 
 **Version**: v1.0.0 (Stable)
 
-Twig is currently optimized for **JSON** files and runs in **Read-Only** mode. I am actively working on making it even more stable and feature-rich.
+Twig is currently optimized for **JSON** files and runs in **Read-Only** mode. Active development is focused on making it even more stable and feature-rich.
