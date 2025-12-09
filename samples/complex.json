@@ -1,0 +1,2790 @@
+{
+  "zoo_name": "Antigravity Wildlife Park",
+  "location": "San Diego, CA",
+  "exhibits": [
+    {
+      "name": "Savanna Zone",
+      "open": true,
+      "temperature_c": 12,
+      "animals": [
+        {
+          "name": "Michael",
+          "species": "Leopard",
+          "age": 8,
+          "diet": "Herbivore",
+          "medical_history": []
+        },
+        {
+          "name": "James",
+          "species": "Penguin",
+          "age": 8,
+          "diet": "Herbivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "William",
+          "species": "Koala",
+          "age": 18,
+          "diet": "Omnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Richard",
+          "species": "Lion",
+          "age": 16,
+          "diet": "Herbivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "David",
+          "species": "Elephant",
+          "age": 17,
+          "diet": "Omnivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Michael",
+          "species": "Bear",
+          "age": 10,
+          "diet": "Herbivore",
+          "medical_history": []
+        },
+        {
+          "name": "Thomas",
+          "species": "Elephant",
+          "age": 3,
+          "diet": "Omnivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Karen",
+          "species": "Kangaroo",
+          "age": 7,
+          "diet": "Herbivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "David",
+          "species": "Fox",
+          "age": 6,
+          "diet": "Herbivore",
+          "medical_history": []
+        },
+        {
+          "name": "James",
+          "species": "Bear",
+          "age": 17,
+          "diet": "Carnivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Joseph",
+          "species": "Eagle",
+          "age": 9,
+          "diet": "Carnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Susan",
+          "species": "Giraffe",
+          "age": 2,
+          "diet": "Omnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Richard",
+          "species": "Whale",
+          "age": 17,
+          "diet": "Carnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Elizabeth",
+          "species": "Dolphin",
+          "age": 9,
+          "diet": "Omnivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Barbara",
+          "species": "Kangaroo",
+          "age": 2,
+          "diet": "Carnivore",
+          "medical_history": []
+        },
+        {
+          "name": "William",
+          "species": "Tiger",
+          "age": 6,
+          "diet": "Herbivore",
+          "medical_history": []
+        },
+        {
+          "name": "Linda",
+          "species": "Zebra",
+          "age": 8,
+          "diet": "Herbivore",
+          "medical_history": []
+        },
+        {
+          "name": "John",
+          "species": "Tiger",
+          "age": 17,
+          "diet": "Herbivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Robert",
+          "species": "Cheetah",
+          "age": 2,
+          "diet": "Herbivore",
+          "medical_history": []
+        },
+        {
+          "name": "Michael",
+          "species": "Cheetah",
+          "age": 9,
+          "diet": "Carnivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Patricia",
+          "species": "Leopard",
+          "age": 2,
+          "diet": "Omnivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Jessica",
+          "species": "Eagle",
+          "age": 12,
+          "diet": "Carnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Charles",
+          "species": "Hawk",
+          "age": 13,
+          "diet": "Omnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Linda",
+          "species": "Cheetah",
+          "age": 14,
+          "diet": "Herbivore",
+          "medical_history": []
+        },
+        {
+          "name": "Thomas",
+          "species": "Dolphin",
+          "age": 10,
+          "diet": "Omnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Linda",
+          "species": "Whale",
+          "age": 1,
+          "diet": "Omnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Jennifer",
+          "species": "Wolf",
+          "age": 8,
+          "diet": "Carnivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Joseph",
+          "species": "Bear",
+          "age": 8,
+          "diet": "Carnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Linda",
+          "species": "Leopard",
+          "age": 6,
+          "diet": "Omnivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Robert",
+          "species": "Lion",
+          "age": 1,
+          "diet": "Carnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Joseph",
+          "species": "Bear",
+          "age": 13,
+          "diet": "Omnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Thomas",
+          "species": "Shark",
+          "age": 15,
+          "diet": "Carnivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "David",
+          "species": "Owl",
+          "age": 20,
+          "diet": "Omnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Patricia",
+          "species": "Fox",
+          "age": 12,
+          "diet": "Herbivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Robert",
+          "species": "Fox",
+          "age": 20,
+          "diet": "Omnivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Charles",
+          "species": "Panda",
+          "age": 4,
+          "diet": "Herbivore",
+          "medical_history": []
+        },
+        {
+          "name": "Michael",
+          "species": "Koala",
+          "age": 5,
+          "diet": "Omnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Jennifer",
+          "species": "Elephant",
+          "age": 4,
+          "diet": "Omnivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Richard",
+          "species": "Hawk",
+          "age": 10,
+          "diet": "Herbivore",
+          "medical_history": []
+        },
+        {
+          "name": "David",
+          "species": "Eagle",
+          "age": 13,
+          "diet": "Omnivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Jennifer",
+          "species": "Lion",
+          "age": 12,
+          "diet": "Carnivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "William",
+          "species": "Koala",
+          "age": 15,
+          "diet": "Herbivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Jennifer",
+          "species": "Tiger",
+          "age": 4,
+          "diet": "Omnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Mary",
+          "species": "Lion",
+          "age": 13,
+          "diet": "Carnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Michael",
+          "species": "Elephant",
+          "age": 9,
+          "diet": "Herbivore",
+          "medical_history": []
+        },
+        {
+          "name": "Michael",
+          "species": "Koala",
+          "age": 8,
+          "diet": "Carnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Michael",
+          "species": "Hawk",
+          "age": 3,
+          "diet": "Omnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Linda",
+          "species": "Lion",
+          "age": 9,
+          "diet": "Carnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Karen",
+          "species": "Elephant",
+          "age": 12,
+          "diet": "Carnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Elizabeth",
+          "species": "Fox",
+          "age": 16,
+          "diet": "Herbivore",
+          "medical_history": []
+        }
+      ]
+    },
+    {
+      "name": "Jungle Zone",
+      "open": true,
+      "temperature_c": 1,
+      "animals": [
+        {
+          "name": "Joseph",
+          "species": "Hawk",
+          "age": 17,
+          "diet": "Carnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Thomas",
+          "species": "Koala",
+          "age": 1,
+          "diet": "Herbivore",
+          "medical_history": []
+        },
+        {
+          "name": "Jessica",
+          "species": "Koala",
+          "age": 16,
+          "diet": "Carnivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Elizabeth",
+          "species": "Elephant",
+          "age": 10,
+          "diet": "Omnivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "William",
+          "species": "Fox",
+          "age": 13,
+          "diet": "Omnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Michael",
+          "species": "Hawk",
+          "age": 3,
+          "diet": "Herbivore",
+          "medical_history": []
+        },
+        {
+          "name": "Jessica",
+          "species": "Lion",
+          "age": 9,
+          "diet": "Omnivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Karen",
+          "species": "Dolphin",
+          "age": 10,
+          "diet": "Herbivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Thomas",
+          "species": "Eagle",
+          "age": 2,
+          "diet": "Carnivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Sarah",
+          "species": "Leopard",
+          "age": 8,
+          "diet": "Omnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Robert",
+          "species": "Lion",
+          "age": 11,
+          "diet": "Carnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Patricia",
+          "species": "Kangaroo",
+          "age": 11,
+          "diet": "Carnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Karen",
+          "species": "Hawk",
+          "age": 20,
+          "diet": "Carnivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Jessica",
+          "species": "Koala",
+          "age": 8,
+          "diet": "Herbivore",
+          "medical_history": []
+        },
+        {
+          "name": "Sarah",
+          "species": "Leopard",
+          "age": 7,
+          "diet": "Carnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Elizabeth",
+          "species": "Fox",
+          "age": 20,
+          "diet": "Omnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Susan",
+          "species": "Tiger",
+          "age": 12,
+          "diet": "Carnivore",
+          "medical_history": []
+        },
+        {
+          "name": "David",
+          "species": "Shark",
+          "age": 8,
+          "diet": "Omnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Charles",
+          "species": "Wolf",
+          "age": 18,
+          "diet": "Omnivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Thomas",
+          "species": "Whale",
+          "age": 14,
+          "diet": "Carnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Elizabeth",
+          "species": "Koala",
+          "age": 12,
+          "diet": "Carnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Jennifer",
+          "species": "Leopard",
+          "age": 13,
+          "diet": "Omnivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Elizabeth",
+          "species": "Dolphin",
+          "age": 14,
+          "diet": "Herbivore",
+          "medical_history": []
+        },
+        {
+          "name": "Richard",
+          "species": "Cheetah",
+          "age": 13,
+          "diet": "Herbivore",
+          "medical_history": []
+        },
+        {
+          "name": "Michael",
+          "species": "Lion",
+          "age": 19,
+          "diet": "Herbivore",
+          "medical_history": []
+        },
+        {
+          "name": "James",
+          "species": "Dolphin",
+          "age": 12,
+          "diet": "Omnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Charles",
+          "species": "Tiger",
+          "age": 3,
+          "diet": "Carnivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Robert",
+          "species": "Koala",
+          "age": 19,
+          "diet": "Carnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Mary",
+          "species": "Cheetah",
+          "age": 15,
+          "diet": "Omnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Jessica",
+          "species": "Bear",
+          "age": 15,
+          "diet": "Carnivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Elizabeth",
+          "species": "Giraffe",
+          "age": 7,
+          "diet": "Omnivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Barbara",
+          "species": "Shark",
+          "age": 8,
+          "diet": "Herbivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Karen",
+          "species": "Cheetah",
+          "age": 7,
+          "diet": "Carnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Patricia",
+          "species": "Owl",
+          "age": 2,
+          "diet": "Omnivore",
+          "medical_history": []
+        },
+        {
+          "name": "James",
+          "species": "Penguin",
+          "age": 17,
+          "diet": "Omnivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "John",
+          "species": "Wolf",
+          "age": 7,
+          "diet": "Carnivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Patricia",
+          "species": "Kangaroo",
+          "age": 7,
+          "diet": "Omnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Mary",
+          "species": "Lion",
+          "age": 1,
+          "diet": "Omnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Robert",
+          "species": "Eagle",
+          "age": 9,
+          "diet": "Carnivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Thomas",
+          "species": "Lion",
+          "age": 6,
+          "diet": "Carnivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Barbara",
+          "species": "Whale",
+          "age": 9,
+          "diet": "Omnivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Michael",
+          "species": "Owl",
+          "age": 5,
+          "diet": "Herbivore",
+          "medical_history": []
+        },
+        {
+          "name": "Michael",
+          "species": "Dolphin",
+          "age": 6,
+          "diet": "Herbivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Elizabeth",
+          "species": "Shark",
+          "age": 19,
+          "diet": "Omnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Michael",
+          "species": "Kangaroo",
+          "age": 6,
+          "diet": "Omnivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Karen",
+          "species": "Panda",
+          "age": 8,
+          "diet": "Omnivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Sarah",
+          "species": "Giraffe",
+          "age": 18,
+          "diet": "Carnivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Thomas",
+          "species": "Koala",
+          "age": 5,
+          "diet": "Carnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Jennifer",
+          "species": "Tiger",
+          "age": 20,
+          "diet": "Carnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Barbara",
+          "species": "Bear",
+          "age": 2,
+          "diet": "Carnivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Arctic Zone",
+      "open": true,
+      "temperature_c": 22,
+      "animals": [
+        {
+          "name": "Jessica",
+          "species": "Tiger",
+          "age": 8,
+          "diet": "Herbivore",
+          "medical_history": []
+        },
+        {
+          "name": "Mary",
+          "species": "Kangaroo",
+          "age": 2,
+          "diet": "Carnivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Charles",
+          "species": "Cheetah",
+          "age": 16,
+          "diet": "Carnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Susan",
+          "species": "Hawk",
+          "age": 17,
+          "diet": "Herbivore",
+          "medical_history": []
+        },
+        {
+          "name": "Michael",
+          "species": "Koala",
+          "age": 9,
+          "diet": "Carnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Barbara",
+          "species": "Lion",
+          "age": 13,
+          "diet": "Carnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Jessica",
+          "species": "Koala",
+          "age": 12,
+          "diet": "Carnivore",
+          "medical_history": []
+        },
+        {
+          "name": "John",
+          "species": "Tiger",
+          "age": 13,
+          "diet": "Omnivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "William",
+          "species": "Dolphin",
+          "age": 9,
+          "diet": "Carnivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Michael",
+          "species": "Tiger",
+          "age": 13,
+          "diet": "Carnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Linda",
+          "species": "Bear",
+          "age": 9,
+          "diet": "Omnivore",
+          "medical_history": []
+        },
+        {
+          "name": "David",
+          "species": "Fox",
+          "age": 7,
+          "diet": "Omnivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "John",
+          "species": "Hawk",
+          "age": 18,
+          "diet": "Herbivore",
+          "medical_history": []
+        },
+        {
+          "name": "Joseph",
+          "species": "Eagle",
+          "age": 9,
+          "diet": "Omnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Charles",
+          "species": "Fox",
+          "age": 20,
+          "diet": "Herbivore",
+          "medical_history": []
+        },
+        {
+          "name": "Karen",
+          "species": "Kangaroo",
+          "age": 13,
+          "diet": "Herbivore",
+          "medical_history": []
+        },
+        {
+          "name": "Karen",
+          "species": "Cheetah",
+          "age": 14,
+          "diet": "Omnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Sarah",
+          "species": "Bear",
+          "age": 2,
+          "diet": "Herbivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Elizabeth",
+          "species": "Shark",
+          "age": 1,
+          "diet": "Omnivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Robert",
+          "species": "Elephant",
+          "age": 1,
+          "diet": "Omnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Patricia",
+          "species": "Dolphin",
+          "age": 14,
+          "diet": "Carnivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Linda",
+          "species": "Fox",
+          "age": 10,
+          "diet": "Herbivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "John",
+          "species": "Penguin",
+          "age": 7,
+          "diet": "Carnivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "William",
+          "species": "Wolf",
+          "age": 3,
+          "diet": "Omnivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Robert",
+          "species": "Penguin",
+          "age": 12,
+          "diet": "Herbivore",
+          "medical_history": []
+        },
+        {
+          "name": "Karen",
+          "species": "Kangaroo",
+          "age": 7,
+          "diet": "Herbivore",
+          "medical_history": []
+        },
+        {
+          "name": "Patricia",
+          "species": "Wolf",
+          "age": 13,
+          "diet": "Omnivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Linda",
+          "species": "Lion",
+          "age": 18,
+          "diet": "Carnivore",
+          "medical_history": []
+        },
+        {
+          "name": "William",
+          "species": "Owl",
+          "age": 17,
+          "diet": "Herbivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Joseph",
+          "species": "Penguin",
+          "age": 3,
+          "diet": "Omnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Sarah",
+          "species": "Giraffe",
+          "age": 3,
+          "diet": "Carnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Charles",
+          "species": "Bear",
+          "age": 3,
+          "diet": "Omnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Richard",
+          "species": "Bear",
+          "age": 5,
+          "diet": "Omnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Jessica",
+          "species": "Zebra",
+          "age": 1,
+          "diet": "Omnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Robert",
+          "species": "Koala",
+          "age": 4,
+          "diet": "Herbivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Michael",
+          "species": "Wolf",
+          "age": 7,
+          "diet": "Carnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Barbara",
+          "species": "Shark",
+          "age": 1,
+          "diet": "Herbivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Jessica",
+          "species": "Whale",
+          "age": 14,
+          "diet": "Herbivore",
+          "medical_history": []
+        },
+        {
+          "name": "Patricia",
+          "species": "Elephant",
+          "age": 17,
+          "diet": "Omnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Thomas",
+          "species": "Shark",
+          "age": 16,
+          "diet": "Herbivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Barbara",
+          "species": "Elephant",
+          "age": 15,
+          "diet": "Herbivore",
+          "medical_history": []
+        },
+        {
+          "name": "James",
+          "species": "Eagle",
+          "age": 16,
+          "diet": "Carnivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Barbara",
+          "species": "Dolphin",
+          "age": 10,
+          "diet": "Omnivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Barbara",
+          "species": "Eagle",
+          "age": 5,
+          "diet": "Carnivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Karen",
+          "species": "Lion",
+          "age": 17,
+          "diet": "Herbivore",
+          "medical_history": []
+        },
+        {
+          "name": "James",
+          "species": "Tiger",
+          "age": 6,
+          "diet": "Omnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Barbara",
+          "species": "Hawk",
+          "age": 4,
+          "diet": "Herbivore",
+          "medical_history": []
+        },
+        {
+          "name": "Charles",
+          "species": "Fox",
+          "age": 2,
+          "diet": "Omnivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "James",
+          "species": "Penguin",
+          "age": 8,
+          "diet": "Herbivore",
+          "medical_history": []
+        },
+        {
+          "name": "Joseph",
+          "species": "Lion",
+          "age": 13,
+          "diet": "Omnivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Aquarium Zone",
+      "open": true,
+      "temperature_c": 3,
+      "animals": [
+        {
+          "name": "Robert",
+          "species": "Owl",
+          "age": 8,
+          "diet": "Carnivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Jennifer",
+          "species": "Leopard",
+          "age": 8,
+          "diet": "Herbivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Linda",
+          "species": "Koala",
+          "age": 14,
+          "diet": "Carnivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "James",
+          "species": "Elephant",
+          "age": 17,
+          "diet": "Omnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Barbara",
+          "species": "Cheetah",
+          "age": 8,
+          "diet": "Omnivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Jessica",
+          "species": "Elephant",
+          "age": 20,
+          "diet": "Carnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Thomas",
+          "species": "Fox",
+          "age": 20,
+          "diet": "Carnivore",
+          "medical_history": []
+        },
+        {
+          "name": "David",
+          "species": "Kangaroo",
+          "age": 17,
+          "diet": "Herbivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Mary",
+          "species": "Wolf",
+          "age": 1,
+          "diet": "Omnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Linda",
+          "species": "Lion",
+          "age": 2,
+          "diet": "Omnivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Sarah",
+          "species": "Shark",
+          "age": 11,
+          "diet": "Carnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Elizabeth",
+          "species": "Zebra",
+          "age": 5,
+          "diet": "Carnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Charles",
+          "species": "Dolphin",
+          "age": 1,
+          "diet": "Omnivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Linda",
+          "species": "Dolphin",
+          "age": 13,
+          "diet": "Herbivore",
+          "medical_history": []
+        },
+        {
+          "name": "Joseph",
+          "species": "Kangaroo",
+          "age": 12,
+          "diet": "Omnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Karen",
+          "species": "Leopard",
+          "age": 20,
+          "diet": "Carnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Michael",
+          "species": "Leopard",
+          "age": 10,
+          "diet": "Omnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Richard",
+          "species": "Whale",
+          "age": 3,
+          "diet": "Carnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Linda",
+          "species": "Lion",
+          "age": 5,
+          "diet": "Omnivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Joseph",
+          "species": "Giraffe",
+          "age": 2,
+          "diet": "Omnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Susan",
+          "species": "Hawk",
+          "age": 20,
+          "diet": "Carnivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Charles",
+          "species": "Penguin",
+          "age": 11,
+          "diet": "Omnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Patricia",
+          "species": "Shark",
+          "age": 16,
+          "diet": "Carnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Mary",
+          "species": "Wolf",
+          "age": 6,
+          "diet": "Omnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Sarah",
+          "species": "Cheetah",
+          "age": 19,
+          "diet": "Herbivore",
+          "medical_history": []
+        },
+        {
+          "name": "Michael",
+          "species": "Whale",
+          "age": 8,
+          "diet": "Omnivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Elizabeth",
+          "species": "Eagle",
+          "age": 16,
+          "diet": "Herbivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Patricia",
+          "species": "Hawk",
+          "age": 19,
+          "diet": "Omnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Thomas",
+          "species": "Panda",
+          "age": 2,
+          "diet": "Omnivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Sarah",
+          "species": "Leopard",
+          "age": 1,
+          "diet": "Herbivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Susan",
+          "species": "Owl",
+          "age": 16,
+          "diet": "Carnivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Michael",
+          "species": "Elephant",
+          "age": 4,
+          "diet": "Omnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Jennifer",
+          "species": "Cheetah",
+          "age": 13,
+          "diet": "Omnivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Mary",
+          "species": "Shark",
+          "age": 13,
+          "diet": "Carnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Richard",
+          "species": "Hawk",
+          "age": 18,
+          "diet": "Herbivore",
+          "medical_history": []
+        },
+        {
+          "name": "Patricia",
+          "species": "Elephant",
+          "age": 1,
+          "diet": "Omnivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Barbara",
+          "species": "Fox",
+          "age": 4,
+          "diet": "Carnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Elizabeth",
+          "species": "Cheetah",
+          "age": 14,
+          "diet": "Carnivore",
+          "medical_history": []
+        },
+        {
+          "name": "John",
+          "species": "Bear",
+          "age": 16,
+          "diet": "Carnivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Karen",
+          "species": "Whale",
+          "age": 12,
+          "diet": "Carnivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "William",
+          "species": "Tiger",
+          "age": 18,
+          "diet": "Carnivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "William",
+          "species": "Wolf",
+          "age": 6,
+          "diet": "Omnivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Karen",
+          "species": "Wolf",
+          "age": 18,
+          "diet": "Omnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Elizabeth",
+          "species": "Giraffe",
+          "age": 1,
+          "diet": "Carnivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Thomas",
+          "species": "Shark",
+          "age": 13,
+          "diet": "Omnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Joseph",
+          "species": "Kangaroo",
+          "age": 14,
+          "diet": "Herbivore",
+          "medical_history": []
+        },
+        {
+          "name": "Jennifer",
+          "species": "Lion",
+          "age": 10,
+          "diet": "Carnivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Thomas",
+          "species": "Fox",
+          "age": 4,
+          "diet": "Omnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Barbara",
+          "species": "Shark",
+          "age": 16,
+          "diet": "Omnivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "William",
+          "species": "Owl",
+          "age": 11,
+          "diet": "Herbivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Reptile House Zone",
+      "open": true,
+      "temperature_c": 25,
+      "animals": [
+        {
+          "name": "John",
+          "species": "Eagle",
+          "age": 14,
+          "diet": "Omnivore",
+          "medical_history": []
+        },
+        {
+          "name": "John",
+          "species": "Leopard",
+          "age": 13,
+          "diet": "Omnivore",
+          "medical_history": []
+        },
+        {
+          "name": "David",
+          "species": "Bear",
+          "age": 7,
+          "diet": "Herbivore",
+          "medical_history": []
+        },
+        {
+          "name": "Sarah",
+          "species": "Koala",
+          "age": 15,
+          "diet": "Carnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Mary",
+          "species": "Whale",
+          "age": 6,
+          "diet": "Omnivore",
+          "medical_history": []
+        },
+        {
+          "name": "James",
+          "species": "Kangaroo",
+          "age": 17,
+          "diet": "Carnivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Sarah",
+          "species": "Fox",
+          "age": 2,
+          "diet": "Carnivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Sarah",
+          "species": "Whale",
+          "age": 5,
+          "diet": "Omnivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "John",
+          "species": "Whale",
+          "age": 2,
+          "diet": "Carnivore",
+          "medical_history": []
+        },
+        {
+          "name": "David",
+          "species": "Panda",
+          "age": 6,
+          "diet": "Herbivore",
+          "medical_history": []
+        },
+        {
+          "name": "David",
+          "species": "Lion",
+          "age": 12,
+          "diet": "Herbivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Richard",
+          "species": "Elephant",
+          "age": 11,
+          "diet": "Herbivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Linda",
+          "species": "Owl",
+          "age": 3,
+          "diet": "Omnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Sarah",
+          "species": "Owl",
+          "age": 5,
+          "diet": "Omnivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "John",
+          "species": "Leopard",
+          "age": 9,
+          "diet": "Carnivore",
+          "medical_history": []
+        },
+        {
+          "name": "James",
+          "species": "Panda",
+          "age": 6,
+          "diet": "Carnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Richard",
+          "species": "Hawk",
+          "age": 18,
+          "diet": "Omnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Jennifer",
+          "species": "Panda",
+          "age": 6,
+          "diet": "Carnivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Robert",
+          "species": "Giraffe",
+          "age": 18,
+          "diet": "Omnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Susan",
+          "species": "Penguin",
+          "age": 11,
+          "diet": "Carnivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Susan",
+          "species": "Tiger",
+          "age": 17,
+          "diet": "Carnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Linda",
+          "species": "Owl",
+          "age": 18,
+          "diet": "Omnivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Linda",
+          "species": "Cheetah",
+          "age": 3,
+          "diet": "Carnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Jennifer",
+          "species": "Bear",
+          "age": 8,
+          "diet": "Omnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Sarah",
+          "species": "Wolf",
+          "age": 7,
+          "diet": "Herbivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Jennifer",
+          "species": "Panda",
+          "age": 16,
+          "diet": "Carnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Barbara",
+          "species": "Wolf",
+          "age": 4,
+          "diet": "Carnivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Elizabeth",
+          "species": "Leopard",
+          "age": 14,
+          "diet": "Omnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Richard",
+          "species": "Whale",
+          "age": 13,
+          "diet": "Omnivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Thomas",
+          "species": "Tiger",
+          "age": 18,
+          "diet": "Omnivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Richard",
+          "species": "Giraffe",
+          "age": 18,
+          "diet": "Carnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Linda",
+          "species": "Giraffe",
+          "age": 4,
+          "diet": "Herbivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "David",
+          "species": "Koala",
+          "age": 13,
+          "diet": "Carnivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Charles",
+          "species": "Lion",
+          "age": 8,
+          "diet": "Herbivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Jennifer",
+          "species": "Fox",
+          "age": 3,
+          "diet": "Carnivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "John",
+          "species": "Elephant",
+          "age": 18,
+          "diet": "Omnivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Barbara",
+          "species": "Dolphin",
+          "age": 20,
+          "diet": "Carnivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Thomas",
+          "species": "Leopard",
+          "age": 4,
+          "diet": "Omnivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "David",
+          "species": "Kangaroo",
+          "age": 11,
+          "diet": "Herbivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Jessica",
+          "species": "Bear",
+          "age": 14,
+          "diet": "Herbivore",
+          "medical_history": []
+        },
+        {
+          "name": "Richard",
+          "species": "Cheetah",
+          "age": 17,
+          "diet": "Omnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Susan",
+          "species": "Lion",
+          "age": 3,
+          "diet": "Herbivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Barbara",
+          "species": "Cheetah",
+          "age": 6,
+          "diet": "Carnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Elizabeth",
+          "species": "Zebra",
+          "age": 2,
+          "diet": "Carnivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "John",
+          "species": "Kangaroo",
+          "age": 14,
+          "diet": "Herbivore",
+          "medical_history": []
+        },
+        {
+          "name": "James",
+          "species": "Shark",
+          "age": 5,
+          "diet": "Omnivore",
+          "medical_history": []
+        },
+        {
+          "name": "Robert",
+          "species": "Lion",
+          "age": 11,
+          "diet": "Omnivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Richard",
+          "species": "Owl",
+          "age": 13,
+          "diet": "Herbivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Susan",
+          "species": "Whale",
+          "age": 8,
+          "diet": "Herbivore",
+          "medical_history": [
+            {
+              "date": "2023-01-01",
+              "checkup": "Healthy"
+            },
+            {
+              "date": "2023-06-01",
+              "checkup": "Vaccinated"
+            }
+          ]
+        },
+        {
+          "name": "Karen",
+          "species": "Zebra",
+          "age": 19,
+          "diet": "Herbivore",
+          "medical_history": []
+        }
+      ]
+    }
+  ]
+}

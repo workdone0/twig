@@ -1,0 +1,23 @@
+{
+  "application": {
+    "name": "Twig Data Explorer",
+    "version": "1.0.4",
+    "environment": "production",
+    "settings": {
+      "theme": "ocean_blue",
+      "notifications": true,
+      "max_items_per_page": 50,
+      "auto_refresh_interval": 300
+    }
+  },
+  "user_preferences": {
+    "timezone": "America/New_York",
+    "language": "en-US",
+    "currency": "USD"
+  },
+  "feature_flags": {
+    "beta_dashboard": false,
+    "advanced_search": true,
+    "legacy_api_support": false
+  }
+}
