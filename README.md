@@ -15,6 +15,13 @@
 
 ![Twig Demo](asset/demo.gif)
 
+**The Demo Shows:**
+1.  **Navigation**: Traversing regions (`us-east-1`) → VPCs → Subnets → Instances.
+2.  **Global Search**: Finding "api-gateway" instantly.
+3.  **Smart Jump**: Entering a path (`.regions...instances[0].name`) to jump directly to a deeply nested key.
+4.  **Match Cycling**: Searching for "available" and using `n`/`N` to cycle through results.
+5.  **Themes & Copy**: Toggling themes and copying paths.
+
 ## The Story
 
 Every developer knows the nightmare of dealing with JSON files in the terminal. You try to `cat` a file, and you get a wall of unreadable text. You try `less`, but it's passive and hard to search.
