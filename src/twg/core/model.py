@@ -94,76 +94,21 @@ class TwigModel:
         return [self.get_node(child_id) for child_id in node.children if self.get_node(child_id)]
 
     def _expand_node(self, node: Node) -> None:
-        """Generates child nodes from raw_value, using buckets if too large."""
+        """Generates child nodes from raw_value."""
         if node.expanded:
             return
             
         data = node.raw_value
-        BUCKET_SIZE = 1000
-
-        # Check if we are inside a list bucket to offset indices
-        start_index = node.metadata.get("start_index", 0)
 
         if isinstance(data, list):
-            size = len(data)
-            if size > BUCKET_SIZE:
-                # Create buckets
-                for i in range(0, size, BUCKET_SIZE):
-                    end = min(i + BUCKET_SIZE, size)
-                    # Bucket key shows absolute range
-                    
-                    
-                    # Absolute start index for the new bucket
-                    abs_start = start_index + i
-                    abs_end = start_index + end - 1
-                    
-                    bucket_key = f"[{abs_start} ... {abs_end}]"
-                    bucket_data = data[i:end]
-                    
-                    self._create_bucket(node, bucket_key, bucket_data, start_index=abs_start)
-            else:
-                # Normal expansion
-                for i, v in enumerate(data):
-                    # Key is absolute index
-                    self._create_child(node, str(start_index + i), v)
+            for i, v in enumerate(data):
+                self._create_child(node, str(i), v)
 
         elif isinstance(data, dict):
-            size = len(data)
-            if size > BUCKET_SIZE:
-                 # Dict bucketization (more complex, need keys list)
-                 keys = list(data.keys())
-                 for i in range(0, size, BUCKET_SIZE):
-                    end = min(i + BUCKET_SIZE, size)
-                    
-                    start_key = keys[i]
-                    end_key = keys[end-1]
-                    lbl_start = (start_key[:10] + '..') if len(start_key) > 10 else start_key
-                    lbl_end = (end_key[:10] + '..') if len(end_key) > 10 else end_key
-                    
-                    bucket_key = f"{{{lbl_start} ... {lbl_end}}}"
-                    
-                    bucket_keys = keys[i:end]
-                    bucket_data = {k: data[k] for k in bucket_keys}
-                    
-                    self._create_bucket(node, bucket_key, bucket_data)
-            else:
-                 for k, v in data.items():
-                    self._create_child(node, k, v)
+             for k, v in data.items():
+                self._create_child(node, k, v)
         
         node.expanded = True
-
-    def _create_bucket(self, parent: Node, key: str, value: Any, start_index: int = 0) -> None:
-        """Creates a virtual intermediate node."""
-        # Metadata tracks the original list offset
-        child = Node(
-            key=key,
-            value=None,
-            type=DataType.ARRAY if isinstance(value, list) else DataType.OBJECT,
-            parent=parent.id,
-            raw_value=value
-        )
-        child.metadata = {"start_index": start_index, "is_bucket": True}
-        self.add_node(child)
 
     def _create_child(self, parent: Node, key: str, value: Any) -> None:
         
@@ -211,22 +156,79 @@ class TwigModel:
             path = "." + path
         return path
 
+    def find_next_node(self, query: str, start_node_id: Optional[uuid.UUID] = None, direction: int = 1) -> Optional[Node]:
+        """
+        Global search for next/prev node. 
+        Collects all matches and traverses relative to start_node_id.
+        Direction: 1 (Next), -1 (Prev).
+        """
+        if not self.root_id:
+            return None
+        
+        query = query.lower()
+        
+        # Generator to iterate all nodes in order
+        def traverse(node_id: uuid.UUID):
+            node = self.nodes.get(node_id)
+            if not node: return
+            
+            yield node
+            
+            # Force expansion for search completeness (since we dropped lazy load limits)
+            if node.is_container and not node.expanded:
+                 self._expand_node(node)
+                 
+            for child_id in node.children:
+                yield from traverse(child_id)
+
+        matches = []
+        count = 0
+        
+        for node in traverse(self.root_id):
+            count += 1
+            
+            match = query in str(node.key).lower()
+            if not match and not node.is_container:
+                match = query in str(node.value).lower()
+            
+            if match:
+                matches.append(node)
+        
+        if not matches:
+             return None
+
+        # 2. Find start index
+        current_idx = -1
+        if start_node_id:
+            for i, m in enumerate(matches):
+                if m.id == start_node_id:
+                    current_idx = i
+                    break
+        
+        # 3. Calculate target index
+        if current_idx == -1:
+            # If start not found (or None), start at beginning (if Next) or End (if Prev)
+            if direction > 0:
+                target_idx = 0
+            else:
+                target_idx = len(matches) - 1
+        else:
+            target_idx = (current_idx + direction) % len(matches)
+            
+        return matches[target_idx]
+
     def resolve_path(self, path: str) -> Optional[Node]:
         """
         Resolves a jq-style path (e.g. .users[0].name) to a Node (UUID).
-        Transparently traverses buckets if needed.
         Raises ValueError if path syntax is invalid.
         """
         segments = self._parse_jq_path(path)
-        # Note: if path is ".", segments is []. Returns root node if exists.
         
         path = path.strip()
         if not path:
-             # Empty string is invalid
              raise ValueError("Path cannot be empty")
              
         if path != "." and not segments:
-             # Non-trivial string but no segments found -> Invalid
              raise ValueError(f"Invalid jq path syntax: {path}")
         
         if not self.root_id:
@@ -237,10 +239,9 @@ class TwigModel:
             return None
             
         if not segments:
-             # Just root
              return current_node
             
-        # Iterate through logical segments
+        # Iterate through segments
         seg_idx = 0
         while seg_idx < len(segments):
             segment = segments[seg_idx]
@@ -250,54 +251,17 @@ class TwigModel:
             
             found = False
             
-            # 1. Try finding direct match
+            # Try finding direct match
             for child in children:
                 # Compare keys. 
-                # Note: node.key is str. segment might be int or str.
                 if str(child.key) == str(segment):
                     current_node = child
                     found = True
                     seg_idx += 1 # Consumed segment
                     break
             
-            if found:
-                continue
-                
-            # 2. Try finding in buckets (Bubbling down)
-            # If we didn't find specific key, maybe it's inside a bucket child?
-            bucket_found = False
-            for child in children:
-                if child.metadata.get("is_bucket"):
-                    # Check if this bucket contains our target.
-                    
-                    # Case A: List Bucket (has start_index)
-                    if isinstance(segment, int) and child.type == DataType.ARRAY:
-                         start = child.metadata.get("start_index", 0)
-                         # We need end index? 
-                         # We can infer from raw_value length if available
-                         if isinstance(child.raw_value, list):
-                             count = len(child.raw_value)
-                             if start <= segment < start + count:
-                                 # Found the right bucket!
-                                 current_node = child
-                                 bucket_found = True
-                                 # Do NOT increment seg_idx. We just moved into the bucket, 
-                                 # we still need to find the actual 'segment' inside it.
-                                 break
-                                 
-                    # Case B: Dict Bucket (keys based)
-                    elif isinstance(segment, str): # Dict keys are strings
-                         if isinstance(child.raw_value, dict):
-                             if segment in child.raw_value:
-                                 current_node = child
-                                 bucket_found = True
-                                 break
-            
-            if bucket_found:
-                continue
-                
-            # If we get here, neither direct child nor bucket contained it.
-            return None
+            if not found:
+                return None
             
         return current_node
 

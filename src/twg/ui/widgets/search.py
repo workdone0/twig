@@ -3,7 +3,6 @@ from textual.screen import ModalScreen
 from textual.widgets import Input, Label
 from textual.containers import Vertical, Container
 
-from twg.ui.widgets.navigator import MAX_SEARCH_DEPTH, MAX_SEARCH_WIDTH
 
 class SearchModal(ModalScreen[str]):
     """Modal screen for entering search query."""
@@ -42,9 +41,9 @@ class SearchModal(ModalScreen[str]):
 
     def compose(self) -> ComposeResult:
         with Container(id="search-container"):
-            yield Label("Search keys & values in visible path:", id="search-label")
+            yield Label("Search keys & values:", id="search-label")
             yield Input(placeholder="Type to search...", id="search-input")
-            yield Label(f"(Press Esc to cancel)\nMax Depth: {MAX_SEARCH_DEPTH} • Max Width: {MAX_SEARCH_WIDTH}", id="search-help")
+            yield Label("(Press Esc to cancel)", id="search-help")
 
     def on_input_submitted(self, message: Input.Submitted) -> None:
         if message.value:

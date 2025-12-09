@@ -42,12 +42,12 @@ The UI is heavily inspired by **macOS Finder's column view**. It's the most natu
 
 ### Seamless Navigation
 - **Miller Columns**: Intuitively move right to drill down, left to go back.
-- **Smart Truncation**: Large lists (1000+ items) are automatically bucketed (e.g., `[0 ... 999]`) so the UI never freezes.
 - **Breadcrumbs**: Always know your location with a `jq`-compatible path display at the top.
 
 ### Powerful Search
-- **Deep Search**: Press `/` to search for keys or values. Twig transparently drills down into nested structures to find matches.
-- **Jump-to-path**: Press `:` to instantly jump to any specific path (e.g., `.users[0].name`).
+- **Deep Search**: Press `/` to search for keys or values.
+    - **Smart Path Support**: If your query starts with `.` (e.g., `.users[0]`), Twig automatically jumps to that path.
+- **Direct Jump**: Press `:` to instantly jump to a specific path (legacy/alternative).
 
 ### Developer Essentials
 - **Instant Copy**: Press `c` to copy the current path to your clipboard (jq syntax ready).

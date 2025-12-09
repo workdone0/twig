@@ -5,6 +5,7 @@ from textual.message import Message
 from textual.binding import Binding
 import uuid
 from typing import List
+import asyncio
 
 from twg.core.model import TwigModel, Node, DataType
 
@@ -83,6 +84,10 @@ class Column(Vertical):
 
     def on_mount(self) -> None:
         """Select the initial item by default when the column is mounted."""
+        # Check if list exists (might have failed to load)
+        if not self.query(TwigOptionList):
+            return
+
         opt_list = self.query_one(TwigOptionList)
         if opt_list.option_count > 0:
             # Respect the initial requested selection
@@ -146,8 +151,7 @@ class Column(Vertical):
         
         return False
 
-MAX_SEARCH_DEPTH = 10
-MAX_SEARCH_WIDTH = 5
+
 
 class ColumnNavigator(HorizontalScroll):
     """
@@ -171,42 +175,6 @@ class ColumnNavigator(HorizontalScroll):
         if self.model.root_id:
             yield Column(self.model, self.model.root_id, 0)
             
-    def _find_in_children(self, parent_id: uuid.UUID, query: str, depth: int = 0, path: List[int] = []) -> tuple[bool, List[int], int]:
-        """
-        Recursively search in children.
-        Returns (found, path_of_indices_to_expand, match_index_in_final_col)
-        """
-        if depth > MAX_SEARCH_DEPTH: 
-            return False, [], -1
-            
-        children = self.model.get_children(parent_id)
-        query_lower = query.lower()
-        
-        # 1. Check current level for match
-        for i, child in enumerate(children):
-            if child:
-                match = query_lower in str(child.key).lower()
-                if not match and not child.is_container:
-                    match = query_lower in str(child.value).lower()
-                
-                if match:
-                    return True, path, i
-        
-        # 2. Recurse deeper (first few containers only for performance optimization)
-        count = 0 
-        for i, child in enumerate(children):
-             if child and child.is_container:
-                 # Recurse
-                 found, sub_path, match_idx = self._find_in_children(child.id, query, depth + 1, path + [i])
-                 if found:
-                     return True, sub_path, match_idx
-                 
-                 count += 1
-                 if count > MAX_SEARCH_WIDTH: # Only check first N containers to avoid freezing
-                     break
-        
-        return False, [], -1
-
     async def _expand_node(self, column_index: int, node_id: uuid.UUID, initial_select_index: int = 0) -> None:
         """Helper to expand a node into a new column with a specific selection."""
         # 1. Remove all columns to the right
@@ -245,15 +213,18 @@ class ColumnNavigator(HorizontalScroll):
         lineage.reverse()
         
         # 2. Iterate and expand
-        # lineage[0] is Root. Col 0 shows children of Root.
-        
         for i in range(len(lineage) - 1):
+             # Yield to allow DOM to update from previous iteration's mount
+             import asyncio
+             await asyncio.sleep(0.05)
+             
              current_node = lineage[i]
              next_node = lineage[i+1] # The one selected in Col i
              
              # Find index of next_node in current_node's children
-             children = self.model.get_children(current_node.id)
              try:
+                 children = self.model.get_children(current_node.id)
+                 
                  # Note: iterating to find index might be O(N) but handled by lazy load usually small enough?
                  # Or we can optimize model to look up index? 
                  # For now list.index is fine.
@@ -276,9 +247,6 @@ class ColumnNavigator(HorizontalScroll):
                                  break
                      
                      # 1. Highlight in current column (if it exists)
-                     # Wait, we need to ensure Col[i] exists.
-                     # Since we expand sequentially, Col[0] exists. 
-                     # Col[i] creates Col[i+1]. So Col[i] should exist.
                      
                      # Find column widget
                      col_widget = None
@@ -316,99 +284,58 @@ class ColumnNavigator(HorizontalScroll):
 
     async def find_next(self, query: str, direction: int = 1) -> bool:
         """
-        Find in the child column(s) recursively if available.
-        Prioritizes searching deeper into the visible path.
+        Global search using the model's DFS.
         """
-        # 1. Identify currently focused column
+        # 1. Determine start Node ID from current focus
+        start_node_id = None
         focused_col = None
+        
+        # Try finding focused column first
         for child in self.children:
              if isinstance(child, Column) and child.query_one(TwigOptionList).has_focus:
                  focused_col = child
                  break
         
+        # Fallback: Find deepest column with a highlight (if focus lost due to Loading modal)
         if not focused_col:
-            return False
+             max_idx = -1
+             for child in self.children:
+                 if isinstance(child, Column):
+                     opts = child.query_one(TwigOptionList)
+                     if opts.highlighted is not None and child.index > max_idx:
+                         max_idx = child.index
+                         focused_col = child
 
-        # 2. Iterate through subsequent columns (Child, Grandchild, etc.)
-        start_index = focused_col.index + 1
-        # Find max index
-        max_index = start_index - 1
-        visible_cols = {}
-        for child in self.children:
-            if isinstance(child, Column):
-                visible_cols[child.index] = child
-                if child.index > max_index:
-                    max_index = child.index
-        
-        # Search from next column up to the end
-        for idx in range(start_index, max_index + 1):
-            col = visible_cols.get(idx)
-            if col:
-                found = await col.find_next(query, direction)
-                if found:
-                    col.query_one(TwigOptionList).focus()
-                    self.scroll_to_widget(col)
-                    # Trigger highlight update
-                    opts = col.query_one(TwigOptionList)
-                    if opts.highlighted is not None:
-                         node_id = col.node_map.get(opts.highlighted)
-                         if node_id:
-                             self.post_message(self.NodeSelected(node_id))
-                    return True
-
-        # 3. Deep Search (Recursion)
-        # Start from the LAST visible column.
-        last_col = visible_cols.get(max_index)
-        if last_col:
-            opts = last_col.query_one(TwigOptionList)
+        if focused_col:
+            opts = focused_col.query_one(TwigOptionList)
             if opts.highlighted is not None:
-                parent_id = last_col.node_map.get(opts.highlighted)
-                if parent_id:
-                    # Start recursion from here
-                    found, path, match_idx = self._find_in_children(parent_id, query)
-                    
-                    if found:
-                        current_col_idx = last_col.index
-                        current_node_id = parent_id
-                        
-                        # Apply expansions
-                        for choice_idx in path:
-                             # Expand current node with choice_idx selected
-                             await self._expand_node(current_col_idx, current_node_id, initial_select_index=choice_idx)
-                             
-                             # Get the node ID for the next step recursively
-                             children = self.model.get_children(current_node_id)
-                             if 0 <= choice_idx < len(children):
-                                 current_node_id = children[choice_idx].id
-                                 current_col_idx += 1
-                             else:
-                                 break
-                        
-                        # Expand the final container
-                        await self._expand_node(current_col_idx, current_node_id, initial_select_index=match_idx)
-                        
-                        # Focus the final column
-                        final_col_idx = current_col_idx + 1
-                        def focus_final():
-                            for child in self.children:
-                                if isinstance(child, Column) and child.index == final_col_idx:
-                                    child.query_one(TwigOptionList).focus()
-                                    
-                                    # Identify the matched node
-                                    c_node_id = child.node_map.get(match_idx)
-                                    if c_node_id:
-                                        # 1. Update Inspector/Breadcrumbs
-                                        self.post_message(self.NodeSelected(c_node_id))
-                                        
-                                        # 2. Trigger expansion of the NEXT level (children of the match)
-                                        # We use run_worker because we are in a sync callback
-                                        self.run_worker(self._expand_node(child.index, c_node_id, initial_select_index=0))
-                                    break
-                        self.call_after_refresh(focus_final)
+                start_node_id = focused_col.node_map.get(opts.highlighted)
+        
+        # 2. Search in Model
+        target_node = None
+        
+        # Feature: Smart Search (if query looks like a path, try resolving it first)
+        if query.startswith("."):
+            try:
+                # If the user typed a specific path, jump to it directly
+                resolved = self.model.resolve_path(query)
+                if resolved:
+                    target_node = resolved
+            except:
+                pass # Fallback to standard text search if resolution fails
 
-                        return True
-
-        return await focused_col.find_next(query, direction)
+        if not target_node:
+             # Note: Direction ignored for now, always forward global search since we use DFS generator
+             target_node = self.model.find_next_node(query, start_node_id=start_node_id, direction=direction)
+        
+        if target_node:
+            # 3. Expand to it
+            await self.expand_to_node(target_node.id)
+            # Post selection
+            self.post_message(self.NodeSelected(target_node.id))
+            return True
+        
+        return False
 
     async def on_mount(self) -> None:
         # Focus the first option list
