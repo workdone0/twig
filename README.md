@@ -26,7 +26,7 @@ Every developer knows the nightmare of dealing with JSON files in the terminal. 
 I decided to solve this problem. I wanted a tool that was fast, local, and ran everywhere.
 
 **Why "Twig"?**
-The name represents a small, thin branch on a tree or bush—which is exactly how we visualize your JSON data. Just as a twig is part of a larger structure, this tool helps you navigate the branches of your data trees.
+The name represents a small, thin branch on a tree or bush—which is exactly how Twig visualizes your JSON data. Just as a twig is part of a larger structure, this tool helps you navigate the branches of your data trees.
 
 **The Inspiration**
 The UI is heavily inspired by **macOS Finder's column view**. It's the most natural way to traverse deep hierarchies, and I wanted to bring that fluid experience to the terminal.
