@@ -26,7 +26,7 @@ Every developer knows the nightmare of dealing with JSON files in the terminal. 
 I decided to solve this problem. I wanted a tool that was fast, local, and ran everywhere.
 
 **Why "Twig"?**
-The name represents a small, thin branch on a tree or bush—which is exactly how we visualize your JSON data. Just as a twig is part of a larger structure, this tool helps you navigate the branches of your data trees.
+The name represents a small, thin branch on a tree or bush—which is exactly how Twig visualizes your JSON data. Just as a twig is part of a larger structure, this tool helps you navigate the branches of your data trees.
 
 **The Inspiration**
 The UI is heavily inspired by **macOS Finder's column view**. It's the most natural way to traverse deep hierarchies, and I wanted to bring that fluid experience to the terminal.
@@ -42,12 +42,12 @@ The UI is heavily inspired by **macOS Finder's column view**. It's the most natu
 
 ### Seamless Navigation
 - **Miller Columns**: Intuitively move right to drill down, left to go back.
-- **Smart Truncation**: Large lists (1000+ items) are automatically bucketed (e.g., `[0 ... 999]`) so the UI never freezes.
 - **Breadcrumbs**: Always know your location with a `jq`-compatible path display at the top.
 
 ### Powerful Search
-- **Deep Search**: Press `/` to search for keys or values. Twig transparently drills down into nested structures to find matches.
-- **Jump-to-path**: Press `:` to instantly jump to any specific path (e.g., `.users[0].name`).
+- **Deep Search**: Press `/` to search for keys or values.
+    - **Smart Path Support**: If your query starts with `.` (e.g., `.users[0]`), Twig automatically jumps to that path.
+- **Direct Jump**: Press `:` to instantly jump to a specific path (legacy/alternative).
 
 ### Developer Essentials
 - **Instant Copy**: Press `c` to copy the current path to your clipboard (jq syntax ready).

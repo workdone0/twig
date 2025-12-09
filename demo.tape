@@ -6,7 +6,7 @@ Set Height 800
 Set Padding 20
 Set FontFamily "Menlo"
 
-Type "twg samples/tweets.json"
+Type "twg samples/complex.json"
 Sleep 1s
 Enter
 
@@ -15,47 +15,67 @@ Sleep 2s
 # 0. Setup
 Set TypingSpeed 100ms
 
-# 1. Basic Navigation
+# 1. Basic Navigation (Explore Exhibits)
 Down
-Sleep 1s
+Sleep 0.5s
+Down
+Sleep 0.5s
+Down
+Sleep 0.5s
 Right
 Sleep 1s
+Down
+Sleep 0.5s
 Right
 Sleep 1s
 Down
-Sleep 1s
+Sleep 0.5s
 Down
 Sleep 2s
 
-# 2. Search
+# 2. Search (Find 'Leopard')
 Type "/"
 Sleep 1.5s
-Type "created_at"
+Type "Leopard"
 Sleep 1.5s
 Enter
 Sleep 3s
 
-# 3. Jump to Path
-Type ":"
+# 3. Smart Search (Path Jump)
+Type "/"
 Sleep 1.5s
-Type ".includes.tweets"
+Type ".exhibits[0].animals[5].name"
 Sleep 1.5s
 Enter
-Sleep 3s
+Sleep 2s
 
-# 4. Inline Help
+# 4. Search Navigation (Next/Prev)
+Type "/"
+Sleep 1s
+Type "Lion"
+Sleep 1s
+Enter
+Sleep 1.5s
+Type "n"
+Sleep 1s
+Type "n"
+Sleep 1s
+Type "N"
+Sleep 1s
+
+# 5. Inline Help
 Type "?"
 Sleep 4s
 Escape
 Sleep 1.5s
 
-# 5. Theme Toggle
+# 6. Theme Toggle
 Type "t"
 Sleep 3s
 Type "t"
 Sleep 3s
 
-# 6. Copy Path
+# 7. Copy Path
 Type "c"
 Sleep 2s
 
