@@ -1,6 +1,5 @@
 /* Global Styles */
 Screen {
-    background: $background;
     color: $text;
 }
 
