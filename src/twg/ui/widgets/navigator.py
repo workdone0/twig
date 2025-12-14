@@ -180,7 +180,7 @@ class ColumnNavigator(HorizontalScroll):
         # 1. Remove all columns to the right
         to_remove = [child for child in self.children if isinstance(child, Column) and child.index > column_index]
         for child in to_remove:
-            child.remove()
+            await child.remove()
         
         # 2. Check if the selected node is a container
         node = self.model.get_node(node_id)
