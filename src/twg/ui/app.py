@@ -10,6 +10,7 @@ import pyperclip
 from textual.binding import Binding
 
 from twg.core.model import TwigModel
+from twg.core.config import Config
 from twg.adapters.json_adapter import JsonAdapter
 from twg.ui.widgets.navigator import ColumnNavigator
 from twg.ui.widgets.inspector import Inspector
@@ -46,7 +47,8 @@ class TwigApp(App):
     ]
 
     def on_mount(self) -> None:
-        self.theme = "catppuccin-mocha"
+        self.config = Config()
+        self.theme = self.config.get("theme", "catppuccin-mocha")
         self.title = "Twig"
         self.run_worker(self.load_file, thread=True)
 
@@ -110,6 +112,7 @@ class TwigApp(App):
         next_theme = themes[next_index]
         
         self.theme = next_theme
+        self.config.set("theme", next_theme)
         self.notify(f"Theme: {next_theme}")
 
     def __init__(self, file_path: str):
@@ -117,6 +120,7 @@ class TwigApp(App):
         self.model: TwigModel | None = None
         self.current_node: Node | None = None
         self.last_search_query: str | None = None
+        self.config: Config | None = None
         super().__init__()
 
     def compose(self) -> ComposeResult:
@@ -176,8 +180,8 @@ class TwigApp(App):
                         self.notify(f"Path not found: {path}", severity="error")
                 except ValueError as e:
                     self.notify(str(e), severity="error")
-        
-        self.push_screen(JumpModal(), check_jump)
+
+        await self.push_screen(JumpModal(), check_jump)
 
     async def action_next_match(self) -> None:
         """Find next match for the last query."""
@@ -187,14 +191,14 @@ class TwigApp(App):
             
         navigator = self.query_one(ColumnNavigator)
         loading = LoadingScreen()
-        self.mount(loading)
+        await self.mount(loading)
         
         try:
              found = await navigator.find_next(self.last_search_query, direction=1)
              if not found:
                  self.notify(f"not found '{self.last_search_query}'")
         finally:
-             loading.remove()
+            await loading.remove()
 
     async def action_prev_match(self) -> None:
         """Find previous match for the last search query."""
@@ -204,14 +208,14 @@ class TwigApp(App):
 
         navigator = self.query_one(ColumnNavigator)
         loading = LoadingScreen()
-        self.mount(loading)
+        await self.mount(loading)
         
         try:
              found = await navigator.find_next(self.last_search_query, direction=-1)
              if not found:
                  self.notify(f"not found '{self.last_search_query}'")
         finally:
-             loading.remove()
+            await loading.remove()
 
     def action_copy_path(self) -> None:
         """Copies the jq-style path of the currently selected node to the clipboard."""
