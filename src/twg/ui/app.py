@@ -22,6 +22,7 @@ from twg.ui.widgets.loading import LoadingScreen
 
 from twg.ui.widgets.breadcrumbs import Breadcrumbs
 from twg.core.model import Node
+from twg.core.cleaner import repair_json
 
 MAX_FILE_SIZE_WARNING = 100 * 1024 * 1024 # 100 MB
 
@@ -241,12 +242,40 @@ def run():
         help="The JSON/data file to explore."
     )
     parser.add_argument(
+        "output",
+        nargs="?",
+        help="Optional output file for the fixed JSON. If not provided, the fixed content is printed to stdout. You can specify the same file as input to overwrite it in-place."
+    )
+    parser.add_argument(
         "-v", "--version",
+
         action="version",
         version="%(prog)s 1.0.0"
     )
+    parser.add_argument(
+        "--fix",
+        action="store_true",
+        help="Attempt to automatically repair malformed JSON and exit."
+    )
     
     args = parser.parse_args()
+    
+    if args.fix:
+        try:
+            with open(args.file, 'r', encoding='utf-8') as f:
+                content = f.read()
+            fixed = repair_json(content)
+            
+            if args.output:
+                with open(args.output, 'w', encoding='utf-8') as f:
+                    f.write(fixed)
+                print(f"Fixed JSON written to {args.output}")
+            else:
+                print(fixed)
+            sys.exit(0)
+        except Exception as e:
+            print(f"Error repairing JSON: {e}", file=sys.stderr)
+            sys.exit(1)
     
     if not os.path.exists(args.file):
         print(f"Error: File not found: {args.file}", file=sys.stderr)
