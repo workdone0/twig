@@ -9,6 +9,7 @@ dependencies = [
     "ujson>=5.11.0",
     "pyperclip>=1.8.2",
     "json-repair>=0.30.0",
+    "rich>=13.0.0",
 ]
 classifiers = [
     "Programming Language :: Python :: 3",
