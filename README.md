@@ -66,6 +66,23 @@ twig --fix bad.json clean.json
 twig --fix bad.json bad.json
 ```
 
+### Pretty Print
+Output formatted JSON to `stdout` with syntax highlighting and metadata (to `stderr`).
+
+```bash
+# Print formatted JSON
+twig -p data.json
+
+# Fix and print invalid JSON
+twig -p --fix bad.json
+
+# Save formatted JSON to a file
+twig -p unformatted.json formatted.json
+
+# Custom Indentation (default is 2)
+twig -p --indent 4 data.json
+```
+
 ## Installation
 
 ### ⚡ Using pipx (Recommended)
