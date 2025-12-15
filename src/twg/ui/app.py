@@ -251,10 +251,19 @@ def run():
         nargs="?",
         help="Optional output file. For --fix, it saves the repaired JSON. For --print, it saves the formatted JSON. If omitted, prints to stdout."
     )
+    
+    try:
+        from importlib.metadata import version, PackageNotFoundError
+        twg_version = version("twg")
+    except ImportError:
+        twg_version = "unknown"
+    except PackageNotFoundError:
+        twg_version = "dev"
+
     parser.add_argument(
         "-v", "--version",
         action="version",
-        version="%(prog)s 1.0.0"
+        version=f"%(prog)s {twg_version}"
     )
     parser.add_argument(
         "--fix",
