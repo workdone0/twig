@@ -6,6 +6,11 @@ import os
 import asyncio
 import argparse
 import pyperclip
+from rich.console import Console
+from rich.json import JSON
+from rich.panel import Panel
+from rich.text import Text
+from rich import box
 
 from textual.binding import Binding
 
@@ -244,11 +249,10 @@ def run():
     parser.add_argument(
         "output",
         nargs="?",
-        help="Optional output file for the fixed JSON. If not provided, the fixed content is printed to stdout. You can specify the same file as input to overwrite it in-place."
+        help="Optional output file. For --fix, it saves the repaired JSON. For --print, it saves the formatted JSON. If omitted, prints to stdout."
     )
     parser.add_argument(
         "-v", "--version",
-
         action="version",
         version="%(prog)s 1.0.0"
     )
@@ -257,40 +261,118 @@ def run():
         action="store_true",
         help="Attempt to automatically repair malformed JSON and exit."
     )
+    parser.add_argument(
+        "-p", "--print",
+        action="store_true",
+        help="Print formatted and syntax-highlighted JSON to stdout and exit."
+    )
+    
+    parser.add_argument(
+        "--indent",
+        type=int,
+        default=2,
+        help="Number of spaces for indentation (default: 2)."
+    )
     
     args = parser.parse_args()
-    
-    if args.fix:
-        try:
-            with open(args.file, 'r', encoding='utf-8') as f:
-                content = f.read()
-            fixed = repair_json(content)
-            
-            if args.output:
-                with open(args.output, 'w', encoding='utf-8') as f:
-                    f.write(fixed)
-                print(f"Fixed JSON written to {args.output}")
-            else:
-                print(fixed)
-            sys.exit(0)
-        except Exception as e:
-            print(f"Error repairing JSON: {e}", file=sys.stderr)
+
+    if not args.fix and not args.print:
+        # TUI Mode
+        if not os.path.exists(args.file):
+            print(f"Error: File not found: {args.file}", file=sys.stderr)
             sys.exit(1)
-    
+
+        if not args.file.lower().endswith(".json"):
+            print(f"Error: Invalid file type '{args.file}'. Twig currently only supports .json files.", file=sys.stderr)
+            sys.exit(1)
+            
+        app = TwigApp(args.file)
+        result = app.run()
+        
+        if result is not None and isinstance(result, str):
+            print(f"Error: {result}", file=sys.stderr)
+            sys.exit(1)
+        return
+
+    # CLI Mode (--fix or --print)
     if not os.path.exists(args.file):
         print(f"Error: File not found: {args.file}", file=sys.stderr)
         sys.exit(1)
 
-    if not args.file.lower().endswith(".json"):
-        print(f"Error: Invalid file type '{args.file}'. Twig currently only supports .json files.", file=sys.stderr)
-        sys.exit(1)
+    try:
+        with open(args.file, 'r', encoding='utf-8') as f:
+            content = f.read()
+
+        if args.fix:
+            try:
+                content = repair_json(content)
+            except Exception as e:
+                print(f"Error repairing JSON: {e}", file=sys.stderr)
+                sys.exit(1)
         
-    app = TwigApp(args.file)
-    result = app.run()
-    
-    if result is not None and isinstance(result, str):
-        print(f"Error: {result}", file=sys.stderr)
+        try:
+            import json
+            parsed = json.loads(content)
+        except json.JSONDecodeError as e:
+            if args.print:
+                 print(f"Error: Failed to parse JSON. Use --fix to attempt repair.\n{e}", file=sys.stderr)
+                 sys.exit(1)
+            else:
+                 print(f"Error: Resulting JSON is invalid even after attempted fix.\n{e}", file=sys.stderr)
+                 sys.exit(1)
+
+        if args.output:
+            # Write to file (formatted)
+            with open(args.output, 'w', encoding='utf-8') as f:
+                json.dump(parsed, f, indent=args.indent)
+            
+            action = "Fixed" if args.fix else "Formatted"
+            print(f"{action} JSON written to {args.output}", file=sys.stderr)
+        
+        else:
+            if args.print:
+                file_size = len(content.encode('utf-8'))
+                
+                if isinstance(parsed, list):
+                    item_count = len(parsed)
+                    type_label = "Array"
+                elif isinstance(parsed, dict):
+                    item_count = len(parsed)
+                    type_label = "Object"
+                else:
+                    item_count = 1
+                    type_label = "Primitive"
+                
+                err_console = Console(stderr=True)
+                meta_text = Text()
+                meta_text.append(f" File: ", style="bold cyan")
+                meta_text.append(f"{os.path.basename(args.file)} \n")
+                meta_text.append(f" Size: ", style="bold cyan")
+                meta_text.append(f"{file_size / 1024:.1f} KB \n")
+                meta_text.append(f" Type: ", style="bold cyan")
+                meta_text.append(f"{type_label} ({item_count} items)")
+                
+                err_console.print(Panel(
+                    meta_text,
+                    title="Twig Metadata",
+                    border_style="blue",
+                    box=box.ROUNDED,
+                    expand=False
+                ))
+
+                # JSON to stdout
+                console = Console()
+                console.print(JSON(content, indent=args.indent))
+            
+            else:
+                print(json.dumps(parsed, indent=args.indent))
+
+        sys.exit(0)
+
+    except Exception as e:
+        print(f"Error processing file: {e}", file=sys.stderr)
         sys.exit(1)
+    
 
 if __name__ == "__main__":
     run()
