@@ -51,6 +51,21 @@ Know exactly where you want to go?
 *   **Themeable**: Cycle through themes (Catppuccin, Dracula, Monokai) with `t`.
 *   **Zero Learning Curve**: Use Arrow keys or Vim keys. Press `?` for help.
 
+### Repair Malformed JSON
+Twig can automatically repair common JSON errors using `json-repair`, including trailing commas, single quotes, unquoted keys, and missing braces.
+
+**Usage:**
+```bash
+# Print fixed JSON to stdout
+twig --fix bad.json
+
+# Save fixed JSON to a new file
+twig --fix bad.json clean.json
+
+# Overwrite the original file
+twig --fix bad.json bad.json
+```
+
 ## Installation
 
 ### ⚡ Using pipx (Recommended)

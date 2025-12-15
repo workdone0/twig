@@ -17,7 +17,7 @@ Twig is built on the **Textual** framework.
 
 ```text
 src/twg
-├── core/           # Data models (TwigModel, Node)
+├── core/           # Data models (TwigModel, Node) and utilities (cleaner)
 ├── adapters/       # File ingestion logic
 └── ui/
     ├── app.py      # Main Entry Point
