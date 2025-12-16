@@ -11,7 +11,26 @@ Set WindowBar Colorful
 # Intro
 Sleep 1s
 
-Type "twg samples/cloud_infrastructure.json"
+# 0. Version Check
+Type "twig --version"
+Sleep 1s
+Enter
+Sleep 2s
+
+# 0.1 Show Invalid JSON
+Type "cat samples/unformatted_invalid_config.json"
+Sleep 1s
+Enter
+Sleep 2s
+
+# 0.2 Fix and Print
+Type "twig --fix --print samples/unformatted_invalid_config.json"
+Sleep 1s
+Enter
+Sleep 3s
+
+# 0.3 Navigation Demo
+Type "twig samples/cloud_infrastructure.json"
 Sleep 1s
 Enter
 
