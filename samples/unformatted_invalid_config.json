@@ -1,0 +1,17 @@
+{
+    // Server Configuration
+  timeout: 5000,
+  'retries': 3,
+    "debug": true,
+    "host": "localhost",
+    "port": 8080,
+    "features": [
+        "logging",
+        "metrics",
+        "tracing", // trailing comma
+    ],
+    "database": {
+        "url": "postgres://user:pass@localhost:5432/db",
+        "pool_size": 10,
+    },
+}
