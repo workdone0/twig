@@ -145,7 +145,7 @@ class SQLiteModel:
         Uses the `nodes_search` virtual table to find matches for the query.
         Results are ordered by path to provide a consistent navigation order.
         """
-        query = query.replace('"', '""') # Simple escape
+        query = query.strip().replace('"', '""') # Simple escape
         # FTS5 match query
         # We match key, value, or path
         fts_query = f"{query}*"  # Prefix match usually
