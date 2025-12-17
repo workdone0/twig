@@ -7,7 +7,7 @@ import uuid
 from typing import List
 import asyncio
 
-from twg.core.model import TwigModel, Node, DataType
+from twg.core.model import SQLiteModel, Node, DataType
 
 class TwigOptionList(OptionList):
     """
@@ -35,7 +35,7 @@ class Column(Vertical):
             self.node_id = node_id
             super().__init__()
 
-    def __init__(self, model: TwigModel, parent_node_id: uuid.UUID, index: int, initial_select_index: int = 0):
+    def __init__(self, model: SQLiteModel, parent_node_id: uuid.UUID, index: int, initial_select_index: int = 0):
         self.model = model
         self.parent_node_id = parent_node_id
         self.index = index
@@ -166,7 +166,7 @@ class ColumnNavigator(HorizontalScroll):
             self.node_id = node_id
             super().__init__()
 
-    def __init__(self, model: TwigModel):
+    def __init__(self, model: SQLiteModel):
         self.model = model
         super().__init__()
 
@@ -174,7 +174,10 @@ class ColumnNavigator(HorizontalScroll):
         # Start with the root column
         if self.model.root_id:
             yield Column(self.model, self.model.root_id, 0)
-            
+
+    def __arrow_up(self) -> None:
+        pass # Optional hook override
+
     async def _expand_node(self, column_index: int, node_id: uuid.UUID, initial_select_index: int = 0) -> None:
         """Helper to expand a node into a new column with a specific selection."""
         # 1. Remove all columns to the right
@@ -215,7 +218,6 @@ class ColumnNavigator(HorizontalScroll):
         # 2. Iterate and expand
         for i in range(len(lineage) - 1):
              # Yield to allow DOM to update from previous iteration's mount
-             import asyncio
              await asyncio.sleep(0.05)
              
              current_node = lineage[i]

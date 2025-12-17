@@ -1,6 +1,6 @@
 from textual.widgets import Static
 from textual.reactive import reactive
-from twg.core.model import Node, TwigModel
+from twg.core.model import Node, SQLiteModel
 
 class Breadcrumbs(Static):
     """
@@ -12,7 +12,7 @@ class Breadcrumbs(Static):
 
     selected_node: reactive[Node | None] = reactive(None)
 
-    def __init__(self, model: TwigModel, **kwargs):
+    def __init__(self, model: SQLiteModel, **kwargs):
         self.model = model
         super().__init__(**kwargs)
 

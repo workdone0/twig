@@ -9,7 +9,7 @@ from rich.syntax import Syntax
 from datetime import datetime
 import json
 
-from twg.core.model import Node, DataType, TwigModel
+from twg.core.model import Node, DataType, SQLiteModel
 
 class Inspector(Container):
     """
@@ -18,7 +18,7 @@ class Inspector(Container):
     
     selected_node: reactive[Node | None] = reactive(None)
 
-    def __init__(self, model: TwigModel, **kwargs):
+    def __init__(self, model: SQLiteModel, **kwargs):
         self.model = model
         super().__init__(**kwargs)
 
@@ -72,12 +72,9 @@ class Inspector(Container):
         type_str = node.type.value.capitalize()
         size_str = "-"
         
-        if node.type == DataType.ARRAY:
-             if isinstance(node.raw_value, list):
-                 size_str = f"{len(node.raw_value)} items"
-        elif node.type == DataType.OBJECT:
-             if isinstance(node.raw_value, dict):
-                 size_str = f"{len(node.raw_value)} keys"
+        if node.type in (DataType.ARRAY, DataType.OBJECT):
+             count = self.model.get_children_count(node.id)
+             size_str = f"{count} items"
         elif node.type == DataType.STRING:
              size_str = f"{len(str(node.value))} chars"
 
@@ -102,9 +99,4 @@ class Inspector(Container):
             content.update(Panel(f"Container with {size_str}", title="Value"))
         else:
             val = node.value
-            if isinstance(val, (dict, list)):
-                formatted = json.dumps(val, indent=2)
-                syntax = Syntax(formatted, "json", theme="monokai", word_wrap=True)
-                content.update(Panel(syntax, title="Value"))
-            else:
-                content.update(Panel(str(val), title="Value"))
+            content.update(Panel(str(val), title="Value"))

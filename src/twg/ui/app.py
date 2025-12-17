@@ -3,7 +3,6 @@ from textual.widgets import Footer, Header, LoadingIndicator, Label, Static
 from textual.containers import Container, Horizontal, Vertical, Center, Middle
 import sys
 import os
-import asyncio
 import argparse
 import pyperclip
 from rich.console import Console
@@ -14,9 +13,9 @@ from rich import box
 
 from textual.binding import Binding
 
-from twg.core.model import TwigModel
+from twg.core.model import SQLiteModel
 from twg.core.config import Config
-from twg.adapters.json_adapter import JsonAdapter
+from twg.adapters.sqlite_loader import SQLiteLoader
 from twg.ui.widgets.navigator import ColumnNavigator
 from twg.ui.widgets.inspector import Inspector
 from twg.ui.widgets.status_bar import StatusBar
@@ -24,12 +23,9 @@ from twg.ui.widgets.search import SearchModal
 from twg.ui.widgets.jump import JumpModal
 from twg.ui.widgets.help import HelpModal
 from twg.ui.widgets.loading import LoadingScreen
-
 from twg.ui.widgets.breadcrumbs import Breadcrumbs
 from twg.core.model import Node
 from twg.core.cleaner import repair_json
-
-MAX_FILE_SIZE_WARNING = 100 * 1024 * 1024 # 100 MB
 
 class TwigApp(App):
     """
@@ -61,26 +57,13 @@ class TwigApp(App):
     def load_file(self) -> None:
         """Worker method to load the file in a background thread."""
         try:
-            # check file size
-            try:
-                size = os.path.getsize(self.file_path)
-                if size > MAX_FILE_SIZE_WARNING:
-                    self.call_from_thread(
-                        self.notify, 
-                        f"Large file detected ({size / (1024*1024):.1f} MB). Performance may be degraded.", 
-                        severity="warning",
-                        timeout=5
-                    )
-            except OSError:
-                pass # safely ignore, adapter will handle file errors
-
-            adapter = JsonAdapter()
-            model = adapter.load_into_model(self.file_path)
+            loader = SQLiteLoader()
+            model = loader.load_into_model(self.file_path, force_rebuild=self.force_rebuild)
             self.call_from_thread(self.on_file_loaded, model)
         except Exception as e:
             self.call_from_thread(self.on_file_load_error, str(e))
     
-    def on_file_loaded(self, model: TwigModel) -> None:
+    def on_file_loaded(self, model: SQLiteModel) -> None:
         """Called when the file is successfully loaded."""
         self.model = model
         
@@ -100,6 +83,9 @@ class TwigApp(App):
                 id="content-view"
             )
         )
+        # Update status bar model
+        status_bar = self.query_one(StatusBar)
+        status_bar.model = self.model
 
     def on_file_load_error(self, error_message: str) -> None:
         """Called when file loading fails."""
@@ -121,9 +107,10 @@ class TwigApp(App):
         self.config.set("theme", next_theme)
         self.notify(f"Theme: {next_theme}")
 
-    def __init__(self, file_path: str):
+    def __init__(self, file_path: str, force_rebuild: bool = False):
         self.file_path = file_path
-        self.model: TwigModel | None = None
+        self.force_rebuild = force_rebuild
+        self.model: SQLiteModel | None = None
         self.current_node: Node | None = None
         self.last_search_query: str | None = None
         self.config: Config | None = None
@@ -282,6 +269,11 @@ def run():
         default=2,
         help="Number of spaces for indentation (default: 2)."
     )
+    parser.add_argument(
+        "--rebuild-db",
+        action="store_true",
+        help="Force rebuild of the internal SQLite database cache."
+    )
     
     args = parser.parse_args()
 
@@ -295,7 +287,7 @@ def run():
             print(f"Error: Invalid file type '{args.file}'. Twig currently only supports .json files.", file=sys.stderr)
             sys.exit(1)
             
-        app = TwigApp(args.file)
+        app = TwigApp(args.file, force_rebuild=args.rebuild_db)
         result = app.run()
         
         if result is not None and isinstance(result, str):

@@ -1,9 +1,11 @@
 from __future__ import annotations
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Generator
 import uuid
 import re
+import sqlite3
+from twg.core.db import DatabaseManager
 
 class DataType(Enum):
     OBJECT = "object"
@@ -13,280 +15,237 @@ class DataType(Enum):
     FLOAT = "float"
     BOOLEAN = "boolean"
     NULL = "null"
+    
+    @staticmethod
+    def from_value(data: Any) -> DataType:
+        if data is None:
+            return DataType.NULL
+        elif isinstance(data, bool):
+            return DataType.BOOLEAN
+        elif isinstance(data, int):
+            return DataType.INTEGER
+        elif isinstance(data, float):
+            return DataType.FLOAT
+        elif isinstance(data, str):
+            return DataType.STRING
+        elif isinstance(data, dict):
+            return DataType.OBJECT
+        elif isinstance(data, list):
+            return DataType.ARRAY
+        return DataType.STRING
 
 @dataclass
 class Node:
     """
-    Represents a single node in the JSON tree.
-    
-    Attributes:
-        id: Unique identifier for the node.
-        key: The key (for objects) or index (for arrays) of this node.
-        value: The value to display (leaf value or container summary).
-        type: The data type of the node.
-        parent: UUID of the parent node.
-        children: List of UUIDs of child nodes.
-        raw_value: The raw Python object this node represents (for lazy loading).
-        expanded: Whether children have been generated.
+    Lightweight Node representation from SQLite.
+    Does not store children or raw values in memory.
     """
-    id: uuid.UUID = field(default_factory=uuid.uuid4)
-    key: str = ""
-    value: Any = None
-    type: DataType = DataType.NULL
-    parent: Optional[uuid.UUID] = None
-    children: List[uuid.UUID] = field(default_factory=list)
-    raw_value: Any = field(default=None, repr=False)
-    expanded: bool = False
-    metadata: Dict[str, Any] = field(default_factory=dict)
-
+    id: uuid.UUID
+    key: str
+    value: Any
+    type: DataType
+    parent: Optional[uuid.UUID]
+    path: str
+    is_expanded: bool = False
+    
     @property
     def is_container(self) -> bool:
         return self.type in (DataType.OBJECT, DataType.ARRAY)
 
-def get_type_from_value(data: Any) -> DataType:
-    if data is None:
-        return DataType.NULL
-    elif isinstance(data, bool):
-        return DataType.BOOLEAN
-    elif isinstance(data, int):
-        return DataType.INTEGER
-    elif isinstance(data, float):
-        return DataType.FLOAT
-    elif isinstance(data, str):
-        return DataType.STRING
-    elif isinstance(data, dict):
-        return DataType.OBJECT
-    elif isinstance(data, list):
-        return DataType.ARRAY
-    return DataType.STRING
-
-class TwigModel:
+class SQLiteModel:
     """
-    The data model for the application.
-    
-    Stores all nodes in a flat dictionary keyed by UUID for O(1) access.
-    Manages the tree structure and provides helper methods for traversal.
+    SQLite-backed data model.
     """
-    def __init__(self):
-        self.nodes: Dict[uuid.UUID, Node] = {}
-        self.root_id: Optional[uuid.UUID] = None
+    def __init__(self, db_path: str):
+        self.db_manager = DatabaseManager()
+        self.db_path = db_path
+        # We keep a connection for read operations
+        self.conn = self.db_manager.get_connection(self.db_path)
+        
+        # Cache root id to avoid query
+        self.root_id = self._fetch_root_id()
 
-    def add_node(self, node: Node) -> None:
-        self.nodes[node.id] = node
-        if node.parent and node.parent in self.nodes:
-            # Only append if not already present (sanity check)
-            parent = self.nodes[node.parent]
-            if node.id not in parent.children:
-                parent.children.append(node.id)
+    def _fetch_root_id(self) -> Optional[uuid.UUID]:
+        cursor = self.conn.execute("SELECT id FROM nodes WHERE parent_id IS NULL LIMIT 1")
+        row = cursor.fetchone()
+        return uuid.UUID(row["id"]) if row else None
+
+    def close(self):
+        self.conn.close()
+
+    def row_to_node(self, row: sqlite3.Row) -> Node:
+        # Convert type string back to Enum
+        try:
+             # simple lookup by value
+             dtype = DataType(row["type"])
+        except ValueError:
+             dtype = DataType.STRING
+             
+        # Deserialize value from DB (stored as TEXT)
+        # We attempt to cast back to native types where appropriate
+        val = row["value"]
+        if dtype == DataType.NULL:
+            val = None
+        elif dtype == DataType.BOOLEAN:
+            val = (val == "True" or val == "true")
+        elif dtype == DataType.INTEGER:
+            try: val = int(val)
+            except: pass
+        elif dtype == DataType.FLOAT:
+             try: val = float(val)
+             except: pass
+             
+        return Node(
+            id=uuid.UUID(row["id"]),
+            key=row["key"],
+            value=val,
+            type=dtype,
+            parent=uuid.UUID(row["parent_id"]) if row["parent_id"] else None,
+            path=row["path"],
+            is_expanded=bool(row["is_expanded"])
+        )
 
     def get_node(self, node_id: uuid.UUID) -> Optional[Node]:
-        return self.nodes.get(node_id)
+        cursor = self.conn.execute(
+            "SELECT * FROM nodes WHERE id = ?", 
+            (str(node_id),)
+        )
+        row = cursor.fetchone()
+        if row:
+            return self.row_to_node(row)
+        return None
 
     def get_children(self, node_id: uuid.UUID) -> List[Node]:
-        """Returns the list of child nodes. Generates them if not already expanded."""
-        node = self.get_node(node_id)
-        if not node:
-            return []
-        
-        if not node.expanded and node.is_container:
-            self._expand_node(node)
-            
-        return [self.get_node(child_id) for child_id in node.children if self.get_node(child_id)]
-
-    def _expand_node(self, node: Node) -> None:
-        """Generates child nodes from raw_value."""
-        if node.expanded:
-            return
-            
-        data = node.raw_value
-
-        if isinstance(data, list):
-            for i, v in enumerate(data):
-                self._create_child(node, str(i), v)
-
-        elif isinstance(data, dict):
-             for k, v in data.items():
-                self._create_child(node, k, v)
-        
-        node.expanded = True
-
-    def _create_child(self, parent: Node, key: str, value: Any) -> None:
-        
-        node_type = get_type_from_value(value)
-        display_value = value if node_type not in (DataType.OBJECT, DataType.ARRAY) else None
-        
-        child = Node(
-            key=key,
-            value=display_value,
-            type=node_type,
-            parent=parent.id,
-            raw_value=value
+        """Returns ordered children of the node."""
+        cursor = self.conn.execute(
+            "SELECT * FROM nodes WHERE parent_id = ? ORDER BY rank", 
+            (str(node_id),)
         )
-        self.add_node(child)
+        return [self.row_to_node(row) for row in cursor.fetchall()]
+
+    def get_children_count(self, node_id: uuid.UUID) -> int:
+        """Returns the number of children."""
+        cursor = self.conn.execute(
+            "SELECT COUNT(*) FROM nodes WHERE parent_id = ?", 
+            (str(node_id),)
+        )
+        return cursor.fetchone()[0]
 
     def get_path(self, node_id: uuid.UUID) -> str:
-        """Returns the jq-style path to the node."""
+        """Returns the jq-style path from the DB column."""
         node = self.get_node(node_id)
-        if not node:
-            return ""
-        
-        # 1. Collect nodes from leaf to root
-        chain = []
-        curr = node
-        while curr:
-            chain.append(curr)
-            curr = self.get_node(curr.parent) if curr.parent else None
-        
-        # 2. Build path from root to leaf
-        chain.reverse()
-        
-        parts = []
-        for i, node in enumerate(chain):
-            if i == 0: # Root
-                continue
-            
-            parent = chain[i-1]
-            if parent.type == DataType.ARRAY:
-                parts.append(f"[{node.key}]")
-            else:
-                parts.append(f".{node.key}")
-                
-        path = "".join(parts) if parts else "."
-        if not path.startswith("."):
-            path = "." + path
-        return path
+        if node:
+            return node.path
+        return ""
 
     def find_next_node(self, query: str, start_node_id: Optional[uuid.UUID] = None, direction: int = 1) -> Optional[Node]:
         """
-        Global search for next/prev node. 
-        Collects all matches and traverses relative to start_node_id.
-        Direction: 1 (Next), -1 (Prev).
+        Global search using FTS5.
+        
+        Uses the `nodes_search` virtual table to find matches for the query.
+        Results are ordered by path to provide a consistent navigation order.
         """
-        if not self.root_id:
-            return None
+        query = query.replace('"', '""') # Simple escape
+        # FTS5 match query
+        # We match key, value, or path
+        fts_query = f"{query}*"  # Prefix match usually
         
-        query = query.lower()
+        sq = """
+        SELECT n.* 
+        FROM nodes n
+        JOIN nodes_search s ON n.rowid = s.rowid
+        WHERE nodes_search MATCH ?
+        ORDER BY n.path
+        """
         
-        # Generator to iterate all nodes in order
-        def traverse(node_id: uuid.UUID):
-            node = self.nodes.get(node_id)
-            if not node: return
-            
-            yield node
-            
-            # Force expansion for search completeness (since we dropped lazy load limits)
-            if node.is_container and not node.expanded:
-                 self._expand_node(node)
-                 
-            for child_id in node.children:
-                yield from traverse(child_id)
-
-        matches = []
-        count = 0
+        # For small number of matches, fetching all is fine.
+        # But let's try to be smarter if we have a start_node.
         
-        for node in traverse(self.root_id):
-            count += 1
-            
-            match = query in str(node.key).lower()
-            if not match and not node.is_container:
-                match = query in str(node.value).lower()
-            
-            if match:
-                matches.append(node)
-        
-        if not matches:
-             return None
-
-        # 2. Find start index
-        current_idx = -1
+        # First, we need to know where we are.
+        start_path = ""
         if start_node_id:
-            for i, m in enumerate(matches):
-                if m.id == start_node_id:
-                    current_idx = i
-                    break
+            n = self.get_node(start_node_id)
+            if n:
+                start_path = n.path
         
-        # 3. Calculate target index
-        if current_idx == -1:
-            # If start not found (or None), start at beginning (if Next) or End (if Prev)
+        # If we have a start path, we can use it to filter
+        if start_path:
             if direction > 0:
-                target_idx = 0
+                 # Find next match after current path
+                 sql_next = """
+                    SELECT n.* 
+                    FROM nodes n
+                    JOIN nodes_search s ON n.rowid = s.rowid
+                    WHERE nodes_search MATCH ? AND n.path > ?
+                    ORDER BY n.path ASC LIMIT 1
+                 """
+                 cursor = self.conn.execute(sql_next, (fts_query, start_path))
+                 row = cursor.fetchone()
+                 if row: return self.row_to_node(row)
+                 # Wrap around: Find first match
+                 sql_first = """
+                    SELECT n.* 
+                    FROM nodes n
+                    JOIN nodes_search s ON n.rowid = s.rowid
+                    WHERE nodes_search MATCH ?
+                    ORDER BY n.path ASC LIMIT 1
+                 """
+                 cursor = self.conn.execute(sql_first, (fts_query,))
+                 row = cursor.fetchone()
+                 if row: return self.row_to_node(row)
+                 
             else:
-                target_idx = len(matches) - 1
+                 # Find prev match before current path
+                 sql_prev = """
+                    SELECT n.* 
+                    FROM nodes n
+                    JOIN nodes_search s ON n.rowid = s.rowid
+                    WHERE nodes_search MATCH ? AND n.path < ?
+                    ORDER BY n.path DESC LIMIT 1
+                 """
+                 cursor = self.conn.execute(sql_prev, (fts_query, start_path))
+                 row = cursor.fetchone()
+                 if row: return self.row_to_node(row)
+                 # Wrap around: Find last match
+                 sql_last = """
+                    SELECT n.* 
+                    FROM nodes n
+                    JOIN nodes_search s ON n.rowid = s.rowid
+                    WHERE nodes_search MATCH ?
+                    ORDER BY n.path DESC LIMIT 1
+                 """
+                 cursor = self.conn.execute(sql_last, (fts_query,))
+                 row = cursor.fetchone()
+                 if row: return self.row_to_node(row)
+                 
         else:
-            target_idx = (current_idx + direction) % len(matches)
-            
-        return matches[target_idx]
+             # No context, just return first
+             sql_first = """
+                SELECT n.* 
+                FROM nodes n
+                JOIN nodes_search s ON n.rowid = s.rowid
+                WHERE nodes_search MATCH ?
+                ORDER BY n.path ASC LIMIT 1
+             """
+             cursor = self.conn.execute(sql_first, (fts_query,))
+             row = cursor.fetchone()
+             if row: return self.row_to_node(row)
+
+        return None
 
     def resolve_path(self, path: str) -> Optional[Node]:
         """
-        Resolves a jq-style path (e.g. .users[0].name) to a Node (UUID).
-        Raises ValueError if path syntax is invalid.
+        Direct lookup by path column.
         """
-        segments = self._parse_jq_path(path)
-        
         path = path.strip()
-        if not path:
-             raise ValueError("Path cannot be empty")
-             
-        if path != "." and not segments:
-             raise ValueError(f"Invalid jq path syntax: {path}")
-        
-        if not self.root_id:
-            return None
-            
-        current_node = self.get_node(self.root_id)
-        if not current_node:
-            return None
-            
-        if not segments:
-             return current_node
-            
-        # Iterate through segments
-        seg_idx = 0
-        while seg_idx < len(segments):
-            segment = segments[seg_idx]
-            
-            # Ensure children are expanded
-            children = self.get_children(current_node.id)
-            
-            found = False
-            
-            # Try finding direct match
-            for child in children:
-                # Compare keys. 
-                if str(child.key) == str(segment):
-                    current_node = child
-                    found = True
-                    seg_idx += 1 # Consumed segment
-                    break
-            
-            if not found:
-                return None
-            
-        return current_node
+        if not path: return None
+        if not path.startswith("."): 
+             # Normalize paths to always start with dot (except empty, handled above)
+             path = "." + path 
 
-    def _parse_jq_path(self, path: str) -> List[str | int]:
-        """Parses a jq path string into specific segments."""
-        path = path.strip()
-        if path == "." or path == "":
-            return []
-            
-        # Correct regex for finding segments:
-        matches = re.finditer(r'(?:\.|^)([^.\[\]]+)|\[(\d+)\]|\["([^"]+)"\]|\[\'([^\']+)\'\]', path)
-        results = []
-        for m in matches:
-             if m.group(1): # key (no quotes)
-                 k = m.group(1)
-                 # Handle odd case where path starts with .key, group 1 is key.
-                 # If path starts with ., the first match might be empty group 1 if regex isn't careful.
-                 # My regex: (?:\.|^)([^.\[\]]+)
-                 # .foo -> matches .foo -> group 1 is foo.
-                 results.append(k)
-             elif m.group(2): # Int
-                 results.append(int(m.group(2)))
-             elif m.group(3): # Double quote
-                 results.append(m.group(3))
-             elif m.group(4): # Single quote
-                 results.append(m.group(4))
-                 
-        return results
+        # Exact match
+        cursor = self.conn.execute("SELECT * FROM nodes WHERE path = ?", (path,))
+        row = cursor.fetchone()
+        if row:
+            return self.row_to_node(row)
+        return None

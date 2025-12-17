@@ -12,8 +12,9 @@ class StatusBar(Horizontal):
     
     selected_node: reactive[Node | None] = reactive(None)
 
-    def __init__(self, file_path: str, **kwargs):
+    def __init__(self, file_path: str, model=None, **kwargs):
         self.file_path = file_path
+        self.model = model
         super().__init__(**kwargs)
 
     def compose(self) -> ComposeResult:
@@ -51,11 +52,8 @@ class StatusBar(Horizontal):
         
         info = f"{key} : {type_str}"
         
-        if node.is_container:
-            if isinstance(node.raw_value, (list, dict)):
-                count = len(node.raw_value)
-                info += f" [{count} items]"
-            elif node.children:
-                info += f" [{len(node.children)} items]"
+        if node.is_container and self.model:
+            count = self.model.get_children_count(node.id)
+            info += f" [{count} items]"
                 
         context.update(info)
