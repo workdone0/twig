@@ -31,7 +31,8 @@ Twig solves this. It brings the fluid, hierarchical navigation of **macOS Finder
 
 ### The Twig Advantage
 *   **Privacy First**: Your data never leaves your machine. 100% local.
-*   **Zero-Lag**: Built for speed. Traverse deep structures instantly without creating temporary files.
+*   **Scalable**: SQLite backend handles gigabyte-sized files efficiently.
+*   **Zero-Lag**: Built for speed. Traverse deep structures instantly using streaming parsers.
 *   **No GUI Required**: Perfect for SSH sessions and remote debugging.
 *   **Native Feel**: Miller Columns allow you to visualize the tree structure naturally—left to go back, right to drill down.
 
@@ -104,6 +105,9 @@ twig data.json
 
 # Or use the short alias
 twg data.json
+
+# Force rebuild of the internal cache
+twg data.json --rebuild-db
 ```
 
 ### Cheat Sheet
@@ -126,7 +130,7 @@ twg data.json
 
 *   **Can it handle large files?**
 
-    Yes. On a standard 8GB machine, Twig comfortably handles files up to **~100MB**. Larger files are possible but may impact performance since the graph is loaded into memory.
+    Yes. Twig uses a **SQLite backend** with streaming parsing (`ijson`). This means it can handle **gigabyte-sized files** without consuming excessive RAM. The initial load might take a moment to build the cache, but subsequent opens are instant.
 
 ## Star History
 

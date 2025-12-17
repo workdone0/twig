@@ -9,16 +9,18 @@ Thank you for your interest in contributing to Twig. We welcome contributions fr
 ### Architecture Guide
 Twig is built on the **Textual** framework.
 
-*   **Core**: `TwigModel` (src/twg/core) handles the in-memory graph of the JSON data.
+*   **Core**: `SQLiteModel` (src/twg/core) acts as the bridge to the SQLite database.
+*   **Storage**: Data is streamed via `ijson` into a local SQLite cache.
+*   **Search**: Uses SQLite `FTS5` for high-performance global search.
 *   **UI**: `ColumnNavigator` (src/twg/ui/widgets) implements the Miller Column navigation.
-*   **Async**: Heavy operations (like loading large files) are non-blocking.
+*   **Async**: Heavy operations (loading, searching) run in background threads.
 
 ### Project Structure
 
 ```text
 src/twg
-├── core/           # Data models (TwigModel, Node) and utilities (cleaner)
-├── adapters/       # File ingestion logic
+├── core/           # Data models (SQLiteModel) and database logic (DBManager)
+├── adapters/       # File ingestion logic (SQLiteLoader)
 └── ui/
     ├── app.py      # Main Entry Point
     ├── widgets/    # Reusable Components (Navigator, Inspector)
