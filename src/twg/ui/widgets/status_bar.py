@@ -32,7 +32,7 @@ class StatusBar(Horizontal):
             size_str = "?"
 
         filename = os.path.basename(self.file_path)
-        yield Static(f"📄 {filename} ({size_str})", id="sb-file")
+        yield Static(f"FILE: {filename} ({size_str})", id="sb-file")
         
         # Context (Center/Remaining)
         yield Static("", id="sb-context")
@@ -65,6 +65,6 @@ class StatusBar(Horizontal):
     def watch_search_stats(self, stats: str | None) -> None:
         stats_widget = self.query_one("#sb-search-stats", Static)
         if stats:
-            stats_widget.update(f"🔍 {stats}")
+            stats_widget.update(f"SEARCH: {stats}")
         else:
             stats_widget.update("")

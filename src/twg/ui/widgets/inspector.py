@@ -106,14 +106,14 @@ class Inspector(Container):
             # URL
             if self.URL_PATTERN.match(val_str):
                 add_detail("Format", "URL")
-                insight_text.append("\n🔗 Link detected:\n", style="bold")
+                insight_text.append("\nLink detected:\n", style="bold")
                 insight_text.append(val_str, style="blue underline link " + val_str)
                 has_insights = True
             
             # Color
             elif self.HEX_COLOR_PATTERN.match(val_str):
                 add_detail("Format", "Color")
-                insight_text.append("\n🎨 Color Preview: ", style="bold")
+                insight_text.append("\nColor Preview: ", style="bold")
                 insight_text.append("██████", style=val_str)
                 insight_text.append(f" {val_str}")
                 has_insights = True
@@ -139,7 +139,7 @@ class Inspector(Container):
             
             limit = 30
             for i, child in enumerate(children[:limit]): 
-                icon = "📂" if child.is_container else "📄"
+                icon = "[+] " if child.is_container else "- "
                 val = "..." if child.is_container else str(child.value)
                 if len(val) > 50: val = val[:47] + "..."
                 preview_str += f"{icon} {child.key}: {val}\n"
