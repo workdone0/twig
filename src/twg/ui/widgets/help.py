@@ -107,6 +107,7 @@ class HelpModal(ModalScreen[None]):
         ("n / N", "Next / Prev match"),
         (":", "Jump to path"),
         ("c", "Copy path"),
+        ("y", "Copy source"),
         ("t", "Toggle theme"),
         ("q", "Quit"),
     ]

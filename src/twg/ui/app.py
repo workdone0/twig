@@ -39,6 +39,7 @@ class TwigApp(App):
     BINDINGS = [
         ("q", "quit", "Quit"),
         ("c", "copy_path", "Copy Path"),
+        ("y", "copy_source", "Copy Source"),
         ("t", "toggle_theme", "Toggle Theme"),
         ("/", "search", "Search"),
         ("n", "next_match", "Next Match"),
@@ -67,11 +68,9 @@ class TwigApp(App):
         """Called when the file is successfully loaded."""
         self.model = model
         
-        # Remove loading indicator
         content = self.query_one("#main-content")
         content.remove_children()
         
-        # Mount the actual UI
         content.mount(
             Vertical(
                 Breadcrumbs(self.model, id="breadcrumbs"),
@@ -83,7 +82,6 @@ class TwigApp(App):
                 id="content-view"
             )
         )
-        # Update status bar model
         status_bar = self.query_one(StatusBar)
         status_bar.model = self.model
 
@@ -119,7 +117,6 @@ class TwigApp(App):
     def compose(self) -> ComposeResult:
         yield Header(show_clock=False)
         
-        # Initial state: Loading
         with Container(id="main-content"):
             yield Center(Middle(LoadingIndicator()))
             yield Center(Middle(Label(f"Loading {os.path.basename(self.file_path)}...")))
@@ -226,6 +223,30 @@ class TwigApp(App):
                 self.notify(f"Failed to copy: {e}", severity="error")
         else:
              self.notify("Root path copied")
+
+    def action_copy_source(self) -> None:
+        """Copies the raw source (JSON) of the selected node to clipboard."""
+        if not self.current_node:
+            return
+            
+        import json
+        
+        try:
+            if self.current_node.is_container:
+                data = self.model.reconstruct_json(self.current_node.id, max_depth=5)
+            else:
+                data = self.current_node.value
+
+            json_str = json.dumps(data, indent=2)
+            pyperclip.copy(json_str)
+            
+            preview = json_str[:50].replace('\n', ' ')
+            if len(json_str) > 50: preview += "..."
+            
+            self.notify(f"Copied source: {preview}")
+            
+        except Exception as e:
+            self.notify(f"Failed to copy source: {e}", severity="error")
 
 def run():
     parser = argparse.ArgumentParser(

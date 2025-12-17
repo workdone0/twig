@@ -34,13 +34,10 @@ class StatusBar(Horizontal):
         filename = os.path.basename(self.file_path)
         yield Static(f"FILE: {filename} ({size_str})", id="sb-file")
         
-        # Context (Center/Remaining)
         yield Static("", id="sb-context")
         
-        # Mode (Right)
         yield Static("READ ONLY", id="sb-mode")
         
-        # Search Stats (Extreme Right)
         yield Static("", id="sb-search-stats")
 
     def watch_selected_node(self, node: Node | None) -> None:

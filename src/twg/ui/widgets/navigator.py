@@ -182,8 +182,6 @@ class ColumnNavigator(HorizontalScroll):
 
     async def _expand_node(self, column_index: int, node_id: uuid.UUID, initial_select_index: int = 0) -> None:
         """Helper to expand a node into a new column with a specific selection."""
-        # 1. Start by checking if the next column is ALREADY correct
-        # This prevents "flashing" or rebuilding when we just move focus back and forth
         next_col_index = column_index + 1
         existing_next_col = None
         
@@ -194,33 +192,24 @@ class ColumnNavigator(HorizontalScroll):
         
         # If the next column exists and is showing the children of OUR selected node, we are good.
         if existing_next_col and existing_next_col.parent_node_id == node_id:
-             # Just ensure we notify selection, but don't rebuild DOM
              self.post_message(self.NodeSelected(node_id))
              return
 
-        # 1. Remove all columns to the right (since it wasn't correct)
         to_remove = [child for child in self.children if isinstance(child, Column) and child.index > column_index]
         if to_remove:
-             # Batch removal for smoother UI
              await asyncio.gather(*[child.remove() for child in to_remove])
         
-        # 2. Check if the selected node is a container
         node = self.model.get_node(node_id)
         if node and node.is_container:
-            # SAFETY CHECK: Ensure we don't duplicate the column if removal failed or raced
-            # Explicitly remove any column that matches our target index
             for child in self.children:
                 if isinstance(child, Column) and child.index == next_col_index:
                     await child.remove()
 
-            # 3. Add new column for the selected node
             new_col = Column(self.model, node.id, next_col_index, initial_select_index=initial_select_index)
             await self.mount(new_col)
             
-            # Scroll to the new column
             self.call_after_refresh(self.scroll_to_widget, new_col, animate=True)
 
-        # 4. Notify app about selection (of the parent node that caused expansion)
         self.post_message(self.NodeSelected(node_id))
 
     async def expand_to_node(self, node_id: uuid.UUID) -> None:
@@ -233,7 +222,6 @@ class ColumnNavigator(HorizontalScroll):
         current_id = self._nav_id
         self._pending_target_node_id = node_id
         
-        # 1. Build lineage (Root -> ... -> Node)
         node = self.model.get_node(node_id)
         if not node: return
         
@@ -244,16 +232,13 @@ class ColumnNavigator(HorizontalScroll):
             curr = self.model.get_node(curr.parent) if curr.parent else None
         lineage.reverse()
         
-        # 2. Iterate and expand
         for i in range(len(lineage) - 1):
-             # Check if we've been superseded
              if self._nav_id != current_id:
                  return
 
              current_node = lineage[i]
              next_node = lineage[i+1] # The one selected in Col i
              
-             # Find index of next_node in current_node's children
              try:
                  children = self.model.get_children(current_node.id)
                  
@@ -264,7 +249,6 @@ class ColumnNavigator(HorizontalScroll):
                          break
                  
                  if select_idx != -1:
-                     # Calculate what to select in the NEXT column (grandchild)
                      grandchild_idx = 0
                      if i + 2 < len(lineage):
                          grandchild = lineage[i+2]
@@ -274,9 +258,6 @@ class ColumnNavigator(HorizontalScroll):
                                  grandchild_idx = gc_idx
                                  break
                      
-                     # 1. Highlight in current column (if it exists)
-                     
-                     # Find column widget
                      col_widget = None
                      for child in self.children:
                          if isinstance(child, Column) and child.index == i:
@@ -284,8 +265,6 @@ class ColumnNavigator(HorizontalScroll):
                              break
                      
                      if col_widget:
-                         # Manually update highlight
-                         # Check if OptionList exists before querying (might have failed to load)
                          if not col_widget.query(TwigOptionList):
                              continue
                              
@@ -293,33 +272,27 @@ class ColumnNavigator(HorizontalScroll):
                          opt_list.highlighted = select_idx
                          self.scroll_to_widget(col_widget, animate=False)
                          
-                         # 2. Expand
                          await self._expand_node(i, next_node.id, initial_select_index=grandchild_idx)
                          
              except Exception as e:
-                 # Logic error or race condition
                  self.notify(f"Jump Error: {e}", severity="error")
                  break
         
-        # Check cancellation before final focus
         if self._nav_id != current_id:
             return
             
         self._pending_target_node_id = None
 
-        # 3. Focus the final column
         final_col_idx = len(lineage) - 1
         target_col_idx = max(0, len(lineage) - 2)
         
         def focus_target():
-             # Re-check inside the callback just in case
              if self._nav_id != current_id: return
              
              for child in self.children:
                  if isinstance(child, Column) and child.index == target_col_idx:
                      if child.query(TwigOptionList):
                          child.query_one(TwigOptionList).focus()
-                         # Post selection message
                          self.post_message(self.NodeSelected(node_id))
                      break
         self.call_after_refresh(focus_target)

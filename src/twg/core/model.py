@@ -145,23 +145,6 @@ class SQLiteModel:
         Uses the `nodes_search` virtual table to find matches for the query.
         Results are ordered by path to provide a consistent navigation order.
         """
-        # FTS5 phrase search (quote-wrapped)
-        query = query.strip().replace('"', '""')
-        fts_query = f'"{query}"*'
-        
-        sq = """
-        SELECT n.* 
-        FROM nodes n
-        JOIN nodes_search s ON n.rowid = s.rowid
-        WHERE nodes_search MATCH ?
-        ORDER BY n.path
-        """
-        
-        # For small number of matches, fetching all is fine.
-        # But let's try to be smarter if we have a start_node.
-        
-        # First, we need to know where we are.
-        start_path = ""
         if start_node_id:
             n = self.get_node(start_node_id)
             if n:
@@ -257,10 +240,9 @@ class SQLiteModel:
         query = query.strip().replace('"', '""')
         if not query: return (0, 0)
         
-        # FTS5 phrase search (quote-wrapped)
+        # FTS5 phrase search
         fts_query = f'"{query}"*'
         
-        # 1. Total Count
         sql_count = "SELECT COUNT(*) FROM nodes_search WHERE nodes_search MATCH ?"
         cursor = self.conn.execute(sql_count, (fts_query,))
         total = cursor.fetchone()[0]

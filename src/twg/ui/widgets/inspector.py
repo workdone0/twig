@@ -36,16 +36,9 @@ class Inspector(Container):
             yield Label("", id="insp-path")
             
             with VerticalScroll(id="inspector-scroll"):
-                # 1. Metadata Grid
                 yield Container(id="insp-details-grid")
-                
-                # 2. Insights (Links, etc)
                 yield Static(id="insp-insights", classes="insp-section")
-
-                # 3. Preview (for containers)
                 yield Static(id="insp-preview_content", classes="insp-section")
-                
-                # 4. Raw View
                 yield Static(id="insp-raw_content", classes="insp-section")
 
     def watch_selected_node(self, node: Node | None) -> None:
@@ -65,7 +58,7 @@ class Inspector(Container):
             path_view.update("")
             return
 
-        # 1. Path Header
+        # Path Header
         chain = []
         curr = node
         while curr:
@@ -78,7 +71,7 @@ class Inspector(Container):
         human_path = " › ".join(reversed(chain))
         path_view.update(human_path)
 
-        # 2. Details Grid
+        # Details Grid
         type_str = node.type.value.capitalize()
         size_str = "-"
         
@@ -96,7 +89,7 @@ class Inspector(Container):
         add_detail("Type", type_str)
         add_detail("Size", size_str)
         
-        # 3. Smart Insights 
+        # Smart Insights 
         insight_text = Text()
         has_insights = False
         
@@ -130,7 +123,7 @@ class Inspector(Container):
         if has_insights:
              insights.update(Panel(insight_text, title="Smart Insights", border_style="dim"))
         
-        # 4. Preview / Raw
+        # Preview / Raw
         if node.is_container:
             # Preview: Show first 20 items simply
             preview_str = f""
