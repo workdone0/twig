@@ -40,7 +40,7 @@ Breadcrumbs {
     background: $background;
     border-top: solid $secondary;
     border-bottom: solid $secondary;
-    padding: 0 0;
+    padding: 0 1;
     color: $primary; /* cyan */
 }
 
@@ -66,7 +66,8 @@ TwigOptionList {
 }
 
 TwigOptionList:focus {
-    border-left: solid $accent;
+    border-left: thick $accent;
+    background: $surface; 
 }
 
 /* Inspector Styling */
