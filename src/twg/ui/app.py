@@ -183,15 +183,16 @@ class TwigApp(App):
             return
             
         navigator = self.query_one(ColumnNavigator)
-        loading = LoadingScreen()
-        await self.mount(loading)
         
-        try:
-             found = await navigator.find_next(self.last_search_query, direction=1)
-             if not found:
-                 self.notify(f"not found '{self.last_search_query}'")
-        finally:
-            await loading.remove()
+        found_node = await navigator.find_next(self.last_search_query, direction=1)
+        if not found_node:
+             self.notify(f"Not found: '{self.last_search_query}'", severity="warning")
+        else:
+             # Show stats (current/total)
+             if self.model:
+                 current, total = self.model.get_search_stats(self.last_search_query, found_node.id)
+                 if total > 0:
+                     self.query_one(StatusBar).search_stats = f"{current}/{total}"
 
     async def action_prev_match(self) -> None:
         """Find previous match for the last search query."""
@@ -200,15 +201,16 @@ class TwigApp(App):
             return
 
         navigator = self.query_one(ColumnNavigator)
-        loading = LoadingScreen()
-        await self.mount(loading)
         
-        try:
-             found = await navigator.find_next(self.last_search_query, direction=-1)
-             if not found:
-                 self.notify(f"not found '{self.last_search_query}'")
-        finally:
-            await loading.remove()
+        found_node = await navigator.find_next(self.last_search_query, direction=-1)
+        if not found_node:
+             self.notify(f"Not found: '{self.last_search_query}'", severity="warning")
+        else:
+             # Show stats
+             if self.model:
+                 current, total = self.model.get_search_stats(self.last_search_query, found_node.id)
+                 if total > 0:
+                     self.query_one(StatusBar).search_stats = f"{current}/{total}"
 
     def action_copy_path(self) -> None:
         """Copies the jq-style path of the currently selected node to the clipboard."""

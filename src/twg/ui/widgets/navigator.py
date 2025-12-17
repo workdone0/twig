@@ -4,7 +4,7 @@ from textual.widgets import OptionList
 from textual.message import Message
 from textual.binding import Binding
 import uuid
-from typing import List
+from typing import List, Optional
 import asyncio
 
 from twg.core.model import SQLiteModel, Node, DataType
@@ -168,6 +168,8 @@ class ColumnNavigator(HorizontalScroll):
 
     def __init__(self, model: SQLiteModel):
         self.model = model
+        self._nav_id = 0 # To handle cancellation of jump/expand tasks
+        self._pending_target_node_id: Optional[uuid.UUID] = None
         super().__init__()
 
     def compose(self) -> ComposeResult:
@@ -205,6 +207,12 @@ class ColumnNavigator(HorizontalScroll):
         # 2. Check if the selected node is a container
         node = self.model.get_node(node_id)
         if node and node.is_container:
+            # SAFETY CHECK: Ensure we don't duplicate the column if removal failed or raced
+            # Explicitly remove any column that matches our target index
+            for child in self.children:
+                if isinstance(child, Column) and child.index == next_col_index:
+                    await child.remove()
+
             # 3. Add new column for the selected node
             new_col = Column(self.model, node.id, next_col_index, initial_select_index=initial_select_index)
             await self.mount(new_col)
@@ -220,6 +228,11 @@ class ColumnNavigator(HorizontalScroll):
         Expands the column view to show and select the given node.
         Rebuilds the navigation path from root to the target node.
         """
+        # Increment generation to cancel any running expansion
+        self._nav_id += 1
+        current_id = self._nav_id
+        self._pending_target_node_id = node_id
+        
         # 1. Build lineage (Root -> ... -> Node)
         node = self.model.get_node(node_id)
         if not node: return
@@ -233,10 +246,10 @@ class ColumnNavigator(HorizontalScroll):
         
         # 2. Iterate and expand
         for i in range(len(lineage) - 1):
-             # Wait for DOM processing to ensure previous mounts are registered
-             # relying on await mount() is usually sufficient
-             
-             
+             # Check if we've been superseded
+             if self._nav_id != current_id:
+                 return
+
              current_node = lineage[i]
              next_node = lineage[i+1] # The one selected in Col i
              
@@ -244,10 +257,6 @@ class ColumnNavigator(HorizontalScroll):
              try:
                  children = self.model.get_children(current_node.id)
                  
-                 # Note: iterating to find index might be O(N) but handled by lazy load usually small enough?
-                 # Or we can optimize model to look up index? 
-                 # For now list.index is fine.
-                 # We need to match IDs. 'children' contains Node objects.
                  select_idx = -1
                  for idx, child in enumerate(children):
                      if child.id == next_node.id:
@@ -276,6 +285,10 @@ class ColumnNavigator(HorizontalScroll):
                      
                      if col_widget:
                          # Manually update highlight
+                         # Check if OptionList exists before querying (might have failed to load)
+                         if not col_widget.query(TwigOptionList):
+                             continue
+                             
                          opt_list = col_widget.query_one(TwigOptionList)
                          opt_list.highlighted = select_idx
                          self.scroll_to_widget(col_widget, animate=False)
@@ -287,48 +300,62 @@ class ColumnNavigator(HorizontalScroll):
                  # Logic error or race condition
                  self.notify(f"Jump Error: {e}", severity="error")
                  break
-                 
+        
+        # Check cancellation before final focus
+        if self._nav_id != current_id:
+            return
+            
+        self._pending_target_node_id = None
+
         # 3. Focus the final column
         final_col_idx = len(lineage) - 1
         target_col_idx = max(0, len(lineage) - 2)
         
         def focus_target():
+             # Re-check inside the callback just in case
+             if self._nav_id != current_id: return
+             
              for child in self.children:
                  if isinstance(child, Column) and child.index == target_col_idx:
-                     child.query_one(TwigOptionList).focus()
-                     # Post selection message
-                     self.post_message(self.NodeSelected(node_id))
+                     if child.query(TwigOptionList):
+                         child.query_one(TwigOptionList).focus()
+                         # Post selection message
+                         self.post_message(self.NodeSelected(node_id))
                      break
         self.call_after_refresh(focus_target)
 
-    async def find_next(self, query: str, direction: int = 1) -> bool:
+    async def find_next(self, query: str, direction: int = 1) -> Optional[Node]:
         """
         Global search using the model's DFS.
+        Returns the Node found, or None.
         """
         # 1. Determine start Node ID from current focus
-        start_node_id = None
+        # Priority: Pending Target > Focused Column > Deepest Highlight
+        start_node_id = self._pending_target_node_id
         focused_col = None
         
-        # Try finding focused column first
-        for child in self.children:
-             if isinstance(child, Column) and child.query_one(TwigOptionList).has_focus:
-                 focused_col = child
-                 break
-        
-        # Fallback: Find deepest column with a highlight (if focus lost due to Loading modal)
-        if not focused_col:
-             max_idx = -1
-             for child in self.children:
-                 if isinstance(child, Column):
-                     opts = child.query_one(TwigOptionList)
-                     if opts.highlighted is not None and child.index > max_idx:
-                         max_idx = child.index
+        if not start_node_id:
+            # Try finding focused column first
+            for child in self.children:
+                 if isinstance(child, Column) and child.query(TwigOptionList):
+                     if child.query_one(TwigOptionList).has_focus:
                          focused_col = child
+                         break
+            
+            # Fallback: Find deepest column with a highlight (if focus lost due to Loading modal)
+            if not focused_col:
+                 max_idx = -1
+                 for child in self.children:
+                     if isinstance(child, Column) and child.query(TwigOptionList):
+                         opts = child.query_one(TwigOptionList)
+                         if opts.highlighted is not None and child.index > max_idx:
+                             max_idx = child.index
+                             focused_col = child
 
-        if focused_col:
-            opts = focused_col.query_one(TwigOptionList)
-            if opts.highlighted is not None:
-                start_node_id = focused_col.node_map.get(opts.highlighted)
+            if focused_col and focused_col.query(TwigOptionList):
+                opts = focused_col.query_one(TwigOptionList)
+                if opts.highlighted is not None:
+                    start_node_id = focused_col.node_map.get(opts.highlighted)
         
         # 2. Search in Model
         target_node = None
@@ -352,15 +379,15 @@ class ColumnNavigator(HorizontalScroll):
             await self.expand_to_node(target_node.id)
             # Post selection
             self.post_message(self.NodeSelected(target_node.id))
-            return True
+            return target_node
         
-        return False
+        return None
 
     async def on_mount(self) -> None:
         # Focus the first option list
         if self.children:
             first_col = self.children[0]
-            if isinstance(first_col, Column):
+            if isinstance(first_col, Column) and first_col.query(TwigOptionList):
                 opt_list = first_col.query_one(TwigOptionList)
                 opt_list.focus()
                 # Manually trigger initial selection
@@ -395,6 +422,10 @@ class ColumnNavigator(HorizontalScroll):
             for child in self.children:
                 if isinstance(child, Column) and child.index == target_index:
                     target_col = child
+                    if not target_col.query(TwigOptionList):
+                        self.notify("Cannot focus empty column", severity="warning")
+                        continue
+                        
                     target_option_list = target_col.query_one(TwigOptionList)
                     target_option_list.focus()
                     self.scroll_to_widget(target_col, animate=True)

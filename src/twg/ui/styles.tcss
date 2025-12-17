@@ -86,10 +86,16 @@ Inspector {
     color: $warning; /* orange */
 }
 
+
 #inspector-scroll {
     height: 1fr;
     overflow-y: auto;
 }
+
+.insp-section {
+    margin-bottom: 1;
+}
+
 
 #insp-header {
     height: auto;
@@ -169,6 +175,15 @@ StatusBar {
     width: auto;
     color: $warning;
     text-style: bold;
+    margin-right: 2;
+}
+
+#sb-search-stats {
+    width: auto;
+    color: $accent;
+    text-style: bold;
+    min-width: 10;
+    text-align: right;
 }
 
 /* Highlight Styles */

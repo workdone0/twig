@@ -11,6 +11,7 @@ class StatusBar(Horizontal):
     """
     
     selected_node: reactive[Node | None] = reactive(None)
+    search_stats: reactive[str | None] = reactive(None)
 
     def __init__(self, file_path: str, model=None, **kwargs):
         self.file_path = file_path
@@ -38,6 +39,9 @@ class StatusBar(Horizontal):
         
         # Mode (Right)
         yield Static("READ ONLY", id="sb-mode")
+        
+        # Search Stats (Extreme Right)
+        yield Static("", id="sb-search-stats")
 
     def watch_selected_node(self, node: Node | None) -> None:
         context = self.query_one("#sb-context", Static)
@@ -57,3 +61,10 @@ class StatusBar(Horizontal):
             info += f" [{count} items]"
                 
         context.update(info)
+        
+    def watch_search_stats(self, stats: str | None) -> None:
+        stats_widget = self.query_one("#sb-search-stats", Static)
+        if stats:
+            stats_widget.update(f"🔍 {stats}")
+        else:
+            stats_widget.update("")

@@ -1,60 +1,71 @@
 from textual.app import ComposeResult
-from textual.containers import Vertical, Container, Horizontal
+from textual.containers import Vertical, Container, Horizontal, VerticalScroll
 from textual.widgets import Static, Label
 from textual.reactive import reactive
 from rich.text import Text
 from rich.table import Table
 from rich.panel import Panel
 from rich.syntax import Syntax
+from rich.json import JSON
 from datetime import datetime
 import json
+import re
 
 from twg.core.model import Node, DataType, SQLiteModel
 
 class Inspector(Container):
     """
     Displays detailed information about the selected node in a rich format.
+    Uses a vertical stack layout for better use of vertical space.
     """
     
     selected_node: reactive[Node | None] = reactive(None)
+    
+    # Regex patterns for smart insights
+    URL_PATTERN = re.compile(r'https?://(?:[-\w.]|(?:%[\da-fA-F]{2}))+')
+    HEX_COLOR_PATTERN = re.compile(r'^#(?:[0-9a-fA-F]{3}){1,2}$')
+    EMAIL_PATTERN = re.compile(r'[^@]+@[^@]+\.[^@]+')
 
     def __init__(self, model: SQLiteModel, **kwargs):
         self.model = model
         super().__init__(**kwargs)
 
     def compose(self) -> ComposeResult:
-        yield Label("Inspector", id="inspector-title")
-        yield Vertical(
-            Label("", id="insp-header"),
-            Label("", id="insp-path"),
-            Container(id="insp-details-grid"),
-            Static(id="insp-content"),
-            id="inspector-scroll"
-        )
+        with Vertical():
+            yield Label("Inspector", id="inspector-title")
+            yield Label("", id="insp-path")
+            
+            with VerticalScroll(id="inspector-scroll"):
+                # 1. Metadata Grid
+                yield Container(id="insp-details-grid")
+                
+                # 2. Insights (Links, etc)
+                yield Static(id="insp-insights", classes="insp-section")
+
+                # 3. Preview (for containers)
+                yield Static(id="insp-preview_content", classes="insp-section")
+                
+                # 4. Raw View
+                yield Static(id="insp-raw_content", classes="insp-section")
 
     def watch_selected_node(self, node: Node | None) -> None:
-        header = self.query_one("#insp-header", Label)
         path_view = self.query_one("#insp-path", Label)
         details_grid = self.query_one("#insp-details-grid", Container)
-        content = self.query_one("#insp-content", Static)
+        insights = self.query_one("#insp-insights", Static)
+        preview = self.query_one("#insp-preview_content", Static)
+        raw = self.query_one("#insp-raw_content", Static)
         
-        # Clear details grid
+        # Clear all
         details_grid.remove_children()
+        insights.update("")
+        preview.update("")
+        raw.update("")
         
         if node is None:
-            header.update("No Selection")
-            header.add_class("dim")
             path_view.update("")
-            content.update("")
             return
-        
-        header.remove_class("dim")
 
-        # 1. Header
-        key_display = node.key if node.key else "root"
-        header.update(key_display)
-
-        # 2. Human Readable Path
+        # 1. Path Header
         chain = []
         curr = node
         while curr:
@@ -64,21 +75,20 @@ class Inspector(Container):
                 curr = self.model.get_node(curr.parent)
             else:
                 curr = None
-        
         human_path = " › ".join(reversed(chain))
         path_view.update(human_path)
 
-        # 3. Details Grid (Native Widgets)
+        # 2. Details Grid
         type_str = node.type.value.capitalize()
         size_str = "-"
         
+        children_count = 0
         if node.type in (DataType.ARRAY, DataType.OBJECT):
-             count = self.model.get_children_count(node.id)
-             size_str = f"{count} items"
+             children_count = self.model.get_children_count(node.id)
+             size_str = f"{children_count} items"
         elif node.type == DataType.STRING:
              size_str = f"{len(str(node.value))} chars"
 
-        # Helper to add row
         def add_detail(label: str, value: str):
             details_grid.mount(Label(label, classes="insp-label"))
             details_grid.mount(Label(value, classes="insp-value"))
@@ -86,17 +96,76 @@ class Inspector(Container):
         add_detail("Type", type_str)
         add_detail("Size", size_str)
         
-        # Smart Insight: Date
+        # 3. Smart Insights 
+        insight_text = Text()
+        has_insights = False
+        
         if node.type == DataType.STRING:
-            try:
-                dt = datetime.fromisoformat(node.value.replace('Z', '+00:00'))
-                add_detail("Parsed", dt.strftime('%Y-%m-%d %H:%M'))
-            except ValueError:
-                pass
-
-        # 4. Content / Value
+            val_str = str(node.value)
+            
+            # URL
+            if self.URL_PATTERN.match(val_str):
+                add_detail("Format", "URL")
+                insight_text.append("\n🔗 Link detected:\n", style="bold")
+                insight_text.append(val_str, style="blue underline link " + val_str)
+                has_insights = True
+            
+            # Color
+            elif self.HEX_COLOR_PATTERN.match(val_str):
+                add_detail("Format", "Color")
+                insight_text.append("\n🎨 Color Preview: ", style="bold")
+                insight_text.append("██████", style=val_str)
+                insight_text.append(f" {val_str}")
+                has_insights = True
+                
+            # Date
+            else:
+                try:
+                    dt = datetime.fromisoformat(val_str.replace('Z', '+00:00'))
+                    add_detail("Format", "ISO8601")
+                    add_detail("Time", dt.strftime('%Y-%m-%d %H:%M'))
+                except ValueError:
+                    pass
+        
+        if has_insights:
+             insights.update(Panel(insight_text, title="Smart Insights", border_style="dim"))
+        
+        # 4. Preview / Raw
         if node.is_container:
-            content.update(Panel(f"Container with {size_str}", title="Value"))
+            # Preview: Show first 20 items simply
+            preview_str = f""
+            
+            children = self.model.get_children(node.id)
+            
+            limit = 30
+            for i, child in enumerate(children[:limit]): 
+                icon = "📂" if child.is_container else "📄"
+                val = "..." if child.is_container else str(child.value)
+                if len(val) > 50: val = val[:47] + "..."
+                preview_str += f"{icon} {child.key}: {val}\n"
+            
+            if children_count > limit:
+                preview_str += f"\n... and {children_count - limit} more."
+                
+            preview.update(Panel(preview_str, title="Content Preview"))
+            
+            # Raw View: Attempt to load if size is reasonable
+            # 500 items is a safe upper bound for UI responsiveness
+            if children_count < 500:
+                try:
+                    # Depth 4 is enough for inspection without exploding
+                    data = self.model.reconstruct_json(node.id, max_depth=4)
+                    json_str = json.dumps(data, indent=2)
+                    raw.update(Panel(Syntax(json_str, "json", theme="monokai", padding=1), title="Source"))
+                except Exception as e:
+                    raw.update(Panel(Text(f"Error loading raw view: {e}", style="red"), title="Source"))
+            else:
+                raw.update(Panel(Text("Raw view hidden for performance ( > 500 items)", style="italic dim"), title="Source"))
+            
         else:
-            val = node.value
-            content.update(Panel(str(val), title="Value"))
+            # Primitive
+            preview.update(Panel(str(node.value), title="Value"))
+            
+            # Raw: Try to parse as JSON if it looks like it, else just syntax highlight the value
+            json_str = json.dumps(node.value, indent=2)
+            raw.update(Panel(Syntax(json_str, "json", theme="monokai", padding=1), title="Source"))

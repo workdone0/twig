@@ -145,10 +145,9 @@ class SQLiteModel:
         Uses the `nodes_search` virtual table to find matches for the query.
         Results are ordered by path to provide a consistent navigation order.
         """
-        query = query.strip().replace('"', '""') # Simple escape
-        # FTS5 match query
-        # We match key, value, or path
-        fts_query = f"{query}*"  # Prefix match usually
+        # FTS5 phrase search (quote-wrapped)
+        query = query.strip().replace('"', '""')
+        fts_query = f'"{query}"*'
         
         sq = """
         SELECT n.* 
@@ -248,4 +247,70 @@ class SQLiteModel:
         row = cursor.fetchone()
         if row:
             return self.row_to_node(row)
+        return None
+
+    def get_search_stats(self, query: str, current_node_id: Optional[uuid.UUID]) -> tuple[int, int]:
+        """
+        Returns (current_match_index, total_matches) for the given query.
+        Index is 1-based. Returns (0, 0) if no matches or query empty.
+        """
+        query = query.strip().replace('"', '""')
+        if not query: return (0, 0)
+        
+        # FTS5 phrase search (quote-wrapped)
+        fts_query = f'"{query}"*'
+        
+        # 1. Total Count
+        sql_count = "SELECT COUNT(*) FROM nodes_search WHERE nodes_search MATCH ?"
+        cursor = self.conn.execute(sql_count, (fts_query,))
+        total = cursor.fetchone()[0]
+        
+        if total == 0:
+            return (0, 0)
+            
+        current_index = 0
+        if current_node_id:
+             node = self.get_node(current_node_id)
+             if node:
+                 # Count how many matches have a path <= current node's path
+                 # This gives us the rank
+                 sql_rank = """
+                    SELECT COUNT(*) 
+                    FROM nodes n
+                    JOIN nodes_search s ON n.rowid = s.rowid
+                    WHERE nodes_search MATCH ? AND n.path <= ?
+                 """
+                 cursor = self.conn.execute(sql_rank, (fts_query, node.path))
+                 current_index = cursor.fetchone()[0]
+                 
+        return (current_index, total)
+
+    def reconstruct_json(self, node_id: uuid.UUID, max_depth: int = 3, current_depth: int = 0) -> Any:
+        """
+        Reconstructs the JSON value for a given node.
+        Limits depth to prevent excessive loading.
+        """
+        node = self.get_node(node_id)
+        if not node: return None
+        
+        if not node.is_container:
+            return node.value
+            
+        if current_depth >= max_depth:
+            return "..."
+            
+        children = self.get_children(node_id)
+        
+        if node.type == DataType.OBJECT:
+            res = {}
+            for child in children:
+                res[child.key] = self.reconstruct_json(child.id, max_depth, current_depth + 1)
+            return res
+            
+        elif node.type == DataType.ARRAY:
+            res = []
+            for child in children:
+                res.append(self.reconstruct_json(child.id, max_depth, current_depth + 1))
+            return res
+            
         return None
