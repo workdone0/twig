@@ -63,13 +63,13 @@ twg data.json
 Twig also includes powerful CLI tools for quick fixes and formatting.
 
 **Repair Broken JSON**
-Automatically fix common errors like trailing commas or unquoted keys:
+Automatically fix common errors like trailing commas, unquoted keys, and even **sanitize `NaN` / `Infinity`** values (common in Python dumps):
 ```bash
 # Print fixed JSON to stdout
-twig --fix bad.json
+twg --fix bad.json
 
-# Save to a new file
-twig --fix bad.json clean.json
+# Save to a new file (or overwrite in-place)
+twg --fix bad.json -o clean.json
 ```
 
 **Pretty Print**

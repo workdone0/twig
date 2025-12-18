@@ -24,13 +24,13 @@ class Breadcrumbs(Static):
         full_path = self.model.get_path(node.id)
         
         # Smart truncation for long paths
-        if len(full_path) > 70:
+        if len(full_path) > 100:
             parts = full_path.split('.')
-            if len(parts) > 4:
-                # Keep first 2 and last 2
-                full_path = f"{parts[0]}.{parts[1]} ... {parts[-2]}.{parts[-1]}"
+            if len(parts) > 6:
+                # Keep first 2 and last 3 for better context
+                full_path = f"{parts[0]}.{parts[1]} ... {parts[-3]}.{parts[-2]}.{parts[-1]}"
             else:
-                # Fallback simple truncation
-                full_path = full_path[:30] + " ... " + full_path[-30:]
+                # Fallback simple truncation - preserve end
+                full_path = "..." + full_path[-97:]
 
         self.update(f"[b]Path:[/b] {full_path} [dim](jq)[/]")

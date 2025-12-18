@@ -144,7 +144,14 @@ class SQLiteModel:
         
         Uses the `nodes_search` virtual table to find matches for the query.
         Results are ordered by path to provide a consistent navigation order.
-        """
+            """
+        query = query.strip().replace('"', '""')
+        if not query: return None
+        
+        # FTS5 phrase search
+        fts_query = f'"{query}"*'
+        start_path = None
+
         if start_node_id:
             n = self.get_node(start_node_id)
             if n:

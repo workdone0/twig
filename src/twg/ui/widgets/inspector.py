@@ -26,6 +26,8 @@ class Inspector(Container):
     HEX_COLOR_PATTERN = re.compile(r'^#(?:[0-9a-fA-F]{3}){1,2}$')
     EMAIL_PATTERN = re.compile(r'[^@]+@[^@]+\.[^@]+')
 
+    SYNTAX_THEME = "monokai"
+
     def __init__(self, model: SQLiteModel, **kwargs):
         self.model = model
         super().__init__(**kwargs)
@@ -149,7 +151,7 @@ class Inspector(Container):
                     # Depth 4 is enough for inspection without exploding
                     data = self.model.reconstruct_json(node.id, max_depth=4)
                     json_str = json.dumps(data, indent=2)
-                    raw.update(Panel(Syntax(json_str, "json", theme="monokai", padding=1), title="Source"))
+                    raw.update(Panel(Syntax(json_str, "json", theme=self.SYNTAX_THEME, padding=1), title="Source"))
                 except Exception as e:
                     raw.update(Panel(Text(f"Error loading raw view: {e}", style="red"), title="Source"))
             else:
@@ -161,4 +163,4 @@ class Inspector(Container):
             
             # Raw: Try to parse as JSON if it looks like it, else just syntax highlight the value
             json_str = json.dumps(node.value, indent=2)
-            raw.update(Panel(Syntax(json_str, "json", theme="monokai", padding=1), title="Source"))
+            raw.update(Panel(Syntax(json_str, "json", theme=self.SYNTAX_THEME, padding=1), title="Source"))
