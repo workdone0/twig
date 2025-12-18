@@ -3,7 +3,6 @@ from textual.widgets import Footer, Header, LoadingIndicator, Label, Static
 from textual.containers import Container, Horizontal, Vertical, Center, Middle
 import sys
 import os
-import asyncio
 import argparse
 import pyperclip
 from rich.console import Console
@@ -14,9 +13,9 @@ from rich import box
 
 from textual.binding import Binding
 
-from twg.core.model import TwigModel
+from twg.core.model import SQLiteModel
 from twg.core.config import Config
-from twg.adapters.json_adapter import JsonAdapter
+from twg.adapters.sqlite_loader import SQLiteLoader
 from twg.ui.widgets.navigator import ColumnNavigator
 from twg.ui.widgets.inspector import Inspector
 from twg.ui.widgets.status_bar import StatusBar
@@ -24,12 +23,9 @@ from twg.ui.widgets.search import SearchModal
 from twg.ui.widgets.jump import JumpModal
 from twg.ui.widgets.help import HelpModal
 from twg.ui.widgets.loading import LoadingScreen
-
 from twg.ui.widgets.breadcrumbs import Breadcrumbs
 from twg.core.model import Node
 from twg.core.cleaner import repair_json
-
-MAX_FILE_SIZE_WARNING = 100 * 1024 * 1024 # 100 MB
 
 class TwigApp(App):
     """
@@ -43,6 +39,7 @@ class TwigApp(App):
     BINDINGS = [
         ("q", "quit", "Quit"),
         ("c", "copy_path", "Copy Path"),
+        ("y", "copy_source", "Copy Source"),
         ("t", "toggle_theme", "Toggle Theme"),
         ("/", "search", "Search"),
         ("n", "next_match", "Next Match"),
@@ -61,34 +58,19 @@ class TwigApp(App):
     def load_file(self) -> None:
         """Worker method to load the file in a background thread."""
         try:
-            # check file size
-            try:
-                size = os.path.getsize(self.file_path)
-                if size > MAX_FILE_SIZE_WARNING:
-                    self.call_from_thread(
-                        self.notify, 
-                        f"Large file detected ({size / (1024*1024):.1f} MB). Performance may be degraded.", 
-                        severity="warning",
-                        timeout=5
-                    )
-            except OSError:
-                pass # safely ignore, adapter will handle file errors
-
-            adapter = JsonAdapter()
-            model = adapter.load_into_model(self.file_path)
+            loader = SQLiteLoader()
+            model = loader.load_into_model(self.file_path, force_rebuild=self.force_rebuild)
             self.call_from_thread(self.on_file_loaded, model)
         except Exception as e:
             self.call_from_thread(self.on_file_load_error, str(e))
     
-    def on_file_loaded(self, model: TwigModel) -> None:
+    def on_file_loaded(self, model: SQLiteModel) -> None:
         """Called when the file is successfully loaded."""
         self.model = model
         
-        # Remove loading indicator
         content = self.query_one("#main-content")
         content.remove_children()
         
-        # Mount the actual UI
         content.mount(
             Vertical(
                 Breadcrumbs(self.model, id="breadcrumbs"),
@@ -100,6 +82,8 @@ class TwigApp(App):
                 id="content-view"
             )
         )
+        status_bar = self.query_one(StatusBar)
+        status_bar.model = self.model
 
     def on_file_load_error(self, error_message: str) -> None:
         """Called when file loading fails."""
@@ -121,9 +105,10 @@ class TwigApp(App):
         self.config.set("theme", next_theme)
         self.notify(f"Theme: {next_theme}")
 
-    def __init__(self, file_path: str):
+    def __init__(self, file_path: str, force_rebuild: bool = False):
         self.file_path = file_path
-        self.model: TwigModel | None = None
+        self.force_rebuild = force_rebuild
+        self.model: SQLiteModel | None = None
         self.current_node: Node | None = None
         self.last_search_query: str | None = None
         self.config: Config | None = None
@@ -132,7 +117,6 @@ class TwigApp(App):
     def compose(self) -> ComposeResult:
         yield Header(show_clock=False)
         
-        # Initial state: Loading
         with Container(id="main-content"):
             yield Center(Middle(LoadingIndicator()))
             yield Center(Middle(Label(f"Loading {os.path.basename(self.file_path)}...")))
@@ -196,15 +180,16 @@ class TwigApp(App):
             return
             
         navigator = self.query_one(ColumnNavigator)
-        loading = LoadingScreen()
-        await self.mount(loading)
         
-        try:
-             found = await navigator.find_next(self.last_search_query, direction=1)
-             if not found:
-                 self.notify(f"not found '{self.last_search_query}'")
-        finally:
-            await loading.remove()
+        found_node = await navigator.find_next(self.last_search_query, direction=1)
+        if not found_node:
+             self.notify(f"Not found: '{self.last_search_query}'", severity="warning")
+        else:
+             # Show stats (current/total)
+             if self.model:
+                 current, total = self.model.get_search_stats(self.last_search_query, found_node.id)
+                 if total > 0:
+                     self.query_one(StatusBar).search_stats = f"{current}/{total}"
 
     async def action_prev_match(self) -> None:
         """Find previous match for the last search query."""
@@ -213,15 +198,16 @@ class TwigApp(App):
             return
 
         navigator = self.query_one(ColumnNavigator)
-        loading = LoadingScreen()
-        await self.mount(loading)
         
-        try:
-             found = await navigator.find_next(self.last_search_query, direction=-1)
-             if not found:
-                 self.notify(f"not found '{self.last_search_query}'")
-        finally:
-            await loading.remove()
+        found_node = await navigator.find_next(self.last_search_query, direction=-1)
+        if not found_node:
+             self.notify(f"Not found: '{self.last_search_query}'", severity="warning")
+        else:
+             # Show stats
+             if self.model:
+                 current, total = self.model.get_search_stats(self.last_search_query, found_node.id)
+                 if total > 0:
+                     self.query_one(StatusBar).search_stats = f"{current}/{total}"
 
     def action_copy_path(self) -> None:
         """Copies the jq-style path of the currently selected node to the clipboard."""
@@ -238,9 +224,33 @@ class TwigApp(App):
         else:
              self.notify("Root path copied")
 
+    def action_copy_source(self) -> None:
+        """Copies the raw source (JSON) of the selected node to clipboard."""
+        if not self.current_node:
+            return
+            
+        import json
+        
+        try:
+            if self.current_node.is_container:
+                data = self.model.reconstruct_json(self.current_node.id, max_depth=5)
+            else:
+                data = self.current_node.value
+
+            json_str = json.dumps(data, indent=2)
+            pyperclip.copy(json_str)
+            
+            preview = json_str[:50].replace('\n', ' ')
+            if len(json_str) > 50: preview += "..."
+            
+            self.notify(f"Copied source: {preview}")
+            
+        except Exception as e:
+            self.notify(f"Failed to copy source: {e}", severity="error")
+
 def run():
     parser = argparse.ArgumentParser(
-        description="Twig: Inspect. Navigate. Understand. A terminal-based data explorer."
+        description="Twig: Inspect. Navigate. Understand. A modern, terminal-based data explorer."
     )
     parser.add_argument(
         "file",
@@ -282,6 +292,11 @@ def run():
         default=2,
         help="Number of spaces for indentation (default: 2)."
     )
+    parser.add_argument(
+        "--rebuild-db",
+        action="store_true",
+        help="Force rebuild of the internal SQLite database cache."
+    )
     
     args = parser.parse_args()
 
@@ -295,7 +310,7 @@ def run():
             print(f"Error: Invalid file type '{args.file}'. Twig currently only supports .json files.", file=sys.stderr)
             sys.exit(1)
             
-        app = TwigApp(args.file)
+        app = TwigApp(args.file, force_rebuild=args.rebuild_db)
         result = app.run()
         
         if result is not None and isinstance(result, str):

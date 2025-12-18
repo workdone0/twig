@@ -1,6 +1,6 @@
 from textual.widgets import Static
 from textual.reactive import reactive
-from twg.core.model import Node, TwigModel
+from twg.core.model import Node, SQLiteModel
 
 class Breadcrumbs(Static):
     """
@@ -12,7 +12,7 @@ class Breadcrumbs(Static):
 
     selected_node: reactive[Node | None] = reactive(None)
 
-    def __init__(self, model: TwigModel, **kwargs):
+    def __init__(self, model: SQLiteModel, **kwargs):
         self.model = model
         super().__init__(**kwargs)
 
@@ -22,4 +22,15 @@ class Breadcrumbs(Static):
             return
         
         full_path = self.model.get_path(node.id)
+        
+        # Smart truncation for long paths
+        if len(full_path) > 70:
+            parts = full_path.split('.')
+            if len(parts) > 4:
+                # Keep first 2 and last 2
+                full_path = f"{parts[0]}.{parts[1]} ... {parts[-2]}.{parts[-1]}"
+            else:
+                # Fallback simple truncation
+                full_path = full_path[:30] + " ... " + full_path[-30:]
+
         self.update(f"[b]Path:[/b] {full_path} [dim](jq)[/]")

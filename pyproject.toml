@@ -1,12 +1,12 @@
 [project]
 name = "twg"
-version = "1.1.0"
-description = "Inspect. Navigate. Understand. A terminal-based data explorer."
+version = "2.0.0"
+description = "Inspect. Navigate. Understand. A modern, terminal-based data explorer."
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
     "textual>=0.41.0",
-    "ujson>=5.11.0",
+    "ijson>=3.2.0",
     "pyperclip>=1.8.2",
     "json-repair>=0.30.0",
     "rich>=13.0.0",

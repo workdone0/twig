@@ -7,6 +7,14 @@ from textual.containers import Container, Grid
 class HelpModal(ModalScreen[None]):
     """Modal screen giving help/keybindings."""
 
+    LOGO = r"""
+████████╗██╗    ██╗██╗ ██████╗ 
+╚══██╔══╝██║    ██║██║██╔════╝ 
+   ██║   ██║ █╗ ██║██║██║  ███╗
+   ██║   ██║███╗██║██║██║   ██║
+   ██║   ╚███╔███╔╝██║╚██████╔╝
+   ╚═╝    ╚══╝╚══╝ ╚═╝ ╚═════╝ 
+"""
 
     CSS = """
     HelpModal {
@@ -14,19 +22,18 @@ class HelpModal(ModalScreen[None]):
     }
 
     #help-container {
-        width: 60;
+        width: 70;
         height: auto;
         background: $surface;
         border: tall $primary; 
-        padding: 1 4;
+        padding: 1 2;
         align: center middle;
     }
 
     #help-logo {
         width: 100%;
         text-align: center;
-        text-style: bold;
-        color: $success;
+        color: $warning;
         margin-top: 1;
         margin-bottom: 1;
     }
@@ -34,14 +41,15 @@ class HelpModal(ModalScreen[None]):
     .help-tagline {
         width: 100%;
         text-align: center;
-        color: $accent;
+        color: $success;
+        text-style: bold;
         margin-bottom: 1;
     }
 
     .help-version {
         width: 100%;
         text-align: center;
-        color: $warning;
+        color: $text-muted;
         margin-bottom: 2;
     }
 
@@ -50,7 +58,7 @@ class HelpModal(ModalScreen[None]):
         text-align: center;
         color: $primary;
         text-style: underline;
-        margin-bottom: 3;
+        margin-bottom: 2;
     }
 
     #help-title {
@@ -59,29 +67,29 @@ class HelpModal(ModalScreen[None]):
         text-style: bold underline;
         color: $text;
         margin-bottom: 1;
+        margin-top: 1;
         background: $surface;
     }
 
     #help-grid {
         layout: grid;
         grid-size: 2;
-        grid-columns: auto auto;
-        grid-gutter: 0 4;
-        width: auto;
+        grid-columns: 1fr 1fr;
+        grid-gutter: 0 2;
+        width: 100%;
         height: auto;
-        padding: 0 0;
         margin-bottom: 2;
         align: center middle;
     }
 
     .key {
-        text-align: right;
+        text-align: left;
         text-style: bold;
         color: $accent;
     }
 
     .desc {
-        text-align: left;
+        text-align: right;
         color: $text;
     }
 
@@ -89,6 +97,7 @@ class HelpModal(ModalScreen[None]):
         width: 100%;
         text-align: center;
         color: $text-muted;
+        margin-bottom: 1;
     }
     """
 
@@ -98,6 +107,7 @@ class HelpModal(ModalScreen[None]):
         ("n / N", "Next / Prev match"),
         (":", "Jump to path"),
         ("c", "Copy path"),
+        ("y", "Copy source"),
         ("t", "Toggle theme"),
         ("q", "Quit"),
     ]
@@ -110,7 +120,7 @@ class HelpModal(ModalScreen[None]):
 
         with Container(id="help-container"):
             # Branding Section
-            yield Label("Twig", id="help-logo")
+            yield Label(self.LOGO, id="help-logo")
             yield Label("Inspect. Navigate. Understand.", classes="help-tagline")
             yield Label(f"v{version}", classes="help-version")
             yield Label("[@click=app.open_url('https://github.com/workdone0/twig')]github.com/workdone0/twig[/]", id="help-link")

@@ -11,9 +11,11 @@ class StatusBar(Horizontal):
     """
     
     selected_node: reactive[Node | None] = reactive(None)
+    search_stats: reactive[str | None] = reactive(None)
 
-    def __init__(self, file_path: str, **kwargs):
+    def __init__(self, file_path: str, model=None, **kwargs):
         self.file_path = file_path
+        self.model = model
         super().__init__(**kwargs)
 
     def compose(self) -> ComposeResult:
@@ -30,13 +32,13 @@ class StatusBar(Horizontal):
             size_str = "?"
 
         filename = os.path.basename(self.file_path)
-        yield Static(f"📄 {filename} ({size_str})", id="sb-file")
+        yield Static(f"FILE: {filename} ({size_str})", id="sb-file")
         
-        # Context (Center/Remaining)
         yield Static("", id="sb-context")
         
-        # Mode (Right)
         yield Static("READ ONLY", id="sb-mode")
+        
+        yield Static("", id="sb-search-stats")
 
     def watch_selected_node(self, node: Node | None) -> None:
         context = self.query_one("#sb-context", Static)
@@ -51,11 +53,15 @@ class StatusBar(Horizontal):
         
         info = f"{key} : {type_str}"
         
-        if node.is_container:
-            if isinstance(node.raw_value, (list, dict)):
-                count = len(node.raw_value)
-                info += f" [{count} items]"
-            elif node.children:
-                info += f" [{len(node.children)} items]"
+        if node.is_container and self.model:
+            count = self.model.get_children_count(node.id)
+            info += f" [{count} items]"
                 
         context.update(info)
+        
+    def watch_search_stats(self, stats: str | None) -> None:
+        stats_widget = self.query_one("#sb-search-stats", Static)
+        if stats:
+            stats_widget.update(f"SEARCH: {stats}")
+        else:
+            stats_widget.update("")

@@ -40,7 +40,7 @@ Breadcrumbs {
     background: $background;
     border-top: solid $secondary;
     border-bottom: solid $secondary;
-    padding: 0 0;
+    padding: 0 1;
     color: $primary; /* cyan */
 }
 
@@ -66,7 +66,8 @@ TwigOptionList {
 }
 
 TwigOptionList:focus {
-    border-left: solid $accent;
+    border-left: thick $accent;
+    background: $surface; 
 }
 
 /* Inspector Styling */
@@ -86,10 +87,16 @@ Inspector {
     color: $warning; /* orange */
 }
 
+
 #inspector-scroll {
     height: 1fr;
     overflow-y: auto;
 }
+
+.insp-section {
+    margin-bottom: 1;
+}
+
 
 #insp-header {
     height: auto;
@@ -169,6 +176,15 @@ StatusBar {
     width: auto;
     color: $warning;
     text-style: bold;
+    margin-right: 2;
+}
+
+#sb-search-stats {
+    width: auto;
+    color: $accent;
+    text-style: bold;
+    min-width: 10;
+    text-align: right;
 }
 
 /* Highlight Styles */

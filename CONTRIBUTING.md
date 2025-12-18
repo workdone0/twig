@@ -4,21 +4,23 @@ Thank you for your interest in contributing to Twig. We welcome contributions fr
 
 ## Project Overview
 
-**Twig** is a terminal-based environment (TUI) for exploring and understanding structured data files. It aims to bridge the gap between simple text viewers (`less`, `cat`) and complex IDEs.
+**Twig** is a modern, terminal-based data explorer. It is designed to navigate, inspect, and understand large, complex datasets directly from your terminal, bridging the gap between simple text viewers and heavy IDEs.
 
 ### Architecture Guide
 Twig is built on the **Textual** framework.
 
-*   **Core**: `TwigModel` (src/twg/core) handles the in-memory graph of the JSON data.
+*   **Core**: `SQLiteModel` (src/twg/core) acts as the bridge to the SQLite database.
+*   **Storage**: Data is streamed via `ijson` into a local SQLite cache.
+*   **Search**: Uses SQLite `FTS5` for high-performance global search.
 *   **UI**: `ColumnNavigator` (src/twg/ui/widgets) implements the Miller Column navigation.
-*   **Async**: Heavy operations (like loading large files) are non-blocking.
+*   **Async**: Heavy operations (loading, searching) run in background threads.
 
 ### Project Structure
 
 ```text
 src/twg
-├── core/           # Data models (TwigModel, Node) and utilities (cleaner)
-├── adapters/       # File ingestion logic
+├── core/           # Data models (SQLiteModel) and database logic (DBManager)
+├── adapters/       # File ingestion logic (SQLiteLoader)
 └── ui/
     ├── app.py      # Main Entry Point
     ├── widgets/    # Reusable Components (Navigator, Inspector)
