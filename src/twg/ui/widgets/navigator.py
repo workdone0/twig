@@ -93,6 +93,7 @@ class Column(Vertical):
             # Respect the initial requested selection
             target = self.initial_select_index if self.initial_select_index < opt_list.option_count else 0
             opt_list.highlighted = target
+            opt_list.scroll_to_highlight()
 
     def on_option_list_option_highlighted(self, event: OptionList.OptionHighlighted) -> None:
         has_focus = self.query_one(TwigOptionList).has_focus
@@ -170,6 +171,7 @@ class ColumnNavigator(HorizontalScroll):
         self.model = model
         self._nav_id = 0 # To handle cancellation of jump/expand tasks
         self._pending_target_node_id: Optional[uuid.UUID] = None
+        self._is_expanding = False
         super().__init__()
 
     def compose(self) -> ComposeResult:
@@ -180,7 +182,7 @@ class ColumnNavigator(HorizontalScroll):
     def __arrow_up(self) -> None:
         pass # Optional hook override
 
-    async def _expand_node(self, column_index: int, node_id: uuid.UUID, initial_select_index: int = 0) -> None:
+    async def _expand_node(self, column_index: int, node_id: uuid.UUID, initial_select_index: int = 0, animate: bool = True) -> None:
         """Helper to expand a node into a new column with a specific selection."""
         next_col_index = column_index + 1
         existing_next_col = None
@@ -208,7 +210,10 @@ class ColumnNavigator(HorizontalScroll):
             new_col = Column(self.model, node.id, next_col_index, initial_select_index=initial_select_index)
             await self.mount(new_col)
             
-            self.call_after_refresh(self.scroll_to_widget, new_col, animate=True)
+            if animate:
+                self.call_after_refresh(self.scroll_to_widget, new_col, animate=True)
+            else:
+                self.scroll_to_widget(new_col, animate=False)
 
         self.post_message(self.NodeSelected(node_id))
 
@@ -221,63 +226,69 @@ class ColumnNavigator(HorizontalScroll):
         self._nav_id += 1
         current_id = self._nav_id
         self._pending_target_node_id = node_id
+        self._is_expanding = True
         
-        node = self.model.get_node(node_id)
-        if not node: return
+        try:
+            node = self.model.get_node(node_id)
+            if not node: return
+            
+            lineage = []
+            curr = node
+            while curr:
+                lineage.append(curr)
+                curr = self.model.get_node(curr.parent) if curr.parent else None
+            lineage.reverse()
         
-        lineage = []
-        curr = node
-        while curr:
-            lineage.append(curr)
-            curr = self.model.get_node(curr.parent) if curr.parent else None
-        lineage.reverse()
-        
-        for i in range(len(lineage) - 1):
-             if self._nav_id != current_id:
-                 return
+            for i in range(len(lineage) - 1):
+                 if self._nav_id != current_id:
+                     return
 
-             current_node = lineage[i]
-             next_node = lineage[i+1] # The one selected in Col i
-             
-             try:
-                 children = self.model.get_children(current_node.id)
+                 current_node = lineage[i]
+                 next_node = lineage[i+1] # The one selected in Col i
                  
-                 select_idx = -1
-                 for idx, child in enumerate(children):
-                     if child.id == next_node.id:
-                         select_idx = idx
-                         break
-                 
-                 if select_idx != -1:
-                     grandchild_idx = 0
-                     if i + 2 < len(lineage):
-                         grandchild = lineage[i+2]
-                         grand_children = self.model.get_children(next_node.id)
-                         for gc_idx, gc in enumerate(grand_children):
-                             if gc.id == grandchild.id:
-                                 grandchild_idx = gc_idx
-                                 break
+                 try:
+                     children = self.model.get_children(current_node.id)
                      
-                     col_widget = None
-                     for child in self.children:
-                         if isinstance(child, Column) and child.index == i:
-                             col_widget = child
+                     select_idx = -1
+                     for idx, child in enumerate(children):
+                         if child.id == next_node.id:
+                             select_idx = idx
                              break
                      
-                     if col_widget:
-                         if not col_widget.query(TwigOptionList):
-                             continue
+                     if select_idx != -1:
+                         grandchild_idx = 0
+                         if i + 2 < len(lineage):
+                             grandchild = lineage[i+2]
+                             grand_children = self.model.get_children(next_node.id)
+                             for gc_idx, gc in enumerate(grand_children):
+                                 if gc.id == grandchild.id:
+                                     grandchild_idx = gc_idx
+                                     break
+                         
+                         col_widget = None
+                         for child in self.children:
+                             if isinstance(child, Column) and child.index == i:
+                                 col_widget = child
+                                 break
+                         
+                         if col_widget:
+                             if not col_widget.query(TwigOptionList):
+                                 continue
+                                 
+                             opt_list = col_widget.query_one(TwigOptionList)
+                             opt_list.highlighted = select_idx
+                             opt_list.scroll_to_highlight()
+                             self.scroll_to_widget(col_widget, animate=False)
                              
-                         opt_list = col_widget.query_one(TwigOptionList)
-                         opt_list.highlighted = select_idx
-                         self.scroll_to_widget(col_widget, animate=False)
-                         
-                         await self._expand_node(i, next_node.id, initial_select_index=grandchild_idx)
-                         
-             except Exception as e:
-                 self.notify(f"Jump Error: {e}", severity="error")
-                 break
+                             await self._expand_node(i, next_node.id, initial_select_index=grandchild_idx, animate=False)
+                             
+                 except Exception as e:
+                     self.notify(f"Jump Error: {e}", severity="error")
+                     break
         
+        finally:
+             self._is_expanding = False
+
         if self._nav_id != current_id:
             return
             
@@ -371,6 +382,8 @@ class ColumnNavigator(HorizontalScroll):
 
     async def on_column_highlighted(self, message: Column.Highlighted) -> None:
         """Handles selection within a column."""
+        if self._is_expanding:
+            return
         await self._expand_node(message.column_index, message.node_id, initial_select_index=0)
 
     def on_twig_option_list_move_focus(self, message: TwigOptionList.MoveFocus) -> None:
