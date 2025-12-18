@@ -127,8 +127,7 @@ class TwigApp(App):
         yield Header(show_clock=False)
         
         with Container(id="main-content"):
-            yield Center(Middle(LoadingIndicator()))
-            yield Center(Middle(Label(f"Loading {os.path.basename(self.file_path)}...")))
+            yield LoadingIndicator()
         
         yield StatusBar(self.file_path, id="status-bar")
         yield Footer()
