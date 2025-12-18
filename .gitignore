@@ -21,7 +21,7 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
-
+.astro/
 # Virtual Environments
 .env
 .venv
@@ -30,7 +30,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
-
+node_modules/
 # IDEs
 .idea/
 .vscode/
