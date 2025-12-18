@@ -1,0 +1,118 @@
+---
+import '../global.css';
+
+interface Props {
+	title: string;
+	description?: string;
+}
+
+const { title, description = "Inspect. Navigate. Understand." } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="viewport" content="width=device-width" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="generator" content={Astro.generator} />
+        <meta name="description" content={description} />
+		<title>{title}</title>
+
+        <script is:inline>
+            // Minimal theme loader
+            const theme = (() => {
+                if (typeof localStorage !== 'undefined' && localStorage.getItem('theme')) {
+                    return localStorage.getItem('theme');
+                }
+                return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+            })();
+            document.documentElement.setAttribute('data-theme', theme);
+        </script>
+        
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+	</head>
+	<body>
+        <div class="container">
+            <header>
+                <div class="logo">
+                     <a href="/">
+                        <img src="/asset/logo.png" alt="Twig" height="42" />
+                     </a>
+                </div>
+                <nav>
+                    <a href="/guide" class="nav-link">Guide</a>
+                    <a href="https://github.com/workdone0/twig" class="nav-link">GitHub</a>
+                    <button id="theme-toggle" class="theme-btn" aria-label="Toggle Theme">
+                        <span class="icon sun">Light</span>
+                        <span class="icon moon">Dark</span>
+                    </button>
+                </nav>
+            </header>
+
+            <slot />
+
+            <footer>
+                <div class="footer-content">
+                    <div class="col">
+                        <strong>Twig</strong>
+                        <p>The modern, terminal-based data explorer.</p>
+                        <p style="margin-top: 0.5rem; font-size: 0.8rem; opacity: 0.6;">
+                            Created by <a href="https://workdone0.github.io" target="_blank" style="text-decoration: underline;">Shubham</a>
+                        </p>
+                    </div>
+                </div>
+            </footer>
+        </div>
+
+        <script>
+            const toggle = document.getElementById("theme-toggle");
+            toggle?.addEventListener("click", () => {
+                const current = document.documentElement.getAttribute("data-theme");
+                const next = current === "light" ? "dark" : "light";
+                document.documentElement.setAttribute("data-theme", next);
+                localStorage.setItem("theme", next);
+            });
+        </script>
+	</body>
+</html>
+
+<style>
+    header {
+        height: 100px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        border-bottom: 1px solid var(--border-color);
+        margin-bottom: 4rem;
+    }
+    
+    nav {
+        display: flex;
+        gap: 2rem;
+        align-items: center;
+    }
+
+    .nav-link {
+        font-family: var(--font-mono);
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+    }
+    .nav-link:hover { color: var(--text-primary); }
+
+    .theme-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        padding: 0;
+        font-family: var(--font-mono);
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+    }
+    .theme-btn:hover { color: var(--text-primary); }
+
+    html[data-theme="light"] .sun { display: none; }
+    html[data-theme="dark"] .moon { display: none; }
+</style>

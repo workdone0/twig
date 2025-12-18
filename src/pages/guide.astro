@@ -1,0 +1,436 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Documentation | Twig">
+    <div class="docs-layout">
+        <aside class="sidebar">
+            <div class="toc-sticky">
+                <h4>Contents</h4>
+                <ul>
+                    <li><a href="#introduction">Introduction</a></li>
+                    <li><a href="#installation">Installation</a></li>
+                    <li><a href="#core-workflow">Core Workflow</a></li>
+                    <li><a href="#cli-reference">CLI Reference</a></li>
+                    <li><a href="#keyboard-shortcuts">Keyboard Shortcuts</a></li>
+                    <li><a href="#configuration">Configuration</a></li>
+                    <li><a href="#troubleshooting">Troubleshooting</a></li>
+                </ul>
+            </div>
+        </aside>
+
+        <article class="content">
+            <div class="fade-in-up">
+                <section id="introduction">
+                    <h1>Documentation</h1>
+                    <p class="lead">Twig is a high-performance, terminal-based data explorer. It bridges the gap between simple text viewers (like <code>less</code>) and full-blown IDEs.</p>
+                    <p>Designed for developers who work with large datasets, logs, or complex configuration files, Twig parses JSON into a navigable tree structure, allowing for rapid inspection without ever leaving the terminal.</p>
+                </section>
+            </div>
+
+            <div class="fade-in-up" style="animation-delay: 0.1s;">
+                <section id="installation">
+                    <h2>Installation</h2>
+                    <p>Twig is a Python package available via PyPI. To keep your system clean, we strongly recommend installing it with <strong>pipx</strong>, which isolates dependencies.</p>
+                    
+                    <div class="code-block">
+                        <pre><code>pipx install twg</code></pre>
+                    </div>
+                    
+                    <p>Alternatively, you can use standard pip:</p>
+                    <div class="code-block">
+                        <pre><code>pip install twg</code></pre>
+                    </div>
+                    
+                    <p><small>Requires Python 3.10+.</small></p>
+                </section>
+            </div>
+
+            <div class="fade-in-up" style="animation-delay: 0.2s;">
+                <section id="core-workflow">
+                    <h2>Core Workflow</h2>
+                    <p>The primary way to use Twig is to pass it a data file. Twig will ingest the file, index it into a local SQLite database, and launch the TUI.</p>
+                    <div class="code-block">
+                        <pre><code>twg data.json</code></pre>
+                    </div>
+                    <p><small>Note: You can use command <code>twg</code> or the alias <code>twig</code> interchangeably.</small></p>
+                </section>
+            </div>
+
+            <div class="fade-in-up" style="animation-delay: 0.3s;">
+                <section id="cli-reference">
+                    <h2>CLI Reference</h2>
+                    <p>The <code>twg</code> command supports several flags for automation and quick fixes.</p>
+
+                    <h3><code>--fix</code></h3>
+                    <p>Attempts to automatically repair malformed JSON. This handles trailing commas, missing quotes, and sanitizes <code>NaN</code>/<code>Infinity</code> values often found in Python logs.</p>
+                    <div class="code-block">
+                        <pre><code>twg --fix broken.json</code></pre>
+                    </div>
+                    <p>To save to a new file:</p>
+                    <div class="code-block">
+                        <pre><code>twg --fix broken.json -o clean.json</code></pre>
+                    </div>
+
+                    <h3><code>--print</code> / <code>-p</code></h3>
+                    <p>Pretty-prints the JSON file to stdout with syntax highlighting. Useful for quick verification or piping to other tools.</p>
+                    <div class="code-block">
+                        <pre><code>twg -p --indent 4 data.json -o formatted.json</code></pre>
+                    </div>
+
+                    <h3><code>--rebuild-db</code></h3>
+                    <p>Twig caches parsed files in a local SQLite database (`~/.twig/cache.db`) for instant re-opening. Use this flag to force a fresh ingestion.</p>
+                    <div class="code-block">
+                        <pre><code>twg --rebuild-db fresh_data.json</code></pre>
+                    </div>
+                    
+                    <h3><code>--version</code> / <code>-v</code></h3>
+                    <p>Display the current installed version of Twig.</p>
+                </section>
+            </div>
+
+            <div class="fade-in-up" style="animation-delay: 0.4s;">
+                <section id="keyboard-shortcuts">
+                    <h2>Keyboard Shortcuts</h2>
+                    <p>Twig is designed for keyboard-centric workflows. It supports both standard Arrow keys and Vim bindings.</p>
+                    
+                    <div class="table-wrapper">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Context</th>
+                                    <th>Action</th>
+                                    <th>Key</th>
+                                    <th>Vim Alternate</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td><strong>Navigation</strong></td>
+                                    <td>Move Selection Up</td>
+                                    <td><code>Up</code></td>
+                                    <td><code>k</code></td>
+                                </tr>
+                                <tr>
+                                    <td></td>
+                                    <td>Move Selection Down</td>
+                                    <td><code>Down</code></td>
+                                    <td><code>j</code></td>
+                                </tr>
+                                <tr>
+                                    <td></td>
+                                    <td>Expand Node / Enter</td>
+                                    <td><code>Right</code> / <code>Enter</code></td>
+                                    <td><code>l</code></td>
+                                </tr>
+                                <tr>
+                                    <td></td>
+                                    <td>Collapse Node / Back</td>
+                                    <td><code>Left</code> / <code>Backspace</code></td>
+                                    <td><code>h</code></td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Search</strong></td>
+                                    <td>Global Search</td>
+                                    <td><code>/</code></td>
+                                    <td>-</td>
+                                </tr>
+                                <tr>
+                                    <td></td>
+                                    <td>Next Match</td>
+                                    <td><code>n</code></td>
+                                    <td>-</td>
+                                </tr>
+                                <tr>
+                                    <td></td>
+                                    <td>Previous Match</td>
+                                    <td><code>N</code></td>
+                                    <td>-</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Actions</strong></td>
+                                    <td>Smart Jump (Path)</td>
+                                    <td><code>:</code></td>
+                                    <td>-</td>
+                                </tr>
+                                <tr>
+                                    <td></td>
+                                    <td>Copy Path</td>
+                                    <td><code>c</code></td>
+                                    <td>-</td>
+                                </tr>
+                                <tr>
+                                    <td></td>
+                                    <td>Copy Value (JSON)</td>
+                                    <td><code>y</code></td>
+                                    <td>-</td>
+                                </tr>
+                                <tr>
+                                    <td></td>
+                                    <td>Toggle Theme</td>
+                                    <td><code>t</code></td>
+                                    <td>-</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </section>
+            </div>
+
+            <div class="fade-in-up" style="animation-delay: 0.5s;">
+                <section id="configuration">
+                    <h2>Configuration</h2>
+                    <p>Twig is zero-config by default. It automatically persists your settings between sessions.</p>
+                    <ul>
+                        <li><strong>Theme</strong>: Twig supports multiple themes and saves your preference automatically. Cycles themes with the <code>t</code> key.</li>
+                        <li><strong>Cache</strong>: Stored in <code>~/.twig/</code>. Safe to delete at any time.</li>
+                    </ul>
+                </section>
+            </div>
+            
+            <div class="fade-in-up" style="animation-delay: 0.6s;">
+                <section id="troubleshooting">
+                    <h2>Troubleshooting</h2>
+                    <h3>"Database Locked" Error</h3>
+                    <p>If Twig crashes or is killed forcefully, the SQLite lock file might remain. Run with <code style="white-space: nowrap;">--rebuild-db</code> to reset.</p>
+                    
+                    <h3>Invalid JSON</h3>
+                    <p>If Twig refuses to open a file, run <code>twg --fix file.json</code> to see detailed error reports and attempt an automatic repair.</p>
+                </section>
+            </div>
+
+            <div class="fade-in-up" style="animation-delay: 0.7s;">
+                <section id="community">
+                    <h2>Community</h2>
+                    <p>Twig is open source. If you find it useful, please consider starring the project on GitHub to help others discover it.</p>
+                    <a href="https://github.com/workdone0/twig" target="_blank" class="btn btn-secondary">
+                        ★ Star on GitHub
+                    </a>
+                </section>
+            </div>
+        </article>
+    </div>
+</Layout>
+
+<style>
+    .docs-layout {
+        display: grid;
+        grid-template-columns: 240px 1fr;
+        gap: 4rem;
+        margin-top: 4rem;
+        margin-bottom: 8rem;
+    }
+
+    /* Animations */
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .fade-in-up {
+        opacity: 0;
+        animation: fadeInUp 0.5s ease-out forwards;
+    }
+
+    /* Sidebar */
+    .sidebar { position: relative; }
+    .toc-sticky {
+        position: sticky;
+        top: 2rem;
+        border-left: 1px solid var(--border-color);
+        padding-left: 1.5rem;
+    }
+    .toc-sticky h4 {
+        text-transform: uppercase;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--text-primary); /* Higher contrast */
+        letter-spacing: 0.05em;
+        margin-bottom: 1rem;
+    }
+    .toc-sticky ul { list-style: none; padding: 0; }
+    .toc-sticky li { margin-bottom: 0.5rem; }
+    .toc-sticky a {
+        color: var(--text-secondary);
+        font-size: 0.95rem; /* Slightly larger */
+        display: block;
+        transition: color 0.2s;
+    }
+    .toc-sticky a:hover { color: var(--accent-color); }
+
+    /* Content Typography */
+    section { margin-bottom: 5rem; scroll-margin-top: 120px; }
+    
+    h1 { 
+        margin-bottom: 1.5rem; 
+        font-size: 3rem; 
+        letter-spacing: -0.02em;
+    }
+    .lead { 
+        font-size: 1.25rem; 
+        color: var(--text-secondary); 
+        line-height: 1.6; 
+        margin-bottom: 2rem; 
+        max-width: 600px;
+    }
+    
+    h2 { 
+        margin-bottom: 1.5rem; 
+        font-size: 1.75rem;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid var(--border-color);
+        color: var(--text-primary);
+    }
+    h3 { 
+        margin-top: 2.5rem; 
+        margin-bottom: 1rem; 
+        font-family: var(--font-mono); 
+        font-size: 1.1rem; 
+        color: var(--text-primary); 
+    }
+    
+    p { 
+        margin-bottom: 1.25rem; 
+        color: var(--text-secondary); 
+        line-height: 1.7; /* Better readability */
+    }
+    li { margin-bottom: 0.5rem; color: var(--text-secondary); }
+
+    li { margin-bottom: 0.5rem; color: var(--text-secondary); }
+
+    /* Table */
+    .table-wrapper {
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        overflow: hidden;
+        margin-top: 1.5rem;
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 0.95rem; }
+    th, td { 
+        padding: 1rem 1.25rem; 
+        text-align: left; 
+        border-bottom: 1px solid var(--border-color);
+    }
+    th { 
+        background: var(--bg-surface); 
+        color: var(--text-primary); 
+        font-weight: 600; 
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    tr:last-child td { border-bottom: none; }
+    td code { 
+        background: var(--bg-secondary); /* Fix: Use variable */
+        border: 1px solid var(--border-color);
+        color: var(--text-primary);
+        padding: 2px 6px; 
+        border-radius: 4px; 
+    }
+
+    @media (max-width: 900px) {
+        .docs-layout { grid-template-columns: 1fr; }
+        .sidebar { display: none; }
+    }
+</style>
+
+<!-- Global Styles for Dynamic Elements -->
+<style is:global>
+    /* Code Blocks - Always Dark Theme for consistency */
+    .code-block {
+        background: #090909;
+        border: 1px solid var(--border-color);
+        border-radius: 6px;
+        margin: 1.5rem 0;
+        position: relative;
+    }
+    
+    /* Reset global styles to prevent nesting/double borders */
+    .code-block pre {
+        margin: 0;
+        background: transparent !important;
+        border: none !important;
+        padding: 1.25rem;
+        overflow-x: auto;
+        white-space: pre;
+    }
+    
+    .code-block code {
+        background: transparent !important;
+        border: none !important;
+        color: #e6e6e6 !important; /* Force light text in dark block */
+        font-family: var(--font-mono);
+        font-size: 0.9em;
+        padding: 0 !important;
+    }
+
+    /* Copy Button */
+    .copy-btn {
+        position: absolute;
+        top: 0.5rem;
+        right: 0.5rem;
+        background: rgba(255,255,255,0.1);
+        border: 1px solid transparent;
+        color: #aaa;
+        border-radius: 4px;
+        padding: 4px 8px;
+        font-size: 0.75rem;
+        font-family: 'JetBrains Mono', monospace;
+        cursor: pointer;
+        opacity: 0; 
+        transition: all 0.2s;
+        z-index: 10;
+    }
+    /* Show on hover OR focus */
+    .code-block:hover .copy-btn, .copy-btn:focus { opacity: 1; }
+    
+    .copy-btn:hover { 
+        background: #333; 
+        color: #fff; 
+        border-color: #555;
+    }
+    .copy-btn.copied { 
+        color: #4d4; 
+        border-color: #4d4;
+    }
+    
+    /* Header Fixes */
+    h3 code {
+        font-size: 1.1em;
+        background: var(--bg-secondary) !important; /* Use theme var */
+        color: var(--accent-color) !important; /* Visible in both modes */
+        padding: 0.1em 0.3em !important;
+        border: 1px solid var(--border-color) !important;
+        border-radius: 4px;
+        font-weight: 500;
+    }
+</style>
+
+<script>
+    // Add copy buttons to all code blocks
+    document.querySelectorAll('.code-block').forEach(block => {
+        // Prevent duplicate buttons if script re-runs
+        if (block.querySelector('.copy-btn')) return;
+
+        const btn = document.createElement('button');
+        btn.className = 'copy-btn';
+        btn.textContent = 'Copy';
+        
+        btn.addEventListener('click', async () => {
+            const code = block.querySelector('code')?.innerText || '';
+            await navigator.clipboard.writeText(code.trim());
+            
+            // Feedback
+            const originalText = btn.textContent;
+            btn.textContent = 'Copied!';
+            btn.classList.add('copied');
+            
+            setTimeout(() => {
+                btn.textContent = originalText;
+                btn.classList.remove('copied');
+            }, 2000);
+        });
+        
+        block.appendChild(btn);
+    });
+</script>

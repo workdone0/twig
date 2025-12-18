@@ -1,0 +1,227 @@
+---
+import Layout from '../layouts/Layout.astro';
+---
+
+<Layout title="Twig">
+    <main>
+        <section class="hero">
+            <h1 class="typing-header">
+                <span class="typing-words"></span><span class="cursor">|</span>
+            </h1>
+            <p class="tagline">The modern, terminal-based data explorer for developers who value speed and privacy.</p>
+            
+            <div class="install-block">
+                <span class="cmd">$ pipx install twg</span>
+                <button class="copy-btn" id="hero-copy-btn">Copy</button>
+            </div>
+        </section>
+
+        <section class="demo">
+             <div class="terminal-frame">
+                <!-- Mac-style dots -->
+                <div class="frame-header">
+                    <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+                    <span class="title">usr — twig — 120x40</span>
+                </div>
+                <!-- Using raw GitHub URL to ensure it loads without local assets -->
+                <img src="https://raw.githubusercontent.com/workdone0/twig/master/asset/demo.gif" alt="Twig Demo" />
+             </div>
+        </section>
+
+        <section class="grid-layout">
+             <div class="feature">
+                <h3>Instant Performance</h3>
+                <p>Built on a streaming SQLite backend, Twig opens gigabyte-sized files instantly. No loading spinners, no lag.</p>
+             </div>
+             <div class="feature">
+                <h3>Privacy by Default</h3>
+                <p>Your data never leaves your machine. Twig runs 100% locally—safe for production logs, PII, and sensitive configurations.</p>
+             </div>
+             <div class="feature">
+                <h3>Fluid Navigation</h3>
+                <p>Navigate deep hierarchies naturally with standard Arrow Keys or Vim bindings. Smart expansion keeps context clear.</p>
+             </div>
+             <div class="feature">
+                 <h3>Deep Search</h3>
+                 <p>Instantly find any key or value with `/`. Uses SQLite FTS5 for sub-millisecond query performance.</p>
+             </div>
+        </section>
+    </main>
+</Layout>
+
+<script>
+    // Hero Typewriter Cycler
+    const words = ["Inspect.", "Navigate.", "Understand."];
+    const element = document.querySelector(".typing-words");
+    const cursor = document.querySelector(".cursor") as HTMLElement;
+    
+    let wordIndex = 0;
+    let charIndex = 0;
+    let isDeleting = false;
+    let typeSpeed = 100;
+    
+    function type() {
+        if (!element) return;
+        
+        const currentWord = words[wordIndex];
+        
+        if (isDeleting) {
+            element.innerHTML = currentWord.substring(0, charIndex - 1);
+            charIndex--;
+            typeSpeed = 50; // Faster deletion
+        } else {
+            element.innerHTML = currentWord.substring(0, charIndex + 1);
+            charIndex++;
+            typeSpeed = 100; // Normal typing
+        }
+        
+        if (!isDeleting && charIndex === currentWord.length) {
+            // Finished typing word
+            isDeleting = true;
+            typeSpeed = 2000; // Pause at end
+        } else if (isDeleting && charIndex === 0) {
+            // Finished deleting
+            isDeleting = false;
+            wordIndex++;
+            // Loop back to start
+            if (wordIndex >= words.length) {
+                wordIndex = 0;
+            }
+            typeSpeed = 500; // Pause before next word
+        }
+        
+        setTimeout(type, typeSpeed);
+    }
+    
+    // Start after load
+    setTimeout(type, 500);
+
+    // Hero Copy Button
+    const heroBtn = document.getElementById('hero-copy-btn');
+    heroBtn?.addEventListener('click', async () => {
+        await navigator.clipboard.writeText('pipx install twg');
+        const original = heroBtn.textContent;
+        heroBtn.textContent = 'Copied!';
+        setTimeout(() => heroBtn.textContent = original, 2000);
+    });
+</script>
+
+<style>
+    .hero {
+        text-align: center;
+        padding: 6rem 0 3rem;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+    
+    .typing-header {
+        font-size: 3.5rem;
+        margin-bottom: 1.5rem;
+        min-height: 1.2em;
+    }
+    
+    .cursor {
+        display: inline-block;
+        width: 3px;
+        height: 0.9em;
+        background-color: var(--accent-color);
+        margin-left: 6px;
+        vertical-align: baseline;
+        animation: solid 1s infinite;
+    }
+    @keyframes blink { 50% { opacity: 0; } }
+    @keyframes solid { 0% { opacity: 1; } 100% { opacity: 1; } }
+
+    .tagline {
+        font-size: 1.25rem;
+        color: var(--text-secondary);
+        max-width: 600px;
+        margin: 0 auto 2.5rem;
+    }
+
+    .install-block {
+        display: inline-flex;
+        align-items: center;
+        background: var(--bg-surface);
+        border: 1px solid var(--border-color);
+        padding: 0.75rem 1.25rem;
+        border-radius: 8px;
+        gap: 1rem;
+        font-family: var(--font-mono);
+        font-size: 0.95rem;
+    }
+    .cmd { color: var(--accent-color); }
+    .copy-btn {
+        background: none;
+        border: none;
+        color: var(--text-secondary);
+        cursor: pointer;
+        padding: 2px 6px;
+        font-size: 0.8rem;
+        border-radius: 4px;
+        transition: all 0.2s;
+    }
+    .copy-btn:hover { background: var(--border-color); color: var(--text-primary); }
+
+    /* Terminal Demo - High Fidelity */
+    .demo {
+        margin: 4rem 0;
+        opacity: 0;
+        animation: fadeInUp 0.8s ease-out forwards;
+        animation-delay: 0.2s;
+    }
+    .terminal-frame {
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        overflow: hidden;
+        background: #111; /* Always dark for terminal */
+        box-shadow: 0 30px 60px rgba(0,0,0,0.3);
+        transition: transform 0.4s ease, box-shadow 0.4s ease;
+    }
+    .terminal-frame:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 40px 80px rgba(0,0,0,0.4);
+    }
+
+    .frame-header {
+        background: #1a1a1a;
+        padding: 10px 16px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        border-bottom: 1px solid #333;
+    }
+    .frame-header .title {
+        margin-left: auto;
+        color: #666;
+        font-family: var(--font-mono);
+        font-size: 0.8rem;
+    }
+    .dot { width: 10px; height: 10px; background: #333; border-radius: 50%; } /* Muted dots */
+    img { display: block; width: 100%; opacity: 0.95; }
+
+    /* Minimalist Grid */
+    .grid-layout {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 4rem 2rem;
+        margin-top: 6rem;
+    }
+    
+    .feature {
+        opacity: 0;
+        animation: fadeInUp 0.8s ease-out forwards;
+    }
+    .feature:nth-child(1) { animation-delay: 0.4s; }
+    .feature:nth-child(2) { animation-delay: 0.5s; }
+    .feature:nth-child(3) { animation-delay: 0.6s; }
+    .feature:nth-child(4) { animation-delay: 0.7s; }
+    
+    .feature h3 { font-family: var(--font-mono); font-size: 1.1rem; margin-bottom: 1rem; color: var(--text-primary); }
+    .feature p { margin: 0; }
+
+    @keyframes fadeInUp {
+        from { opacity: 0; transform: translateY(20px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>

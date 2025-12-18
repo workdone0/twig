@@ -1,0 +1,29 @@
+# build output
+dist/
+# generated types
+.astro/
+
+# dependencies
+node_modules/
+
+# logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+
+# environment variables
+.env
+.env.production
+
+# jetbrains setting folder
+.idea/
+.vscode/
+
+# OS metadata
+.DS_Store
+Thumbs.db
+
+# Large media (unused locally)
+asset/demo.gif
