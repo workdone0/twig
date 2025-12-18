@@ -4,39 +4,38 @@
 
 # Twig 🌿
 
-[![PyPI version](https://img.shields.io/pypi/v/twg.svg)](https://pypi.org/project/twg/)
-[![Supported Python versions](https://img.shields.io/pypi/pyversions/twg.svg)](https://pypi.org/project/twg/)
+[![PyPI version](https://img.shields.io/pypi/v/twg.svg?style=flat-square&color=2ecc71)](https://pypi.org/project/twg/)
+[![Supported Python versions](https://img.shields.io/pypi/pyversions/twg.svg?style=flat-square)](https://pypi.org/project/twg/)
 [![Downloads](https://static.pepy.tech/badge/twg)](https://pepy.tech/project/twg)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
 
 > **Inspect. Navigate. Understand.**
 >
-> A modern, terminal-based data explorer.
+> The modern, terminal-based data explorer for developers who value speed and privacy.
 
 ![Twig Demo](asset/demo.gif)
 
 ## Why Twig?
 
-Reading raw data files in the terminal is painful. `cat` gives you a wall of text. `less` is passive. `jq` requires memorizing syntax.
+Data files are getting bigger, but our tools haven't kept up. `cat` floods your screen. `less` feels ancient. `jq` requires learning a new language.
 
-**Twig** solves this by bringing the fluid, hierarchical navigation of **macOS Finder** to your data files. It is a TUI (Terminal User Interface) built for speed, privacy, and usability.
+**Twig** brings the fluid, intuitive navigation of a modern IDE directly to your terminal. It transforms raw JSON into a navigable, searchable, and interactive tree.
 
-### Key Features
+### The Twig Difference
 
-*   **⚡️ Zero-Lag Performance**: Handles gigabyte-sized files effortlessly using a streaming SQLite backend.
-*   **🔒 Privacy First**: Your data never leaves your machine. Everything runs locally.
-*   **🎹 Vim-like Navigation**: Traverse deep structures naturally with arrow keys or Vim bindings.
-*   **🛠️ Developer Essentials**:
-    *   **Copy Source**: Press `y` to copy the raw JSON of any selected node.
-    *   **Copy Path**: Press `c` to copy the `jq`-compatible path (e.g., `.users[0].address`).
-    *   **Persistent Config**: Themes and settings are saved across sessions.
-*   **🎨 Beautiful UI**: Clean, modern interface with multiple themes (Catppuccin, Dracula, etc.).
-*   **🔍 Deep Search**: Instantly find keys or values anywhere in the tree with `/`.
+*   **⚡️ High Performance**: Built on a streaming SQLite backend, Twig handles large files with ease.
+*   **🔒 Privacy by Default**: Your data never leaves your machine. Twig runs 100% locally—safe for production logs, PII, and sensitive configurations.
+*   **🎹 Fluid Navigation**: Navigate deep hierarchies naturally using standard **Arrow Keys**. Smart expansion keeps your context clear.
+*   **🧠 Developer Workflow**:
+    *   **Deep Search**: Instantly find any key or value with `/`.
+    *   **Smart Jump**: Jump directly to a path (e.g., `.users[0].address`).
+    *   **Clipboard Ready**: One-key copy for paths (`c`) or raw JSON (`y`).
+*   **🎨 Premium UI**: A polished TUI with syntax highlighting, multiple themes (Catppuccin, Dracula), and a distraction-free design.
 
 ## Installation
 
 ### Using pipx (Recommended)
-`pipx` installs Twig in an isolated environment, keeping your system clean.
+Install in an isolated environment to keep your system clean:
 ```bash
 pipx install twg
 ```
@@ -46,39 +45,22 @@ pipx install twg
 pip install twg
 ```
 
-## Usage
+## Quick Start
 
-### Interactive Mode (TUI)
-Simply pass a file to start exploring:
-```bash
-twig data.json
-```
-
-Or use the short alias:
+**Explore a file:**
 ```bash
 twg data.json
 ```
 
-### CLI Utils
-Twig also includes powerful CLI tools for quick fixes and formatting.
-
-**Repair Broken JSON**
-Automatically fix common errors like trailing commas, unquoted keys, and even **sanitize `NaN` / `Infinity`** values (common in Python dumps):
+**Fix broken JSON:**
+Automatically repair common errors (trailing commas, unquoted keys) or sanitize `NaN`/`Infinity` values:
 ```bash
-# Print fixed JSON to stdout
-twg --fix bad.json
-
-# Save to a new file (or overwrite in-place)
 twg --fix bad.json -o clean.json
 ```
 
-**Pretty Print**
-Output formatted, syntax-highlighted JSON:
+**Pretty Print:**
 ```bash
-twig -p data.json
-
-# Custom indentation
-twig -p --indent 4 data.json
+twg -p large.json
 ```
 
 ## Cheat Sheet
@@ -86,24 +68,20 @@ twig -p --indent 4 data.json
 | Key | Action |
 | :--- | :--- |
 | **Navigation** | |
-| `Arrow Keys` / `h,j,k,l` | Navigate Tree |
-| `:` | **Smart Jump** to path |
-| `/` | **Search** |
-| `n` / `N` | Next / Prev Search Match |
+| `Arrow Keys` / `h,j,k,l` | **Traverse** Tree |
+| `/` | **Search** (Global) |
+| `n` / `N` | **Next / Prev** Match |
+| `:` | **Jump** to path |
 | **Actions** | |
-| `c` | **Copy Path** (`.key.path`) |
-| `y` | **Copy Source** (Raw JSON) |
-| `t` | Toggle Theme |
-| `?` | Show Help Dashboard |
-| `q` | Quit |
+| `c` | **Copy Path** |
+| `y` | **Copy Value** (JSON) |
+| `t` | **Toggle Theme** |
+| `?` | **Help** |
+| `q` | **Quit** |
 
-## FAQ
+## Contributing
 
-**Why is the package named `twg`?**
-The name `twig` was taken on PyPI. Install as `twg`, but the command is `twig` (or `twg`).
-
-**Can it handle large files?**
-Yes. Twig streams data into a local SQLite cache. It opens gigabyte-sized files instantly after the initial index.
+We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for architecture details and setup instructions.
 
 ## Star History
 

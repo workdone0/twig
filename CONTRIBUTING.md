@@ -1,70 +1,57 @@
 # Contributing to Twig
 
-Thank you for your interest in contributing to Twig. We welcome contributions from the community to help make this the best terminal-based JSON explorer.
+Thank you for your interest in contributing to Twig! We are building the best terminal-based data explorer, and we'd love your help.
 
-## Project Overview
+## Technical Architecture
 
-**Twig** is a modern, terminal-based data explorer. It is designed to navigate, inspect, and understand large, complex datasets directly from your terminal, bridging the gap between simple text viewers and heavy IDEs.
+Twig is built on top of the **Textual** framework (for TUI primitives) and uses a **Streaming SQLite** backend for performance.
 
-### Architecture Guide
-Twig is built on the **Textual** framework.
+### Core Concepts
 
-*   **Core**: `SQLiteModel` (src/twg/core) acts as the bridge to the SQLite database.
-*   **Storage**: Data is streamed via `ijson` into a local SQLite cache.
-*   **Search**: Uses SQLite `FTS5` for high-performance global search.
-*   **UI**: `ColumnNavigator` (src/twg/ui/widgets) implements the Miller Column navigation.
-*   **Async**: Heavy operations (loading, searching) run in background threads.
+1.  **Streaming Ingestion**: Twig does *not* load the entire JSON into RAM. Instead, it uses `ijson` to stream the file and populate a local SQLite cache (`src/twg/adapters/sqlite_loader.py`).
+2.  **Miller Columns**: The visualization is a hierarchical column view (`src/twg/ui/widgets/navigator.py`). Logic for expanding/collapsing nodes is handled here.
+3.  **FTS Search**: Global search uses SQLite's **FTS5** full-text search engine for instant results (`src/twg/core/model.py`), decoupling search complexity from Python.
 
 ### Project Structure
 
 ```text
 src/twg
-├── core/           # Data models (SQLiteModel) and database logic (DBManager)
-├── adapters/       # File ingestion logic (SQLiteLoader)
+├── core/           # Data models, DB schema, and FTS logic
+├── adapters/       # Ingestion (JSON -> SQLite)
 └── ui/
-    ├── app.py      # Main Entry Point
-    ├── widgets/    # Reusable Components (Navigator, Inspector)
-    └── screens/    # Full-screen views (Help, Loading)
+    ├── app.py      # Application entry point & layout
+    ├── widgets/    # Reusable UI components (Navigator, Inspector)
+    └── screens/    # Modals (Help, Search, Jump)
 ```
 
 ## Development Setup
 
-### Prerequisites
-- Python 3.10+
-- `uv` (recommended) or `pip`
+We recommend using `uv` for a fast, modern workflow, but standard `pip` works too.
 
-### Installation
+### 1. Clone & Setup
+```bash
+git clone https://github.com/workdone0/twig.git
+cd twig
 
-1.  **Clone the repository**
-    ```bash
-    git clone https://github.com/workdone0/twig.git
-    cd twig
-    ```
+# Install in editable mode with dev dependencies
+uv sync
+# or
+pip install -e ".[dev]"
+```
 
-2.  **Install dependencies**
-    ```bash
-    uv sync
-    # or
-    pip install -e ".[dev]"
-    ```
+### 2. Run Locally
+```bash
+# Run against a sample file
+uv run twg samples/large_data.json
+```
 
-3.  **Run the application**
-    ```bash
-    uv run twg samples/cloud_infrastructure.json
-    ```
+### 3. Run Tests
+(Coming Soon)
 
-## Contribution Guidelines
+## Submission Guidelines
 
-### Reporting Bugs
-- Open a new issue with a clear title.
-- Include a minimal reproduction case (e.g., a small JSON snippet).
-
-### Pull Requests
-1.  **UI/Logic Separation**: Keep business logic out of UI components where possible.
-2.  **Type Safety**: All new code must use Python type hints.
-3.  **Linting**: We use `ruff` for code style. Ensure your code passes before submitting.
-
-### Code Standards
-*   **Language**: Python 3.10+
-*   **Style**: strict `ruff` configuration.
+*   **Logic Separation**: Keep business logic (search, parsing) in `core/`, and visual logic in `ui/`.
+*   **Type Safety**: We enforce strict type hints.
+*   **Linting**: Run `ruff check .` before submitting.
+*   **PR Title**: Use conventional commits (e.g., `feat: add graph view`, `fix: search crash`).
 
