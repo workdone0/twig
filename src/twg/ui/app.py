@@ -250,7 +250,7 @@ class TwigApp(App):
 
 def run():
     parser = argparse.ArgumentParser(
-        description="Twig: Inspect. Navigate. Understand. A terminal-based data explorer."
+        description="Twig: Inspect. Navigate. Understand. A modern, terminal-based data explorer."
     )
     parser.add_argument(
         "file",

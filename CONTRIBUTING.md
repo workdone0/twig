@@ -4,7 +4,7 @@ Thank you for your interest in contributing to Twig. We welcome contributions fr
 
 ## Project Overview
 
-**Twig** is a terminal-based environment (TUI) for exploring and understanding structured data files. It aims to bridge the gap between simple text viewers (`less`, `cat`) and complex IDEs.
+**Twig** is a modern, terminal-based data explorer. It is designed to navigate, inspect, and understand large, complex datasets directly from your terminal, bridging the gap between simple text viewers and heavy IDEs.
 
 ### Architecture Guide
 Twig is built on the **Textual** framework.
