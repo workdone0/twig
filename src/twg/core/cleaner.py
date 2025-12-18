@@ -20,6 +20,23 @@ def repair_json(content: str) -> str:
     try:
         # Load the repaired object
         obj = json_repair.repair_json(content, return_objects=True)
+        
+        # Sanitize object (replace NaN/Infinity with None)
+        def sanitize(o):
+            if isinstance(o, float):
+                if o != o: # NaN
+                    return None
+                if o == float('inf') or o == float('-inf'):
+                    return None
+                return o
+            elif isinstance(o, dict):
+                return {k: sanitize(v) for k, v in o.items()}
+            elif isinstance(o, list):
+                return [sanitize(v) for v in o]
+            return o
+            
+        obj = sanitize(obj)
+        
         # Dump it back nicely formatted
         return json.dumps(obj, indent=2)
     except Exception as e:

@@ -88,7 +88,16 @@ class TwigApp(App):
     def on_file_load_error(self, error_message: str) -> None:
         """Called when file loading fails."""
         # Exit the app and pass the error message back to the caller
-        self.exit(error_message)
+        
+        # Colorized hint using Rich markup (Textual apps support this in stderr usually)
+        # We'll rely on the fact that result is printed to stderr by run()
+        
+        hint = (
+            f"\n\n[bold yellow]Tip:[/bold yellow] If the file contains invalid JSON, try running:\n"
+            f"  [green]twg --fix {self.file_path} -o {self.file_path}[/green]\n"
+            f"[dim](This will repair and overwrite the file in place)[/dim]"
+        )
+        self.exit(f"[bold red]Error:[/bold red] {error_message}{hint}")
 
     def action_toggle_theme(self) -> None:
         """Cycles through all available themes and notifies the user."""
@@ -257,9 +266,8 @@ def run():
         help="The JSON/data file to explore."
     )
     parser.add_argument(
-        "output",
-        nargs="?",
-        help="Optional output file. For --fix, it saves the repaired JSON. For --print, it saves the formatted JSON. If omitted, prints to stdout."
+        "-o", "--output",
+        help="Output file. For --fix, it saves the repaired JSON. For --print, it saves the formatted JSON. If omitted, prints to stdout."
     )
     
     try:
@@ -314,7 +322,9 @@ def run():
         result = app.run()
         
         if result is not None and isinstance(result, str):
-            print(f"Error: {result}", file=sys.stderr)
+            from rich.console import Console
+            console = Console(stderr=True)
+            console.print(result)
             sys.exit(1)
         return
 

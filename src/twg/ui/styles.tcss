@@ -162,6 +162,7 @@ StatusBar {
 
 #sb-file {
     width: auto;
+    max-width: 30%;
     color: $primary;
     margin-right: 2;
 }
