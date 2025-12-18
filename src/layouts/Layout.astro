@@ -38,12 +38,12 @@ const { title, description = "Inspect. Navigate. Understand." } = Astro.props;
         <div class="container">
             <header>
                 <div class="logo">
-                     <a href="/">
+                     <a href={import.meta.env.BASE_URL}>
                         <img src="https://raw.githubusercontent.com/workdone0/twig/master/asset/logo.png" alt="Twig" height="42" />
                      </a>
                 </div>
                 <nav>
-                    <a href="/guide" class="nav-link">Guide</a>
+                    <a href={`${import.meta.env.BASE_URL}/guide`} class="nav-link">Guide</a>
                     <a href="https://github.com/workdone0/twig" class="nav-link">GitHub</a>
                     <button id="theme-toggle" class="theme-btn" aria-label="Toggle Theme">
                         <span class="icon sun">Light</span>
