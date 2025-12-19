@@ -5,7 +5,6 @@ import sitemap from "@astrojs/sitemap";
 
 // https://astro.build/config
 export default defineConfig({
-  site: "https://workdone0.github.io",
-  base: "/twig",
+  site: "https://twig.wtf",
   integrations: [sitemap()],
 });
