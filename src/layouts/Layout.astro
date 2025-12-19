@@ -19,6 +19,21 @@ const { title, description = "Inspect. Navigate. Understand." } = Astro.props;
         <meta name="description" content={description} />
 		<title>{title}</title>
 
+        <!-- SEO & Open Graph -->
+        <link rel="canonical" href={new URL(Astro.url.pathname, Astro.site)} />
+        <meta name="keywords" content="json viewer, yaml viewer, terminal data explorer, tui, sqlite, large file viewer, developer tools, json explorer, yaml explorer" />
+        
+        <meta property="og:type" content="website" />
+        <meta property="og:url" content={Astro.url} />
+        <meta property="og:title" content={title} />
+        <meta property="og:description" content={description} />
+        <meta property="og:image" content={new URL("asset/logo.png", Astro.site)} />
+
+        <meta property="twitter:card" content="summary_large_image" />
+        <meta property="twitter:title" content={title} />
+        <meta property="twitter:description" content={description} />
+        <meta property="twitter:image" content={new URL("asset/logo.png", Astro.site)} />
+
         <script is:inline>
             // Minimal theme loader
             const theme = (() => {
