@@ -12,6 +12,14 @@ const { title, description = "Inspect. Navigate. Understand." } = Astro.props;
 <!doctype html>
 <html lang="en">
 	<head>
+        <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-L3F72TB67V"></script>
+        <script is:inline>
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-L3F72TB67V');
+        </script>
 		<meta charset="UTF-8" />
 		<meta name="viewport" content="width=device-width" />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
