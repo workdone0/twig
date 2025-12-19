@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://workdone0.github.io/twig/sitemap-index.xml
