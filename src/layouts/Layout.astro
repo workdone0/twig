@@ -6,7 +6,7 @@ interface Props {
 	description?: string;
 }
 
-const { title, description = "Inspect. Navigate. Understand." } = Astro.props;
+const { title, description = "The modern terminal viewer for JSON & YAML. Inspect, navigate, and search with IDE-like fluidity." } = Astro.props;
 ---
 
 <!doctype html>
@@ -29,7 +29,7 @@ const { title, description = "Inspect. Navigate. Understand." } = Astro.props;
 
         <!-- SEO & Open Graph -->
         <link rel="canonical" href={new URL(Astro.url.pathname, Astro.site)} />
-        <meta name="keywords" content="json viewer, yaml viewer, terminal data explorer, tui, sqlite, large file viewer, developer tools, json explorer, yaml explorer" />
+        <meta name="keywords" content="json viewer, yaml viewer, terminal data explorer, tui, sqlite, large file viewer, developer tools, json explorer, yaml explorer, kubernetes log viewer, api response viewer" />
         
         <meta property="og:type" content="website" />
         <meta property="og:url" content={Astro.url} />
@@ -41,6 +41,30 @@ const { title, description = "Inspect. Navigate. Understand." } = Astro.props;
         <meta property="twitter:title" content={title} />
         <meta property="twitter:description" content={description} />
         <meta property="twitter:image" content={new URL("asset/logo.png", Astro.site)} />
+
+        <!-- Structured Data (JSON-LD) -->
+        <script type="application/ld+json" is:inline>
+            {
+              "@context": "https://schema.org",
+              "@type": "SoftwareApplication",
+              "name": "Twig",
+              "operatingSystem": "macOS, Linux, Windows",
+              "applicationCategory": "DeveloperApplication",
+              "offers": {
+                "@type": "Offer",
+                "price": "0",
+                "priceCurrency": "USD"
+              },
+              "description": "A high-performance terminal JSON & YAML viewer. Inspect, navigate, and search massive files interactively.",
+              "url": "https://twig.wtf",
+              "image": "https://twig.wtf/asset/logo.png",
+              "author": {
+                  "@type": "Person",
+                  "name": "Shubham Kumar",
+                  "url": "https://workdone0.dev"
+              }
+            }
+        </script>
 
         <script is:inline>
             // Minimal theme loader
@@ -79,14 +103,24 @@ const { title, description = "Inspect. Navigate. Understand." } = Astro.props;
 
             <footer>
                 <div class="footer-content">
-                    <div class="col">
+                    <div class="col brand">
                         <strong>Twig</strong>
-                        <p>The modern, terminal-based data explorer.</p>
-                        <p style="margin-top: 0.5rem; font-size: 0.8rem; opacity: 0.6;">
-                            Created by <a href="https://workdone0.github.io" target="_blank" style="text-decoration: underline;">Shubham</a>
-                            <span style="margin: 0 0.5rem;">•</span>
-                            <a href="https://buymeacoffee.com/workdone0" target="_blank" style="text-decoration: underline;">Support the project</a>
-                        </p>
+                        <p>The modern terminal UI for JSON & YAML</p>
+                        <p class="copyright">© {new Date().getFullYear()} Shubham Kumar. MIT Licensed.</p>
+                    </div>
+                    
+                    <div class="col links">
+                        <strong>Resources</strong>
+                        <a href="/guide">Documentation</a>
+                        <a href="https://pypi.org/project/twg/" target="_blank">PyPI Package</a>
+                        <a href="https://github.com/workdone0/twig" target="_blank">Source Code</a>
+                    </div>
+                    
+                    <div class="col links">
+                        <strong>Project</strong>
+                        <a href="https://github.com/workdone0/twig/issues" target="_blank">Report an Issue</a>
+                        <a href="https://buymeacoffee.com/workdone0" target="_blank">Support Development</a>
+                        <a href="https://workdone0.dev" target="_blank">Author</a>
                     </div>
                 </div>
             </footer>
@@ -140,4 +174,58 @@ const { title, description = "Inspect. Navigate. Understand." } = Astro.props;
 
     html[data-theme="light"] .sun { display: none; }
     html[data-theme="dark"] .moon { display: none; }
+
+    /* Footer */
+    footer {
+        border-top: 1px solid var(--border-color);
+        margin-top: 8rem;
+        padding: 4rem 0;
+    }
+    .footer-content {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4rem;
+        justify-content: space-between;
+    }
+    .col {
+        display: flex;
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    .col.brand {
+        flex: 2;
+        min-width: 250px;
+    }
+    .col.links {
+        flex: 1;
+        min-width: 150px;
+    }
+    
+    .col strong {
+        color: var(--text-primary);
+        font-family: var(--font-mono);
+        margin-bottom: 0.5rem;
+        display: block;
+    }
+    
+    .col p {
+        margin: 0;
+        font-size: 0.9rem;
+        line-height: 1.6;
+    }
+    .copyright {
+        opacity: 0.5;
+        font-size: 0.8rem !important;
+        margin-top: 1rem !important;
+    }
+    
+    .col a {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        text-decoration: none;
+        transition: color 0.2s;
+    }
+    .col a:hover {
+        color: var(--accent-color);
+    }
 </style>

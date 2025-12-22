@@ -2,31 +2,36 @@
   --font-body: 'Inter', system-ui, -apple-system, blinkmacsystemfont, 'segoe ui', roboto, oxygen, ubuntu, cantarell, 'fira sans', 'droid sans', 'helvetica neue', sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
-  /* Authentic Engineering Theme (High Contrast) */
-  --bg-primary: #050505;
-  --bg-secondary: #0a0a0a;
-  --bg-surface: #111111;
-  --border-color: #333333;
-  --border-focus: #666666;
-  --text-primary: #eeeeee;
-  --text-secondary: #888888;
-  --accent-color: #2ecc71;
+  /* Catppuccin Mocha (Premium Dark Mode) */
+  --bg-primary: #1e1e2e;
+  --bg-secondary: #181825;
+  --bg-surface: #313244;
+  --border-color: #45475a;
+  --border-focus: #585b70;
+  --text-primary: #cdd6f4;
+  --text-secondary: #a6adc8;
+  --accent-color: #a6e3a1;
+  /* Green */
+  --accent-glow: rgba(166, 227, 161, 0.15);
 
-  --grid-color: rgba(255, 255, 255, 0.05);
-  --max-width: 1000px;
-  /* Tighter container */
+  --grid-color: rgba(205, 214, 244, 0.03);
+  --max-width: 1100px;
 }
 
 [data-theme="light"] {
-  --bg-primary: #ffffff;
-  --bg-secondary: #f9fafb;
-  --bg-surface: #f3f4f6;
-  --border-color: #e5e7eb;
-  --border-focus: #9ca3af;
-  --text-primary: #111827;
-  --text-secondary: #6b7280;
-  --accent-color: #16a34a;
-  --grid-color: rgba(0, 0, 0, 0.05);
+  /* Catppuccin Latte Adjusted (Clean White Cards) */
+  --bg-primary: #eff1f5;
+  --bg-secondary: #e6e9ef;
+  --bg-surface: #ffffff;
+  /* Pure white for cards */
+  --border-color: #dce0e8;
+  --border-focus: #acb0be;
+  --text-primary: #4c4f69;
+  --text-secondary: #6c6f85;
+  --accent-color: #40a02b;
+  /* Green */
+  --accent-glow: rgba(64, 160, 43, 0.1);
+  --grid-color: rgba(76, 79, 105, 0.04);
 }
 
 * {

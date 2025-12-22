@@ -28,3 +28,4 @@ Thumbs.db
 # Large media (unused locally)
 asset/demo.gif
 src/twg
+tests

@@ -2,13 +2,13 @@
 import Layout from '../layouts/Layout.astro';
 ---
 
-<Layout title="Twig - High-Performance Terminal Data Explorer">
+<Layout title="Twig - High-Performance Terminal JSON & YAML Viewer">
     <main>
         <section class="hero">
             <h1 class="typing-header">
                 <span class="typing-words"></span><span class="cursor">|</span>
             </h1>
-            <p class="tagline">The modern, terminal-based data explorer for developers who value speed and privacy.</p>
+            <p class="tagline">The modern terminal UI for JSON & YAML</p>
             
             <div class="install-block">
                 <span class="cmd">$ pipx install twg</span>
@@ -24,14 +24,14 @@ import Layout from '../layouts/Layout.astro';
                     <span class="title">usr — twig — 120x40</span>
                 </div>
                 <!-- Using raw GitHub URL to ensure it loads without local assets -->
-                <img src="https://raw.githubusercontent.com/workdone0/twig/master/asset/demo.gif" alt="Twig Demo" />
+                <img src="https://raw.githubusercontent.com/workdone0/twig/master/asset/demo.gif" alt="Twig Demo - JSON and YAML Viewer" />
              </div>
         </section>
 
         <section class="grid-layout">
              <div class="feature">
-                <h3>Instant Performance</h3>
-                <p>Built on a streaming SQLite backend, Twig handles even large files with ease.</p>
+                <h3>Multi-Format Support</h3>
+                <p>Native support for <strong>JSON</strong> and <strong>YAML</strong>. Inspect Kubernetes manifests, cloud logs, and configuration files with ease.</p>
              </div>
              <div class="feature">
                 <h3>Privacy by Default</h3>
@@ -39,12 +39,76 @@ import Layout from '../layouts/Layout.astro';
              </div>
              <div class="feature">
                 <h3>Fluid Navigation</h3>
-                <p>Navigate deep hierarchies naturally with standard Arrow Keys or Vim bindings. Smart expansion keeps context clear.</p>
+                <p>Navigate deep hierarchies naturally with standard Arrow Keys. Smart expansion keeps context clear.</p>
              </div>
              <div class="feature">
                  <h3>Deep Search</h3>
                  <p>Instantly find any key or value with `/`. Uses SQLite FTS5 for sub-millisecond query performance.</p>
              </div>
+        </section>
+
+        <section class="tables-section">
+            <div class="table-container">
+                <h2>Comparison</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Feature</th>
+                            <th>Twig</th>
+                            <th>jq</th>
+                            <th>less</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Interactive Navigation</td>
+                            <td>✅</td>
+                            <td>❌</td>
+                            <td>❌</td>
+                        </tr>
+                        <tr>
+                            <td>Tree View</td>
+                            <td>✅</td>
+                            <td>❌</td>
+                            <td>❌</td>
+                        </tr>
+                        <tr>
+                            <td>Fuzzy Search</td>
+                            <td>✅</td>
+                            <td>❌</td>
+                            <td>✅</td>
+                        </tr>
+                         <tr>
+                            <td>JSON/YAML Support</td>
+                            <td>✅</td>
+                            <td>✅</td>
+                            <td>⚠️</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Redesigned Performance Section: Metrics over Tables -->
+            <div class="metrics-container">
+                <h2>Performance</h2>
+                <div class="metrics-grid">
+                    <div class="metric-card instant">
+                        <div class="metric-icon">⚡️</div>
+                        <div class="metric-value">Instant</div>
+                        <div class="metric-label">&lt; 10MB Files (< 1s)</div>
+                    </div>
+                    <div class="metric-card fast">
+                        <div class="metric-icon">🚀</div>
+                        <div class="metric-value">Fast</div>
+                        <div class="metric-label">50MB Files (~8s)</div>
+                    </div>
+                    <div class="metric-card usable">
+                        <div class="metric-icon">✅</div>
+                        <div class="metric-value">Stable</div>
+                        <div class="metric-label">90MB Files (~17s)</div>
+                    </div>
+                </div>
+            </div>
         </section>
     </main>
 </Layout>
@@ -165,63 +229,197 @@ import Layout from '../layouts/Layout.astro';
 
     /* Terminal Demo - High Fidelity */
     .demo {
-        margin: 4rem 0;
+        margin: 5rem 0;
         opacity: 0;
         animation: fadeInUp 0.8s ease-out forwards;
         animation-delay: 0.2s;
     }
     .terminal-frame {
         border: 1px solid var(--border-color);
-        border-radius: 8px;
+        border-radius: 12px; /* Smoother corners */
         overflow: hidden;
-        background: #111; /* Always dark for terminal */
-        box-shadow: 0 30px 60px rgba(0,0,0,0.3);
+        background: #1e1e2e; /* Catppuccin Base */
+        box-shadow: 
+            0 0 0 1px rgba(0,0,0,0.2),
+            0 20px 50px -10px rgba(0,0,0,0.5);
         transition: transform 0.4s ease, box-shadow 0.4s ease;
     }
     .terminal-frame:hover {
-        transform: translateY(-5px);
-        box-shadow: 0 40px 80px rgba(0,0,0,0.4);
+        transform: translateY(-4px);
+        box-shadow: 
+            0 0 0 1px var(--accent-color),
+            0 30px 60px -15px rgba(0,0,0,0.6);
+        border-color: var(--accent-color);
     }
 
     .frame-header {
-        background: #1a1a1a;
-        padding: 10px 16px;
+        background: #181825; /* Catppuccin Mantle */
+        padding: 12px 16px;
         display: flex;
         align-items: center;
         gap: 8px;
-        border-bottom: 1px solid #333;
+        border-bottom: 1px solid var(--border-color);
     }
     .frame-header .title {
         margin-left: auto;
-        color: #666;
+        color: var(--text-secondary);
         font-family: var(--font-mono);
         font-size: 0.8rem;
+        opacity: 0.8;
     }
-    .dot { width: 10px; height: 10px; background: #333; border-radius: 50%; } /* Muted dots */
-    img { display: block; width: 100%; opacity: 0.95; }
+    /* Mac Buttons */
+    .dot { width: 12px; height: 12px; border-radius: 50%; }
+    .dot:nth-child(1) { background: #ed8796; } /* Red */
+    .dot:nth-child(2) { background: #eed49f; } /* Yellow */
+    .dot:nth-child(3) { background: #a6da95; } /* Green */
+    
+    img { display: block; width: 100%; opacity: 1; }
 
-    /* Minimalist Grid */
+    /* Symmetrical Grid: 2 columns max to prevent orphans */
     .grid-layout {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-        gap: 4rem 2rem;
-        margin-top: 6rem;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        max-width: 900px; /* Constrain width to force 2x2 */
+        margin: 6rem auto;
+        gap: 2rem;
     }
     
     .feature {
         opacity: 0;
         animation: fadeInUp 0.8s ease-out forwards;
+        background: transparent;
+        padding: 1.5rem;
+        border-radius: 12px;
+        border: 1px solid transparent;
+        transition: all 0.3s ease;
+    }
+    .feature:hover {
+        background: var(--bg-surface);
+        border-color: var(--border-color);
+        transform: translateY(-4px);
+        box-shadow: 0 10px 30px -10px rgba(0,0,0,0.1);
     }
     .feature:nth-child(1) { animation-delay: 0.4s; }
     .feature:nth-child(2) { animation-delay: 0.5s; }
     .feature:nth-child(3) { animation-delay: 0.6s; }
     .feature:nth-child(4) { animation-delay: 0.7s; }
     
-    .feature h3 { font-family: var(--font-mono); font-size: 1.1rem; margin-bottom: 1rem; color: var(--text-primary); }
-    .feature p { margin: 0; }
+    .feature h3 { 
+        font-family: var(--font-mono); 
+        font-size: 1.1rem; 
+        margin-bottom: 0.75rem; 
+        color: var(--text-primary); 
+    }
+    .feature h3::before {
+        content: '/ ';
+        color: var(--accent-color);
+        opacity: 0.7;
+    }
+    .feature p { margin: 0; font-size: 0.95rem; }
 
     @keyframes fadeInUp {
         from { opacity: 0; transform: translateY(20px); }
         to { opacity: 1; transform: translateY(0); }
     }
+
+    /* Tables & Metrics Section */
+    .tables-section {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 3rem;
+        justify-content: center;
+        align-items: stretch;
+        margin: 8rem 0;
+    }
+    
+    .table-container, .metrics-container {
+        flex: 1;
+        min-width: 340px;
+        background: var(--bg-surface);
+        padding: 2.5rem;
+        border-radius: 16px;
+        border: 1px solid var(--border-color);
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    }
+
+    .table-container h2, .metrics-container h2 {
+        font-family: var(--font-mono);
+        color: var(--text-primary);
+        font-size: 1.25rem;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    .table-container h2::before, .metrics-container h2::before {
+        content: '#';
+        color: var(--accent-color);
+    }
+
+    /* Metrics Stlyes */
+    .metrics-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        height: calc(100% - 3rem); /* Fill remaining space minus header */
+        justify-content: center;
+    }
+    
+    .metric-card {
+        display: flex;
+        align-items: center;
+        gap: 1.5rem;
+        padding: 1.25rem;
+        background: var(--bg-primary); /* Inset look */
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        transition: transform 0.2s;
+    }
+    .metric-card:hover {
+        transform: scale(1.02);
+        border-color: var(--accent-color);
+    }
+
+    .metric-icon {
+        font-size: 1.5rem;
+        width: 40px;
+        text-align: center;
+    }
+    .metric-value {
+        font-family: var(--font-mono);
+        font-weight: 600;
+        font-size: 1.1rem;
+        color: var(--text-primary);
+        min-width: 80px;
+    }
+    .metric-label {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        margin-left: auto; /* Push to right */
+    }
+
+    /* Table Styles */
+    table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+        font-family: var(--font-mono);
+        font-size: 0.9rem;
+    }
+    th, td {
+        padding: 1rem;
+        text-align: left;
+        border-bottom: 1px solid var(--border-color);
+        color: var(--text-secondary);
+    }
+    th {
+        color: var(--text-primary);
+        font-weight: 600;
+        border-bottom: 2px solid var(--border-color);
+        font-size: 0.85rem;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+    }
+    tr:last-child td { border-bottom: none; }
+    td:first-child { color: var(--text-primary); font-weight: 500; }
 </style>
