@@ -321,7 +321,6 @@ def run():
         result = app.run()
         
         if result is not None and isinstance(result, str):
-            from rich.console import Console
             console = Console(stderr=True)
             console.print(result)
             sys.exit(1)
