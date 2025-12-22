@@ -99,7 +99,7 @@ twg -p large.json
 | Key | Action |
 | :--- | :--- |
 | **Navigation** | |
-| `Arrow Keys` / `h,j,k,l` | **Traverse** Tree |
+| `Arrow Keys` | **Traverse** Tree |
 | `/` | **Search** (Global) |
 | `n` / `N` | **Next / Prev** Match |
 | `:` | **Jump** to path |
