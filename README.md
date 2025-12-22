@@ -12,7 +12,8 @@
 
 > **Inspect. Navigate. Understand.**
 >
-> The modern, terminal-based data explorer for developers who value speed and privacy.
+> The modern, terminal-based data explorer for **JSON** & **YAML**.
+> Designed for developers who value speed and privacy.
 
 ![Twig Demo](asset/demo.gif)
 
@@ -20,11 +21,12 @@
 
 Data files are getting bigger, but our tools haven't kept up. `cat` floods your screen. `less` feels ancient. `jq` requires learning a new language.
 
-**Twig** brings the fluid, intuitive navigation of a modern IDE directly to your terminal. It transforms raw JSON into a navigable, searchable, and interactive tree.
+**Twig** brings the fluid, intuitive navigation of a modern IDE directly to your terminal. It transforms raw data into a navigable, searchable, and interactive tree.
 
 ### The Twig Difference
 
-*   **⚡️ High Performance**: Built on a streaming SQLite backend, Twig handles large files with ease.
+*   **⚡️ High Performance**: Built on a streaming SQLite backend, Twig handles large files with ease. 
+*   **📂 Multi-Format**: Native support for **JSON** and **YAML**.
 *   **🔒 Privacy by Default**: Your data never leaves your machine. Twig runs 100% locally—safe for production logs, PII, and sensitive configurations.
 *   **🎹 Fluid Navigation**: Navigate deep hierarchies naturally using standard **Arrow Keys**. Smart expansion keeps your context clear.
 *   **🧠 Developer Workflow**:
@@ -32,6 +34,19 @@ Data files are getting bigger, but our tools haven't kept up. `cat` floods your 
     *   **Smart Jump**: Jump directly to a path (e.g., `.users[0].address`).
     *   **Clipboard Ready**: One-key copy for paths (`c`) or raw JSON (`y`).
 *   **🎨 Premium UI**: A polished TUI with syntax highlighting, multiple themes (Catppuccin, Dracula), and a distraction-free design.
+
+## Performance & Compatibility
+
+Twig is optimized for speed, but performance depends on file size.
+
+| File Size | Load Time (Approx) | Experience |
+| :--- | :--- | :--- |
+| **< 10MB** | Instant | ⚡️ Fluid |
+| **10MB - 50MB** | < 10s | 🚀 Fast |
+| **50MB - 100MB** | < 20s | ⏳ Acceptable |
+| **> 100MB** | 20s+ | 🐢 Slow but Stable |
+
+> **Note:** Limits apply to both JSON and YAML. For files >100MB, we recommend splitting them if speed is critical.
 
 ## Installation
 

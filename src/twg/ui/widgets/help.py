@@ -58,6 +58,13 @@ class HelpModal(ModalScreen[None]):
         text-align: center;
         color: $primary;
         text-style: underline;
+        margin-bottom: 1;
+    }
+
+    #coffee-link {
+        width: 100%;
+        text-align: center;
+        color: $accent;
         margin-bottom: 2;
     }
 
@@ -123,7 +130,9 @@ class HelpModal(ModalScreen[None]):
             yield Label(self.LOGO, id="help-logo")
             yield Label("Inspect. Navigate. Understand.", classes="help-tagline")
             yield Label(f"v{version}", classes="help-version")
-            yield Label("[@click=app.open_url('https://github.com/workdone0/twig')]github.com/workdone0/twig[/]", id="help-link")
+            yield Label(f"v{version}", classes="help-version")
+            yield Label("https://twig.wtf", id="help-link")
+            yield Label("☕ buymeacoffee.com/workdone0", classes="help-tagline", id="coffee-link")
             
             # Keybindings Section
             yield Label("Keyboard Shortcuts", id="help-title")

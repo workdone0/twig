@@ -7,27 +7,7 @@ from typing import Any, Callable, Optional
 from twg.core.model import DataType
 from twg.adapters.base_loader import BaseLoader
 
-class ProgressFile:
-    """Wrapper around a file object to track bytes read."""
-    def __init__(self, file_obj, total_size: int, callback: Callable[[int, int], None]):
-        self.file_obj = file_obj
-        self.total_size = total_size
-        self.callback = callback
-        self.bytes_read = 0
-        self._last_report = 0
-        self._report_interval = 1024 * 1024  # Report every 1MB
 
-    def read(self, size=-1):
-        data = self.file_obj.read(size)
-        if data:
-            self.bytes_read += len(data)
-            if self.bytes_read - self._last_report > self._report_interval or self.bytes_read >= self.total_size:
-                 self.callback(self.bytes_read, self.total_size)
-                 self._last_report = self.bytes_read
-        return data
-
-    def __getattr__(self, name):
-        return getattr(self.file_obj, name)
 
 class YamlLoader(BaseLoader):
     """
@@ -76,7 +56,7 @@ class YamlLoader(BaseLoader):
         
         root_id = new_id()
         
-        # Stack items: [node_id, type, count/index, path_prefix]
+        # Stack: [node_id, type, count, path_prefix]
         stack = [] 
         
         batch_size = 10000
@@ -94,7 +74,7 @@ class YamlLoader(BaseLoader):
         current_key = None 
         in_document = False
         
-        # Virtual root setup: Treat the stream as an array of documents
+        # Treat the stream as an array of documents (Virtual Root)
         virtual_root_type = DataType.ARRAY
         root_row = (root_id, None, "root", None, virtual_root_type.value, 0, ".", 0)
         rows.append(root_row)

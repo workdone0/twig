@@ -74,8 +74,11 @@ class TwigApp(App):
             else:
                 self.format = "json"
                 loader = SQLiteLoader()
-                
-            model = loader.load_into_model(self.file_path, force_rebuild=self.force_rebuild)
+            
+            model = loader.load_into_model(
+                self.file_path, 
+                force_rebuild=self.force_rebuild
+            )
             self.call_from_thread(self.on_file_loaded, model)
         except Exception as e:
             self.call_from_thread(self.on_file_load_error, str(e))
@@ -84,6 +87,12 @@ class TwigApp(App):
         """Called when the file is successfully loaded."""
         self.model = model
         
+        # Dismiss loading screen if it exists
+        try:
+            self.pop_screen()
+        except:
+            pass
+            
         content = self.query_one("#main-content")
         content.remove_children()
         
@@ -146,10 +155,14 @@ class TwigApp(App):
         yield Header(show_clock=False)
         
         with Container(id="main-content"):
-            yield LoadingIndicator()
-        
+            yield Label("Initializing...", id="init-label")
+            
         yield StatusBar(self.file_path, id="status-bar")
         yield Footer()
+
+    def on_ready(self) -> None:
+        """Push loading screen once app is ready."""
+        self.push_screen(LoadingScreen(message=f"Loading {os.path.basename(self.file_path)}..."))
 
     def on_column_navigator_node_selected(self, message: ColumnNavigator.NodeSelected) -> None:
         """

@@ -22,19 +22,19 @@ class SQLiteLoader(BaseLoader):
         conn = self.db_manager.get_connection(db_path)
         
         try:
-            total_size = os.path.getsize(file_path)
+            # High-performance bulk load settings
+            conn.execute("PRAGMA synchronous = OFF")
+            conn.execute("PRAGMA journal_mode = MEMORY")
+            
+            self._drop_indexes(conn)
+            conn.commit()
             
             with open(file_path, 'rb') as f:
-                if progress_callback:
-                    wrapped_f = ProgressFile(f, total_size, progress_callback)
-                    self._parse_and_insert(wrapped_f, conn)
-                else:
-                    self._parse_and_insert(f, conn)
+                self._parse_and_insert(f, conn)
             
             conn.commit()
             
-            # Bulk build search index
-            self._build_search_index(conn)
+            self._rebuild_indexes(conn)
             conn.commit()
             
         except Exception as e:
@@ -42,11 +42,51 @@ class SQLiteLoader(BaseLoader):
         finally:
             conn.close()
 
-    def _build_search_index(self, conn: sqlite3.Connection):
-        """
-        Populate the FTS5 table in bulk.
-        """
-        conn.execute("INSERT INTO nodes_search(rowid, key, value, path) SELECT rowid, key, value, path FROM nodes")
+    def _drop_indexes(self, conn: sqlite3.Connection):
+        """Drop indexes and FTS table to speed up insertion."""
+        conn.executescript("""
+            DROP INDEX IF EXISTS idx_parent_rank;
+            DROP INDEX IF EXISTS idx_path;
+            DROP TRIGGER IF EXISTS nodes_ai;
+            DROP TRIGGER IF EXISTS nodes_ad;
+            DROP TRIGGER IF EXISTS nodes_au;
+            DROP TABLE IF EXISTS nodes_search;
+        """)
+
+    def _rebuild_indexes(self, conn: sqlite3.Connection):
+        """Re-create indexes and FTS table after bulk insert."""
+        conn.executescript("""
+            -- Standard Indexes
+            CREATE INDEX IF NOT EXISTS idx_parent_rank ON nodes(parent_id, rank);
+            CREATE INDEX IF NOT EXISTS idx_path ON nodes(path);
+
+            -- FTS5 Search Table
+            CREATE VIRTUAL TABLE IF NOT EXISTS nodes_search USING fts5(
+                key, 
+                value, 
+                path, 
+                content='nodes', 
+                content_rowid='rowid'
+            );
+
+            -- Populate FTS
+            INSERT INTO nodes_search(rowid, key, value, path) 
+            SELECT rowid, key, value, path FROM nodes;
+
+            -- Triggers for updates
+            CREATE TRIGGER IF NOT EXISTS nodes_ai AFTER INSERT ON nodes BEGIN
+              INSERT INTO nodes_search(rowid, key, value, path) VALUES (new.rowid, new.key, new.value, new.path);
+            END;
+
+            CREATE TRIGGER IF NOT EXISTS nodes_ad AFTER DELETE ON nodes BEGIN
+              INSERT INTO nodes_search(nodes_search, rowid, key, value, path) VALUES('delete', old.rowid, old.key, old.value, old.path);
+            END;
+
+            CREATE TRIGGER IF NOT EXISTS nodes_au AFTER UPDATE ON nodes BEGIN
+              INSERT INTO nodes_search(nodes_search, rowid, key, value, path) VALUES('delete', old.rowid, old.key, old.value, old.path);
+              INSERT INTO nodes_search(rowid, key, value, path) VALUES (new.rowid, new.key, new.value, new.path);
+            END;
+        """)
 
     def _parse_and_insert(self, file_obj, conn: sqlite3.Connection):
         """
@@ -84,6 +124,7 @@ class SQLiteLoader(BaseLoader):
         current_key = None # For map values
         
         for prefix, event, value in parser:
+            
             if first_event:
                 first_event = False
                 # Determine root type
