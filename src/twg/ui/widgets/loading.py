@@ -1,10 +1,20 @@
 from textual.app import ComposeResult
 from textual.screen import ModalScreen
 from textual.widgets import Label, LoadingIndicator
-from textual.containers import Container, Center, Middle
+from textual.containers import Container, Center, Middle, Vertical
+
 
 class LoadingScreen(ModalScreen):
     """A modal screen that shows a loading indicator."""
+
+    LOGO = r"""
+████████╗██╗    ██╗██╗ ██████╗ 
+╚══██╔══╝██║    ██║██║██╔════╝ 
+   ██║   ██║ █╗ ██║██║██║  ███╗
+   ██║   ██║███╗██║██║██║   ██║
+   ██║   ╚███╔███╔╝██║╚██████╔╝
+   ╚═╝    ╚══╝╚══╝ ╚═╝ ╚═════╝ 
+"""
 
     CSS = """
     LoadingScreen {
@@ -12,17 +22,36 @@ class LoadingScreen(ModalScreen):
     }
 
     #loading-container {
-        width: 40;
+        width: 60;
         height: auto;
         background: $surface;
         border: thick $primary;
-        padding: 2;
+        padding: 1 2;
     }
     
+    #loading-logo {
+        width: 100%;
+        text-align: center;
+        color: $warning;
+        margin-bottom: 1;
+    }
+
+    #loading-bar {
+        width: 100%;
+        margin-bottom: 1;
+    }
+
     #loading-label {
-        margin-top: 1;
+        width: 100%;
         text-align: center;
         text-style: bold;
+    }
+
+    .loading-link {
+        width: 100%;
+        text-align: center;
+        color: $text-muted;
+        margin-top: 1;
     }
     """
 
@@ -32,5 +61,8 @@ class LoadingScreen(ModalScreen):
 
     def compose(self) -> ComposeResult:
         with Container(id="loading-container"):
-            yield Center(Middle(LoadingIndicator()))
+            yield Label(self.LOGO, id="loading-logo")
+            yield Center(LoadingIndicator())
             yield Label(self.message, id="loading-label")
+            yield Label("https://twig.wtf", classes="loading-link")
+            yield Label("☕ buymeacoffee.com/workdone0", classes="loading-link")

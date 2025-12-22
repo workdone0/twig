@@ -1,63 +1,92 @@
 import ijson
 import uuid
 import sqlite3
+import os
 from pathlib import Path
-from typing import Any, Generator, Tuple
-from twg.core.model import SQLiteModel, DataType
-from twg.core.db import DatabaseManager
+from typing import Callable, Optional
+from twg.core.model import DataType
+from twg.adapters.base_loader import BaseLoader, ProgressFile
 
-class SQLiteLoader:
+class SQLiteLoader(BaseLoader):
     """
     Loads JSON file into SQLite database using ijson streaming.
     """
     
     def __init__(self):
-        self.db_manager = DatabaseManager()
+        super().__init__()
 
-    def load_into_model(self, file_path: str, force_rebuild: bool = False) -> SQLiteModel:
-        path = Path(file_path)
-        if not path.exists():
-             raise FileNotFoundError(f"File not found: {file_path}")
-             
-        db_path = self.db_manager.get_db_path(file_path)
-        
-        # Check if DB already exists
-        if db_path.exists() and not force_rebuild:
-            # TODO: Check file mtime vs DB mtime?
-            # For now, simplistic approach: if DB exists, just use it.
-            try:
-                model = SQLiteModel(str(db_path))
-                if model.root_id:
-                    return model
-            except:
-                # If corrupt or empty, rebuild
-                pass
-        
-        # If force_rebuild or corrupt, ensure we start fresh
-        if db_path.exists():
-            try:
-                db_path.unlink()
-            except OSError:
-                pass # Can't delete? Might fail later, or overwrite.
-                
-        # Build DB
-        self.db_manager.init_db(db_path)
+    def ingest_file(self, file_path: str, db_path: Path, progress_callback: Optional[Callable[[int, int], None]] = None) -> None:
+        """
+        Parses JSON and inserts into DB.
+        """
         conn = self.db_manager.get_connection(db_path)
         
         try:
-            with open(path, 'rb') as f:
-                self._parse_and_insert(f, conn)
+            # High-performance bulk load settings
+            conn.execute("PRAGMA synchronous = OFF")
+            conn.execute("PRAGMA journal_mode = MEMORY")
+            
+            self._drop_indexes(conn)
             conn.commit()
+            
+            with open(file_path, 'rb') as f:
+                self._parse_and_insert(f, conn)
+            
+            conn.commit()
+            
+            self._rebuild_indexes(conn)
+            conn.commit()
+            
         except Exception as e:
-            conn.close()
-            # Cleanup bad DB
-            if db_path.exists():
-                db_path.unlink()
-            raise e
+             raise e
         finally:
             conn.close()
-            
-        return SQLiteModel(str(db_path))
+
+    def _drop_indexes(self, conn: sqlite3.Connection):
+        """Drop indexes and FTS table to speed up insertion."""
+        conn.executescript("""
+            DROP INDEX IF EXISTS idx_parent_rank;
+            DROP INDEX IF EXISTS idx_path;
+            DROP TRIGGER IF EXISTS nodes_ai;
+            DROP TRIGGER IF EXISTS nodes_ad;
+            DROP TRIGGER IF EXISTS nodes_au;
+            DROP TABLE IF EXISTS nodes_search;
+        """)
+
+    def _rebuild_indexes(self, conn: sqlite3.Connection):
+        """Re-create indexes and FTS table after bulk insert."""
+        conn.executescript("""
+            -- Standard Indexes
+            CREATE INDEX IF NOT EXISTS idx_parent_rank ON nodes(parent_id, rank);
+            CREATE INDEX IF NOT EXISTS idx_path ON nodes(path);
+
+            -- FTS5 Search Table
+            CREATE VIRTUAL TABLE IF NOT EXISTS nodes_search USING fts5(
+                key, 
+                value, 
+                path, 
+                content='nodes', 
+                content_rowid='rowid'
+            );
+
+            -- Populate FTS
+            INSERT INTO nodes_search(rowid, key, value, path) 
+            SELECT rowid, key, value, path FROM nodes;
+
+            -- Triggers for updates
+            CREATE TRIGGER IF NOT EXISTS nodes_ai AFTER INSERT ON nodes BEGIN
+              INSERT INTO nodes_search(rowid, key, value, path) VALUES (new.rowid, new.key, new.value, new.path);
+            END;
+
+            CREATE TRIGGER IF NOT EXISTS nodes_ad AFTER DELETE ON nodes BEGIN
+              INSERT INTO nodes_search(nodes_search, rowid, key, value, path) VALUES('delete', old.rowid, old.key, old.value, old.path);
+            END;
+
+            CREATE TRIGGER IF NOT EXISTS nodes_au AFTER UPDATE ON nodes BEGIN
+              INSERT INTO nodes_search(nodes_search, rowid, key, value, path) VALUES('delete', old.rowid, old.key, old.value, old.path);
+              INSERT INTO nodes_search(rowid, key, value, path) VALUES (new.rowid, new.key, new.value, new.path);
+            END;
+        """)
 
     def _parse_and_insert(self, file_obj, conn: sqlite3.Connection):
         """
@@ -71,7 +100,6 @@ class SQLiteLoader:
         
         root_id = new_id()
         
-        # Stack keeps track of [parent_id, current_container_type, current_index_in_container, current_path]
         # Stack items: (node_id, type, count/index, path_prefix)
         stack = [] 
         
@@ -96,6 +124,7 @@ class SQLiteLoader:
         current_key = None # For map values
         
         for prefix, event, value in parser:
+            
             if first_event:
                 first_event = False
                 # Determine root type
@@ -126,7 +155,6 @@ class SQLiteLoader:
             
             # Processing children
             if not stack:
-                 # Should not happen unless multiple roots?
                  break
                  
             parent_id, parent_type, rank, parent_path = stack[-1]
@@ -155,8 +183,7 @@ class SQLiteLoader:
                     node_path = f".{node_key}"
                 else:
                     node_path = f"{parent_path}.{node_key}"
-
-                
+            
             # Update rank for parent
             stack[-1][2] += 1
             

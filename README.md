@@ -12,26 +12,54 @@
 
 > **Inspect. Navigate. Understand.**
 >
-> The modern, terminal-based data explorer for developers who value speed and privacy.
+> The modern, terminal-based data explorer for **JSON** & **YAML**.
+> Designed for developers who value speed and privacy.
 
 ![Twig Demo](asset/demo.gif)
 
-## Why Twig?
+## What is Twig?
 
-Data files are getting bigger, but our tools haven't kept up. `cat` floods your screen. `less` feels ancient. `jq` requires learning a new language.
+**Twig** is a high-performance **Terminal JSON Viewer** and **YAML Viewer**, designed to replace `cat`, `less`, and `jq` for interactive data exploration.
 
-**Twig** brings the fluid, intuitive navigation of a modern IDE directly to your terminal. It transforms raw JSON into a navigable, searchable, and interactive tree.
+It turns raw data into a navigable tree, allowing you to filter, search, and explore deep hierarchies without leaving your terminal.
 
-### The Twig Difference
+### Key Features
 
-*   **⚡️ High Performance**: Built on a streaming SQLite backend, Twig handles large files with ease.
-*   **🔒 Privacy by Default**: Your data never leaves your machine. Twig runs 100% locally—safe for production logs, PII, and sensitive configurations.
-*   **🎹 Fluid Navigation**: Navigate deep hierarchies naturally using standard **Arrow Keys**. Smart expansion keeps your context clear.
-*   **🧠 Developer Workflow**:
-    *   **Deep Search**: Instantly find any key or value with `/`.
-    *   **Smart Jump**: Jump directly to a path (e.g., `.users[0].address`).
-    *   **Clipboard Ready**: One-key copy for paths (`c`) or raw JSON (`y`).
-*   **🎨 Premium UI**: A polished TUI with syntax highlighting, multiple themes (Catppuccin, Dracula), and a distraction-free design.
+*   **📂 Multi-Format**: Native support for **JSON** and **YAML**.
+*   **👀 Read Only**: Safely explore production logs or configs without risk of accidental edits.
+*   **🔍 Deep Search**: Instantly find any key or value with fuzzy matching (e.g., matching `Pull` in `imagePullPolicy`).
+*   **🎨 Themes**: Includes beautiful themes like **Catppuccin Mocha** (Default) and **Solarized Dark**.
+*   **⚡️ Performance Optimized**: Built on a streaming SQLite backend to handle files efficiently.
+
+### Comparison
+
+| Feature | **Twig** | `jq` | `less` | `cat` |
+| :--- | :---: | :---: | :---: | :---: |
+| **Interactive Navigation** | ✅ | ❌ | ❌ | ❌ |
+| **Tree View** | ✅ | ❌ | ❌ | ❌ |
+| **Fuzzy Search** | ✅ | ❌ | ✅ | ❌ |
+| **JSON/YAML Support** | ✅ | ✅ | ⚠️ | ❌ |
+| **Learning Curve** | **Low** | High | Low | Low |
+
+## Common Use Cases
+
+*   **Kubernetes Manifests**: Navigate deep hierarchies in K8s YAML files without scrolling for miles.
+*   **Cloud Logs**: Quickly inspect massive JSON log dumps from AWS CloudWatch or GCP.
+*   **API Responses**: Visualize complex nested JSON responses from REST or GraphQL APIs.
+*   **Configuration Management**: Audit large Terraform states or Ansible playbooks safely.
+
+## Performance Benchmarks
+
+Twig is highly optimized for files **under 100MB**, with a "sweet spot" for files under **50MB**.
+
+| File Size | Load Time (Cold Start) | Experience |
+| :--- | :--- | :--- |
+| **< 10MB** | < 1s | ⚡️ Instant |
+| **50MB** | ~8s | 🚀 Fast |
+| **90MB** | ~17s | ✅ Usable |
+| **> 100MB** | 20s+ | 🐢 Slower |
+
+> **Note:** For files larger than 100MB, initial loading will take longer as Twig indexes the entire structure for instant search and navigation.
 
 ## Installation
 
@@ -46,11 +74,13 @@ pipx install twg
 pip install twg
 ```
 
-## Quick Start
+## Usage
 
 **Explore a file:**
 ```bash
 twg data.json
+# or
+twg config.yaml
 ```
 
 **Fix broken JSON:**
@@ -75,7 +105,7 @@ twg -p large.json
 | `:` | **Jump** to path |
 | **Actions** | |
 | `c` | **Copy Path** |
-| `y` | **Copy Value** (JSON) |
+| `y` | **Copy Source** (JSON/YAML) |
 | `t` | **Toggle Theme** |
 | `?` | **Help** |
 | `q` | **Quit** |

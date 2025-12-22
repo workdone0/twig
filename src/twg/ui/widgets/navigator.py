@@ -6,6 +6,8 @@ from textual.binding import Binding
 import uuid
 from typing import List, Optional
 import asyncio
+import re
+from rich.text import Text
 
 from twg.core.model import SQLiteModel, Node, DataType
 
@@ -105,52 +107,47 @@ class Column(Vertical):
         else:
             pass # No focus, ignore
 
-
-    async def find_next(self, query: str, direction: int = 1) -> bool:
+    def highlight_text_match(self, index: int, query: str) -> None:
         """
-        Finds the next item matching the query.
-        Returns True if found and selected, False otherwise.
+        Highlights the query text within the option at the given index.
         """
         opt_list = self.query_one(TwigOptionList)
-        count = opt_list.option_count
-        if count == 0:
-            return False
+        if index < 0 or index >= opt_list.option_count:
+            return
 
-        start_index = opt_list.highlighted if opt_list.highlighted is not None else -1
+        node_id = self.node_map.get(index)
+        if not node_id: return
         
-        # indices to check
-        indices = list(range(count))
-        # rotate so we start after start_index
-        if direction > 0:
-            # next: start+1 ... end, 0 ... start
-            check_order = indices[start_index+1:] + indices[:start_index+1]
-        else:
-            # prev: start-1 ... 0, end ... start
-            check_order = []
-            curr = start_index - 1
-            while len(check_order) < count:
-                if curr < 0: curr = count - 1
-                check_order.append(curr)
-                curr -= 1
+        node = self.model.get_node(node_id)
+        if not node: return
+        
+        # Reconstruct label logic (duplicate of compose, but needed for Text construction)
+        icon = " "
+        if node.type == DataType.OBJECT:
+            icon = "▶" 
+        elif node.type == DataType.ARRAY:
+            icon = "▶" 
+        
+        val_str = ""
+        if not node.is_container:
+            val_str = f": {str(node.value)}"
+            if len(val_str) > 20:
+                val_str = val_str[:17] + "..."
+        
+        full_label = f"{icon} {node.key}{val_str}"
+        
+        text = Text(full_label)
+        if query:
+            pattern = re.compile(re.escape(query), re.IGNORECASE)
+            for match in pattern.finditer(full_label):
+                text.stylize("bold reverse yellow", match.start(), match.end())
+        
+        try:
+            opt_list.replace_option_at_index(index, text)
+        except AttributeError:
+             pass
 
-        query = query.lower()
-        
-        for idx in check_order:
-            node_id = self.node_map.get(idx)
-            if node_id:
-                node = self.model.get_node(node_id)
-                # Matches key (primary) or raw value string (secondary)
-                # Check key
-                match = query in str(node.key).lower()
-                # Check value (if primitive)
-                if not match and not node.is_container:
-                    match = query in str(node.value).lower()
-                
-                if node and match:
-                    opt_list.highlighted = idx
-                    return True
-        
-        return False
+    # find_next removed as it was unused and global search is preferred.
 
 
 
@@ -277,7 +274,7 @@ class ColumnNavigator(HorizontalScroll):
                                  
                              opt_list = col_widget.query_one(TwigOptionList)
                              opt_list.highlighted = select_idx
-                             opt_list.scroll_to_highlight()
+                             opt_list.scroll_to_highlight(top=True) # Pin to top for predictable jumping
                              self.scroll_to_widget(col_widget, animate=False)
                              
                              await self._expand_node(i, next_node.id, initial_select_index=grandchild_idx, animate=False)
@@ -314,7 +311,6 @@ class ColumnNavigator(HorizontalScroll):
         Returns the Node found, or None.
         """
         # 1. Determine start Node ID from current focus
-        # Priority: Pending Target > Focused Column > Deepest Highlight
         start_node_id = self._pending_target_node_id
         focused_col = None
         
@@ -347,12 +343,11 @@ class ColumnNavigator(HorizontalScroll):
         # Feature: Smart Search (if query looks like a path, try resolving it first)
         if query.startswith("."):
             try:
-                # If the user typed a specific path, jump to it directly
                 resolved = self.model.resolve_path(query)
                 if resolved:
                     target_node = resolved
             except:
-                pass # Fallback to standard text search if resolution fails
+                pass
 
         if not target_node:
              # Note: Direction ignored for now, always forward global search since we use DFS generator
@@ -363,6 +358,15 @@ class ColumnNavigator(HorizontalScroll):
             await self.expand_to_node(target_node.id)
             # Post selection
             self.post_message(self.NodeSelected(target_node.id))
+            
+            # 4. Highlight text match in the target column
+            for child in self.children:
+                if isinstance(child, Column) and child.parent_node_id == target_node.parent:
+                     if child.query(TwigOptionList):
+                         opts = child.query_one(TwigOptionList)
+                         if opts.highlighted is not None:
+                             child.highlight_text_match(opts.highlighted, query)
+            
             return target_node
         
         return None
@@ -416,12 +420,8 @@ class ColumnNavigator(HorizontalScroll):
                     target_option_list.focus()
                     self.scroll_to_widget(target_col, animate=True)
                     
-                    # Manually trigger highlight/selection update for the newly focused column
-                    # because OptionList doesn't re-emit highlighted on focus
                     if target_option_list.highlighted is not None:
-                         node_id = target_col.node_map.get(target_option_list.highlighted)
-                         if node_id:
-                             # We simulate a highlight event to trigger expansion and inspector update
-                             # Use run_worker because we are in a sync message handler
-                             self.run_worker(self.on_column_highlighted(Column.Highlighted(target_col.index, node_id)))
+                        node_id = target_col.node_map.get(target_option_list.highlighted)
+                        if node_id:
+                            self.run_worker(self.on_column_highlighted(Column.Highlighted(target_col.index, node_id)))
                     return
