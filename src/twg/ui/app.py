@@ -10,6 +10,7 @@ from rich.json import JSON
 from rich.panel import Panel
 from rich.text import Text
 from rich import box
+from rich.syntax import Syntax
 
 from textual.binding import Binding
 
@@ -346,7 +347,6 @@ def run():
     args = parser.parse_args()
 
     if not args.fix and not args.print:
-        # TUI Mode
         if not os.path.exists(args.file):
             print(f"Error: File not found: {args.file}", file=sys.stderr)
             sys.exit(1)
@@ -364,10 +364,75 @@ def run():
             sys.exit(1)
         return
 
-    # CLI Mode (--fix or --print)
     if not os.path.exists(args.file):
         print(f"Error: File not found: {args.file}", file=sys.stderr)
         sys.exit(1)
+
+    is_yaml = args.file.lower().endswith(('.yaml', '.yml'))
+
+    if is_yaml:
+        if args.fix:
+            print("Error: Fix/Repair is currently only supported for JSON files.", file=sys.stderr)
+            sys.exit(1)
+        
+        try:
+            with open(args.file, 'r', encoding='utf-8') as f:
+                content = f.read()
+            
+            try:
+                if yaml:
+                    parsed = yaml.safe_load(content)
+                else:
+                    print("Error: PyYAML is not installed. Cannot process YAML files.", file=sys.stderr)
+                    sys.exit(1)
+            except Exception as e:
+                print(f"Error: Failed to parse YAML: {e}", file=sys.stderr)
+                sys.exit(1)
+                
+            if args.output:
+                with open(args.output, 'w', encoding='utf-8') as f:
+                    yaml.dump(parsed, f, sort_keys=False, default_flow_style=False)
+                print(f"Formatted YAML written to {args.output}", file=sys.stderr)
+            
+            else:
+                file_size = len(content.encode('utf-8'))
+                
+                if isinstance(parsed, list):
+                    item_count = len(parsed)
+                    type_label = "Array"
+                elif isinstance(parsed, dict):
+                    item_count = len(parsed)
+                    type_label = "Object"
+                else:
+                    item_count = 1
+                    type_label = "Primitive"
+                
+                err_console = Console(stderr=True)
+                meta_text = Text()
+                meta_text.append(f" File: ", style="bold cyan")
+                meta_text.append(f"{os.path.basename(args.file)} \n")
+                meta_text.append(f" Size: ", style="bold cyan")
+                meta_text.append(f"{file_size / 1024:.1f} KB \n")
+                meta_text.append(f" Type: ", style="bold cyan")
+                meta_text.append(f"{type_label} ({item_count} items)")
+                
+                err_console.print(Panel(
+                    meta_text,
+                    title="Twig Metadata",
+                    border_style="blue",
+                    box=box.ROUNDED,
+                    expand=False
+                ))
+
+                console = Console()
+                syntax = Syntax(content, "yaml", theme="monokai", line_numbers=False)
+                console.print(syntax)
+                
+        except Exception as e:
+            print(f"Error processing YAML file: {e}", file=sys.stderr)
+            sys.exit(1)
+        
+        sys.exit(0)
 
     try:
         with open(args.file, 'r', encoding='utf-8') as f:
