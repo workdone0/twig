@@ -13,9 +13,15 @@ from rich import box
 
 from textual.binding import Binding
 
+try:
+    import yaml
+except ImportError:
+    yaml = None
+
 from twg.core.model import SQLiteModel
 from twg.core.config import Config
 from twg.adapters.sqlite_loader import SQLiteLoader
+from twg.adapters.yaml_loader import YamlLoader
 from twg.ui.widgets.navigator import ColumnNavigator
 from twg.ui.widgets.inspector import Inspector
 from twg.ui.widgets.status_bar import StatusBar
@@ -50,6 +56,10 @@ class TwigApp(App):
     ]
 
     def on_mount(self) -> None:
+        from twg.ui.themes import SOLARIZED_DARK, CATPPUCCIN_MOCHA
+        self.register_theme(SOLARIZED_DARK)
+        self.register_theme(CATPPUCCIN_MOCHA)
+        
         self.config = Config()
         self.theme = self.config.get("theme", "catppuccin-mocha")
         self.title = "Twig"
@@ -58,7 +68,13 @@ class TwigApp(App):
     def load_file(self) -> None:
         """Worker method to load the file in a background thread."""
         try:
-            loader = SQLiteLoader()
+            if self.file_path.lower().endswith(('.yaml', '.yml')):
+                self.format = "yaml"
+                loader = YamlLoader()
+            else:
+                self.format = "json"
+                loader = SQLiteLoader()
+                
             model = loader.load_into_model(self.file_path, force_rebuild=self.force_rebuild)
             self.call_from_thread(self.on_file_loaded, model)
         except Exception as e:
@@ -82,6 +98,9 @@ class TwigApp(App):
                 id="content-view"
             )
         )
+        # Update inspector format
+        self.query_one(Inspector).format = self.format
+        
         status_bar = self.query_one(StatusBar)
         status_bar.model = self.model
 
@@ -89,8 +108,7 @@ class TwigApp(App):
         """Called when file loading fails."""
         # Exit the app and pass the error message back to the caller
         
-        # Colorized hint using Rich markup (Textual apps support this in stderr usually)
-        # We'll rely on the fact that result is printed to stderr by run()
+        # Colorized hint using Rich markup
         
         hint = (
             f"\n\n[bold yellow]Tip:[/bold yellow] If the file contains invalid JSON, try running:\n"
@@ -121,6 +139,7 @@ class TwigApp(App):
         self.current_node: Node | None = None
         self.last_search_query: str | None = None
         self.config: Config | None = None
+        self.format: str = "json" # Default
         super().__init__()
 
     def compose(self) -> ComposeResult:
@@ -233,7 +252,7 @@ class TwigApp(App):
              self.notify("Root path copied")
 
     def action_copy_source(self) -> None:
-        """Copies the raw source (JSON) of the selected node to clipboard."""
+        """Copies the raw source (JSON/YAML) of the selected node to clipboard."""
         if not self.current_node:
             return
             
@@ -245,13 +264,19 @@ class TwigApp(App):
             else:
                 data = self.current_node.value
 
-            json_str = json.dumps(data, indent=2)
-            pyperclip.copy(json_str)
+            if self.format == "yaml" and yaml:
+                source_str = yaml.dump(data, sort_keys=False, default_flow_style=False)
+                label = "YAML source"
+            else:
+                source_str = json.dumps(data, indent=2)
+                label = "source"
             
-            preview = json_str[:50].replace('\n', ' ')
-            if len(json_str) > 50: preview += "..."
+            pyperclip.copy(source_str)
             
-            self.notify(f"Copied source: {preview}")
+            preview = source_str[:50].replace('\n', ' ')
+            if len(source_str) > 50: preview += "..."
+            
+            self.notify(f"Copied {label}: {preview}")
             
         except Exception as e:
             self.notify(f"Failed to copy source: {e}", severity="error")
@@ -313,8 +338,8 @@ def run():
             print(f"Error: File not found: {args.file}", file=sys.stderr)
             sys.exit(1)
 
-        if not args.file.lower().endswith(".json"):
-            print(f"Error: Invalid file type '{args.file}'. Twig currently only supports .json files.", file=sys.stderr)
+        if not args.file.lower().endswith((".json", ".yaml", ".yml")):
+            print(f"Error: Invalid file type '{args.file}'. Twig currently only supports .json and .yaml files.", file=sys.stderr)
             sys.exit(1)
             
         app = TwigApp(args.file, force_rebuild=args.rebuild_db)

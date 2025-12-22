@@ -1,63 +1,52 @@
 import ijson
 import uuid
 import sqlite3
+import os
 from pathlib import Path
-from typing import Any, Generator, Tuple
-from twg.core.model import SQLiteModel, DataType
-from twg.core.db import DatabaseManager
+from typing import Callable, Optional
+from twg.core.model import DataType
+from twg.adapters.base_loader import BaseLoader, ProgressFile
 
-class SQLiteLoader:
+class SQLiteLoader(BaseLoader):
     """
     Loads JSON file into SQLite database using ijson streaming.
     """
     
     def __init__(self):
-        self.db_manager = DatabaseManager()
+        super().__init__()
 
-    def load_into_model(self, file_path: str, force_rebuild: bool = False) -> SQLiteModel:
-        path = Path(file_path)
-        if not path.exists():
-             raise FileNotFoundError(f"File not found: {file_path}")
-             
-        db_path = self.db_manager.get_db_path(file_path)
-        
-        # Check if DB already exists
-        if db_path.exists() and not force_rebuild:
-            # TODO: Check file mtime vs DB mtime?
-            # For now, simplistic approach: if DB exists, just use it.
-            try:
-                model = SQLiteModel(str(db_path))
-                if model.root_id:
-                    return model
-            except:
-                # If corrupt or empty, rebuild
-                pass
-        
-        # If force_rebuild or corrupt, ensure we start fresh
-        if db_path.exists():
-            try:
-                db_path.unlink()
-            except OSError:
-                pass # Can't delete? Might fail later, or overwrite.
-                
-        # Build DB
-        self.db_manager.init_db(db_path)
+    def ingest_file(self, file_path: str, db_path: Path, progress_callback: Optional[Callable[[int, int], None]] = None) -> None:
+        """
+        Parses JSON and inserts into DB.
+        """
         conn = self.db_manager.get_connection(db_path)
         
         try:
-            with open(path, 'rb') as f:
-                self._parse_and_insert(f, conn)
+            total_size = os.path.getsize(file_path)
+            
+            with open(file_path, 'rb') as f:
+                if progress_callback:
+                    wrapped_f = ProgressFile(f, total_size, progress_callback)
+                    self._parse_and_insert(wrapped_f, conn)
+                else:
+                    self._parse_and_insert(f, conn)
+            
             conn.commit()
+            
+            # Bulk build search index
+            self._build_search_index(conn)
+            conn.commit()
+            
         except Exception as e:
-            conn.close()
-            # Cleanup bad DB
-            if db_path.exists():
-                db_path.unlink()
-            raise e
+             raise e
         finally:
             conn.close()
-            
-        return SQLiteModel(str(db_path))
+
+    def _build_search_index(self, conn: sqlite3.Connection):
+        """
+        Populate the FTS5 table in bulk.
+        """
+        conn.execute("INSERT INTO nodes_search(rowid, key, value, path) SELECT rowid, key, value, path FROM nodes")
 
     def _parse_and_insert(self, file_obj, conn: sqlite3.Connection):
         """
@@ -71,7 +60,6 @@ class SQLiteLoader:
         
         root_id = new_id()
         
-        # Stack keeps track of [parent_id, current_container_type, current_index_in_container, current_path]
         # Stack items: (node_id, type, count/index, path_prefix)
         stack = [] 
         
@@ -126,7 +114,6 @@ class SQLiteLoader:
             
             # Processing children
             if not stack:
-                 # Should not happen unless multiple roots?
                  break
                  
             parent_id, parent_type, rank, parent_path = stack[-1]
@@ -155,8 +142,7 @@ class SQLiteLoader:
                     node_path = f".{node_key}"
                 else:
                     node_path = f"{parent_path}.{node_key}"
-
-                
+            
             # Update rank for parent
             stack[-1][2] += 1
             

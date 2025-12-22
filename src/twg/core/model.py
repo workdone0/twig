@@ -140,16 +140,16 @@ class SQLiteModel:
 
     def find_next_node(self, query: str, start_node_id: Optional[uuid.UUID] = None, direction: int = 1) -> Optional[Node]:
         """
-        Global search using FTS5.
+        Global search using substring match (LIKE %query%).
         
-        Uses the `nodes_search` virtual table to find matches for the query.
+        Searches 'key' and 'value' columns.
         Results are ordered by path to provide a consistent navigation order.
-            """
-        query = query.strip().replace('"', '""')
+        """
+        query = query.strip()
         if not query: return None
         
-        # FTS5 phrase search
-        fts_query = f'"{query}"*'
+        # Substring pattern
+        like_pattern = f"%{query}%"
         start_path = None
 
         if start_node_id:
@@ -157,66 +157,60 @@ class SQLiteModel:
             if n:
                 start_path = n.path
         
-        # If we have a start path, we can use it to filter
+        # We search KEY and VALUE columns.
+        # Note: 'value' column stores primitives as strings.
+        
         if start_path:
             if direction > 0:
                  # Find next match after current path
                  sql_next = """
-                    SELECT n.* 
-                    FROM nodes n
-                    JOIN nodes_search s ON n.rowid = s.rowid
-                    WHERE nodes_search MATCH ? AND n.path > ?
-                    ORDER BY n.path ASC LIMIT 1
+                    SELECT * FROM nodes 
+                    WHERE (key LIKE ? OR value LIKE ?) AND path > ?
+                    ORDER BY path ASC LIMIT 1
                  """
-                 cursor = self.conn.execute(sql_next, (fts_query, start_path))
+                 cursor = self.conn.execute(sql_next, (like_pattern, like_pattern, start_path))
                  row = cursor.fetchone()
                  if row: return self.row_to_node(row)
-                 # Wrap around: Find first match
+                 
+                 # Wrap around: Find first match from start
                  sql_first = """
-                    SELECT n.* 
-                    FROM nodes n
-                    JOIN nodes_search s ON n.rowid = s.rowid
-                    WHERE nodes_search MATCH ?
-                    ORDER BY n.path ASC LIMIT 1
+                    SELECT * FROM nodes 
+                    WHERE (key LIKE ? OR value LIKE ?)
+                    ORDER BY path ASC LIMIT 1
                  """
-                 cursor = self.conn.execute(sql_first, (fts_query,))
+                 cursor = self.conn.execute(sql_first, (like_pattern, like_pattern))
                  row = cursor.fetchone()
                  if row: return self.row_to_node(row)
                  
             else:
                  # Find prev match before current path
                  sql_prev = """
-                    SELECT n.* 
-                    FROM nodes n
-                    JOIN nodes_search s ON n.rowid = s.rowid
-                    WHERE nodes_search MATCH ? AND n.path < ?
-                    ORDER BY n.path DESC LIMIT 1
+                    SELECT * FROM nodes 
+                    WHERE (key LIKE ? OR value LIKE ?) AND path < ?
+                    ORDER BY path DESC LIMIT 1
                  """
-                 cursor = self.conn.execute(sql_prev, (fts_query, start_path))
+                 cursor = self.conn.execute(sql_prev, (like_pattern, like_pattern, start_path))
                  row = cursor.fetchone()
                  if row: return self.row_to_node(row)
+                 
                  # Wrap around: Find last match
                  sql_last = """
-                    SELECT n.* 
-                    FROM nodes n
-                    JOIN nodes_search s ON n.rowid = s.rowid
-                    WHERE nodes_search MATCH ?
-                    ORDER BY n.path DESC LIMIT 1
+                    SELECT * FROM nodes 
+                    WHERE (key LIKE ? OR value LIKE ?)
+                    ORDER BY path DESC LIMIT 1
                  """
-                 cursor = self.conn.execute(sql_last, (fts_query,))
+                 cursor = self.conn.execute(sql_last, (like_pattern, like_pattern))
                  row = cursor.fetchone()
                  if row: return self.row_to_node(row)
                  
         else:
              # No context, just return first
              sql_first = """
-                SELECT n.* 
-                FROM nodes n
-                JOIN nodes_search s ON n.rowid = s.rowid
-                WHERE nodes_search MATCH ?
-                ORDER BY n.path ASC LIMIT 1
+                SELECT * FROM nodes 
+                WHERE (key LIKE ? OR value LIKE ?)
+                ORDER BY path ASC LIMIT 1
              """
-             cursor = self.conn.execute(sql_first, (fts_query,))
+             cursor = self.conn.execute(sql_first, (like_pattern, like_pattern))
              row = cursor.fetchone()
              if row: return self.row_to_node(row)
 
@@ -237,6 +231,16 @@ class SQLiteModel:
         row = cursor.fetchone()
         if row:
             return self.row_to_node(row)
+            
+        # Smart Fallback for single-document YAMLs (wrapped in Stream array)
+        # If user types .kind, but it's actually .[0].kind
+        if path.startswith("."):
+            fallback_path = ".[0]" + path[1:] # .kind -> .[0].kind
+            cursor = self.conn.execute("SELECT * FROM nodes WHERE path = ?", (fallback_path,))
+            row = cursor.fetchone()
+            if row:
+                return self.row_to_node(row)
+
         return None
 
     def get_search_stats(self, query: str, current_node_id: Optional[uuid.UUID]) -> tuple[int, int]:
@@ -244,14 +248,13 @@ class SQLiteModel:
         Returns (current_match_index, total_matches) for the given query.
         Index is 1-based. Returns (0, 0) if no matches or query empty.
         """
-        query = query.strip().replace('"', '""')
+        query = query.strip()
         if not query: return (0, 0)
         
-        # FTS5 phrase search
-        fts_query = f'"{query}"*'
+        like_pattern = f"%{query}%"
         
-        sql_count = "SELECT COUNT(*) FROM nodes_search WHERE nodes_search MATCH ?"
-        cursor = self.conn.execute(sql_count, (fts_query,))
+        sql_count = "SELECT COUNT(*) FROM nodes WHERE key LIKE ? OR value LIKE ?"
+        cursor = self.conn.execute(sql_count, (like_pattern, like_pattern))
         total = cursor.fetchone()[0]
         
         if total == 0:
@@ -262,14 +265,12 @@ class SQLiteModel:
              node = self.get_node(current_node_id)
              if node:
                  # Count how many matches have a path <= current node's path
-                 # This gives us the rank
                  sql_rank = """
                     SELECT COUNT(*) 
-                    FROM nodes n
-                    JOIN nodes_search s ON n.rowid = s.rowid
-                    WHERE nodes_search MATCH ? AND n.path <= ?
+                    FROM nodes 
+                    WHERE (key LIKE ? OR value LIKE ?) AND path <= ?
                  """
-                 cursor = self.conn.execute(sql_rank, (fts_query, node.path))
+                 cursor = self.conn.execute(sql_rank, (like_pattern, like_pattern, node.path))
                  current_index = cursor.fetchone()[0]
                  
         return (current_index, total)

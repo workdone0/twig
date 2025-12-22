@@ -1,6 +1,6 @@
 [project]
 name = "twg"
-version = "2.0.0"
+version = "2.1.0"
 description = "Inspect. Navigate. Understand. A modern, terminal-based data explorer."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -10,6 +10,7 @@ dependencies = [
     "pyperclip>=1.8.2",
     "json-repair>=0.30.0",
     "rich>=13.0.0",
+    "PyYAML>=6.0",
 ]
 classifiers = [
     "Programming Language :: Python :: 3",

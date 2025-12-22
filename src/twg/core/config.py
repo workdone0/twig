@@ -53,8 +53,6 @@ class Config:
                 # Update defaults with user config (merging)
                 self._data.update(user_config)
         except (OSError, json.JSONDecodeError) as e:
-            # Log error if we had logging, for now just silently fallback to default/current
-            # potentially printing to stderr if critical, but for config we usually fail safe
             print(f"Warning: Failed to load config file: {e}", file=sys.stderr)
 
     def save(self) -> None:

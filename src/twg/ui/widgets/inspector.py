@@ -11,6 +11,11 @@ from datetime import datetime
 import json
 import re
 
+try:
+    import yaml
+except ImportError:
+    yaml = None
+
 from twg.core.model import Node, DataType, SQLiteModel
 
 class Inspector(Container):
@@ -20,6 +25,7 @@ class Inspector(Container):
     """
     
     selected_node: reactive[Node | None] = reactive(None)
+    format: reactive[str] = reactive("json") # "json" or "yaml"
     
     # Regex patterns for smart insights
     URL_PATTERN = re.compile(r'https?://(?:[-\w.]|(?:%[\da-fA-F]{2}))+')
@@ -150,8 +156,17 @@ class Inspector(Container):
                 try:
                     # Depth 4 is enough for inspection without exploding
                     data = self.model.reconstruct_json(node.id, max_depth=4)
-                    json_str = json.dumps(data, indent=2)
-                    raw.update(Panel(Syntax(json_str, "json", theme=self.SYNTAX_THEME, padding=1), title="Source"))
+                    
+                    if self.format == "yaml" and yaml:
+                        # Serialize as YAML
+                        source_str = yaml.dump(data, sort_keys=False, default_flow_style=False)
+                        lexer = "yaml"
+                    else:
+                        # Serialize as JSON
+                        source_str = json.dumps(data, indent=2)
+                        lexer = "json"
+
+                    raw.update(Panel(Syntax(source_str, lexer, theme=self.SYNTAX_THEME, padding=1), title="Source"))
                 except Exception as e:
                     raw.update(Panel(Text(f"Error loading raw view: {e}", style="red"), title="Source"))
             else:
@@ -162,5 +177,12 @@ class Inspector(Container):
             preview.update(Panel(str(node.value), title="Value"))
             
             # Raw: Try to parse as JSON if it looks like it, else just syntax highlight the value
-            json_str = json.dumps(node.value, indent=2)
-            raw.update(Panel(Syntax(json_str, "json", theme=self.SYNTAX_THEME, padding=1), title="Source"))
+            if self.format == "yaml" and yaml:
+                # For primitives, YAML is just the value often, or specialized
+                 source_str = yaml.dump(node.value, sort_keys=False)
+                 lexer = "yaml"
+            else:
+                 source_str = json.dumps(node.value, indent=2)
+                 lexer = "json"
+
+            raw.update(Panel(Syntax(source_str, lexer, theme=self.SYNTAX_THEME, padding=1), title="Source"))
