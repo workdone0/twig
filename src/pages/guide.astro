@@ -23,8 +23,8 @@ import Layout from '../layouts/Layout.astro';
             <div class="fade-in-up">
                 <section id="introduction">
                     <h1>Documentation</h1>
-                    <p class="lead">Twig is a high-performance, terminal-based data explorer. It bridges the gap between simple text viewers (like <code>less</code>) and full-blown IDEs.</p>
-                    <p>Designed for developers who work with large datasets, logs, or complex configuration files, Twig parses JSON into a navigable tree structure, allowing for rapid inspection without ever leaving the terminal.</p>
+                    <p class="lead">Twig is a high-performance, terminal-based data explorer for <strong>JSON</strong> and <strong>YAML</strong>. It bridges the gap between simple text viewers (like <code>less</code>) and full-blown IDEs.</p>
+                    <p>Designed for developers who work with large datasets, Kubernetes manifests, logs, or complex configuration files, Twig parses data into a navigable tree structure, allowing for rapid inspection without ever leaving the terminal.</p>
                 </section>
             </div>
 
@@ -49,9 +49,13 @@ import Layout from '../layouts/Layout.astro';
             <div class="fade-in-up" style="animation-delay: 0.2s;">
                 <section id="core-workflow">
                     <h2>Core Workflow</h2>
-                    <p>The primary way to use Twig is to pass it a data file. Twig will ingest the file, index it into a local SQLite database, and launch the TUI.</p>
+                    <p>The primary way to use Twig is to pass it a data file. Twig automatically detects the format (JSON or YAML), indexes it into a local SQLite database, and launches the TUI.</p>
                     <div class="code-block">
                         <pre><code>twg data.json</code></pre>
+                    </div>
+                    <p>Or for YAML files:</p>
+                    <div class="code-block">
+                        <pre><code>twg k8s_manifest.yaml</code></pre>
                     </div>
                     <p><small>Note: You can use command <code>twg</code> or the alias <code>twig</code> interchangeably.</small></p>
                 </section>
@@ -101,7 +105,6 @@ import Layout from '../layouts/Layout.astro';
                                     <th>Context</th>
                                     <th>Action</th>
                                     <th>Key</th>
-                                    <th>Vim Alternate</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -109,67 +112,56 @@ import Layout from '../layouts/Layout.astro';
                                     <td><strong>Navigation</strong></td>
                                     <td>Move Selection Up</td>
                                     <td><code>Up</code></td>
-                                    <td><code>k</code></td>
                                 </tr>
                                 <tr>
                                     <td></td>
                                     <td>Move Selection Down</td>
                                     <td><code>Down</code></td>
-                                    <td><code>j</code></td>
                                 </tr>
                                 <tr>
                                     <td></td>
                                     <td>Expand Node / Enter</td>
                                     <td><code>Right</code> / <code>Enter</code></td>
-                                    <td><code>l</code></td>
                                 </tr>
                                 <tr>
                                     <td></td>
                                     <td>Collapse Node / Back</td>
-                                    <td><code>Left</code> / <code>Backspace</code></td>
-                                    <td><code>h</code></td>
+                                    <td><code>Left</code> / <code>Esc</code></td>
                                 </tr>
                                 <tr>
                                     <td><strong>Search</strong></td>
                                     <td>Global Search</td>
                                     <td><code>/</code></td>
-                                    <td>-</td>
                                 </tr>
                                 <tr>
                                     <td></td>
                                     <td>Next Match</td>
                                     <td><code>n</code></td>
-                                    <td>-</td>
                                 </tr>
                                 <tr>
                                     <td></td>
                                     <td>Previous Match</td>
                                     <td><code>N</code></td>
-                                    <td>-</td>
                                 </tr>
                                 <tr>
                                     <td><strong>Actions</strong></td>
                                     <td>Smart Jump (Path)</td>
                                     <td><code>:</code></td>
-                                    <td>-</td>
                                 </tr>
                                 <tr>
                                     <td></td>
                                     <td>Copy Path</td>
                                     <td><code>c</code></td>
-                                    <td>-</td>
                                 </tr>
                                 <tr>
                                     <td></td>
-                                    <td>Copy Value (JSON)</td>
+                                    <td>Copy Value (Source)</td>
                                     <td><code>y</code></td>
-                                    <td>-</td>
                                 </tr>
                                 <tr>
                                     <td></td>
                                     <td>Toggle Theme</td>
                                     <td><code>t</code></td>
-                                    <td>-</td>
                                 </tr>
                             </tbody>
                         </table>
