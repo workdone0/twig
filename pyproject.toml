@@ -20,6 +20,19 @@ classifiers = [
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
 ]
+keywords = [
+    "json",
+    "yaml",
+    "viewer",
+    "explorer",
+    "terminal",
+    "tui",
+    "cli",
+    "kubernetes",
+    "log-viewer",
+    "data-analysis",
+    "developer-tools"
+]
 
 [project.scripts]
 twig = "twg.ui.app:run"

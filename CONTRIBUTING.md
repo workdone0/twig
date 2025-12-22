@@ -4,23 +4,28 @@ Thank you for your interest in contributing to Twig! We are building the best te
 
 ## Technical Architecture
 
-Twig is built on top of the **Textual** framework (for TUI primitives) and uses a **Streaming SQLite** backend for performance.
+Twig uses a unique architecture to handle large files efficiently while providing a rich TUI experience. It is built on **Textual** (UI) and **SQLite** (Data Engine).
 
 ### Core Concepts
 
-1.  **Streaming Ingestion**: Twig does *not* load the entire JSON into RAM. Instead, it uses `ijson` to stream the file and populate a local SQLite cache (`src/twg/adapters/sqlite_loader.py`).
-2.  **Miller Columns**: The visualization is a hierarchical column view (`src/twg/ui/widgets/navigator.py`). Logic for expanding/collapsing nodes is handled here.
-3.  **FTS Search**: Global search uses SQLite's **FTS5** full-text search engine for instant results (`src/twg/core/model.py`), decoupling search complexity from Python.
+1.  **Streaming Ingestion**: Twig does *not* load the entire file into RAM. It uses **streaming parsers** to populate a local SQLite cache.
+    *   **JSON**: Uses `ijson` (C-backend) for streaming parsing.
+    *   **YAML**: Uses `PyYAML` (C-loader preferred) to stream events.
+2.  **Defer Indexing Strategy**: To achieve <20s load times for 100MB+ files, we use a "Defer Indexing" pattern (`src/twg/adapters/sqlite_loader.py`).
+    *   We drop all Indices and Triggers before ingestion.
+    *   We bulk insert raw data into the Main Table.
+    *   We rebuild Indices and populates the FTS5 Search Table in a single batch operation at the end.
+3.  **Virtual Windowing**: The UI (`src/twg/ui/widgets/navigator.py`) only renders the visible slice of the tree. This allows it to scroll smoothly over datasets with millions of nodes.
 
 ### Project Structure
 
 ```text
 src/twg
 ├── core/           # Data models, DB schema, and FTS logic
-├── adapters/       # Ingestion (JSON -> SQLite)
-└── ui/
+├── adapters/       # Ingestion logic (BaseLoader, SQLiteLoader, YamlLoader)
+├── ui/
     ├── app.py      # Application entry point & layout
-    ├── widgets/    # Reusable UI components (Navigator, Inspector)
+    ├── widgets/    # Reusable UI components (Navigator, Inspector, LoadingScreen)
     └── screens/    # Modals (Help, Search, Jump)
 ```
 
@@ -45,12 +50,15 @@ pip install -e ".[dev]"
 uv run twg samples/large_data.json
 ```
 
-### 3. Run Tests
-(Coming Soon)
+### 3. Verify Changes
+Since this is a TUI, manual verification is critical.
+*   **Load Test**: Ensure a 50MB file loads in <10s.
+*   **Search Test**: Verify fuzzy search finds deep keys.
+*   **UI Check**: Ensure valid rendering (no overlapping widgets).
 
 ## Submission Guidelines
 
-*   **Logic Separation**: Keep business logic (search, parsing) in `core/`, and visual logic in `ui/`.
+*   **Logic Separation**: Keep business logic (search, parsing) in `core/` or `adapters/`, and visual logic in `ui/`.
 *   **Type Safety**: We enforce strict type hints.
 *   **Linting**: Run `ruff check .` before submitting.
 *   **PR Title**: Use conventional commits (e.g., `feat: add graph view`, `fix: search crash`).
