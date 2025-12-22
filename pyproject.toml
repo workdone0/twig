@@ -1,7 +1,7 @@
 [project]
 name = "twg"
 version = "2.1.0"
-description = "Inspect. Navigate. Understand. A modern, terminal-based data explorer."
+description = "Terminal-based JSON & YAML viewer (TUI) for exploring and searching large files — fast, interactive, and privacy-first."
 readme = "README.md"
 requires-python = ">=3.10"
 dependencies = [
