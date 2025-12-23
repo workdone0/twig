@@ -102,14 +102,12 @@ class TwigApp(App):
                 Breadcrumbs(self.model, id="breadcrumbs"),
                 Horizontal(
                     ColumnNavigator(self.model),
-                    Inspector(self.model, id="inspector"),
+                    Inspector(self.model, format=self.format, id="inspector"),
                     id="main-container"
                 ),
                 id="content-view"
             )
         )
-        # Update inspector format
-        self.query_one(Inspector).format = self.format
         
         status_bar = self.query_one(StatusBar)
         status_bar.model = self.model
