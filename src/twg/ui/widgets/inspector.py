@@ -34,9 +34,8 @@ class Inspector(Container):
 
     SYNTAX_THEME = "monokai"
 
-    def __init__(self, model: SQLiteModel, format: str = "json", **kwargs):
+    def __init__(self, model: SQLiteModel, **kwargs):
         self.model = model
-        self.format = format
         super().__init__(**kwargs)
 
     def compose(self) -> ComposeResult:
