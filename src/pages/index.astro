@@ -1,5 +1,5 @@
 ---
-import Layout from '../layouts/Layout.astro';
+import Layout from "../layouts/Layout.astro";
 ---
 
 <Layout title="Twig - High-Performance Terminal JSON & YAML Viewer">
@@ -9,7 +9,7 @@ import Layout from '../layouts/Layout.astro';
                 <span class="typing-words"></span><span class="cursor">|</span>
             </h1>
             <p class="tagline">The modern terminal UI for JSON & YAML</p>
-            
+
             <div class="install-block">
                 <span class="cmd">$ pipx install twg</span>
                 <button class="copy-btn" id="hero-copy-btn">Copy</button>
@@ -17,34 +17,53 @@ import Layout from '../layouts/Layout.astro';
         </section>
 
         <section class="demo">
-             <div class="terminal-frame">
+            <div class="terminal-frame">
                 <!-- Mac-style dots -->
                 <div class="frame-header">
-                    <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+                    <span class="dot"></span><span class="dot"></span><span
+                        class="dot"></span>
                     <span class="title">usr — twig — 120x40</span>
                 </div>
                 <!-- Using raw GitHub URL to ensure it loads without local assets -->
-                <img src="https://raw.githubusercontent.com/workdone0/twig/master/asset/demo.gif" alt="Twig Demo - JSON and YAML Viewer" />
-             </div>
+                <img
+                    src="https://raw.githubusercontent.com/workdone0/twig/master/asset/demo.gif"
+                    alt="Twig Demo - JSON and YAML Viewer"
+                />
+            </div>
         </section>
 
         <section class="grid-layout">
-             <div class="feature">
+            <div class="feature">
                 <h3>Multi-Format Support</h3>
-                <p>Native support for <strong>JSON</strong> and <strong>YAML</strong>. Inspect Kubernetes manifests, cloud logs, and configuration files with ease.</p>
-             </div>
-             <div class="feature">
+                <p>
+                    Native support for <strong>JSON</strong> and <strong
+                        >YAML</strong
+                    >. Inspect Kubernetes manifests, cloud logs, and
+                    configuration files with ease.
+                </p>
+            </div>
+            <div class="feature">
                 <h3>Privacy by Default</h3>
-                <p>Your data never leaves your machine. Twig runs 100% locally—safe for production logs, PII, and sensitive configurations.</p>
-             </div>
-             <div class="feature">
+                <p>
+                    Your data never leaves your machine. Twig runs 100%
+                    locally—safe for production logs, PII, and sensitive
+                    configurations.
+                </p>
+            </div>
+            <div class="feature">
                 <h3>Fluid Navigation</h3>
-                <p>Navigate deep hierarchies naturally with standard Arrow Keys. Smart expansion keeps context clear.</p>
-             </div>
-             <div class="feature">
-                 <h3>Deep Search</h3>
-                 <p>Instantly find any key or value with `/`. Uses SQLite FTS5 for sub-millisecond query performance.</p>
-             </div>
+                <p>
+                    Navigate deep hierarchies naturally with standard Arrow
+                    Keys. Smart expansion keeps context clear.
+                </p>
+            </div>
+            <div class="feature">
+                <h3>Deep Search</h3>
+                <p>
+                    Instantly find any key or value with `/`. Uses SQLite FTS5
+                    for sub-millisecond query performance.
+                </p>
+            </div>
         </section>
 
         <section class="tables-section">
@@ -62,27 +81,27 @@ import Layout from '../layouts/Layout.astro';
                     <tbody>
                         <tr>
                             <td>Interactive Navigation</td>
-                            <td>✅</td>
-                            <td>❌</td>
-                            <td>❌</td>
+                            <td data-label="Twig">✅</td>
+                            <td data-label="jq">❌</td>
+                            <td data-label="less">❌</td>
                         </tr>
                         <tr>
                             <td>Tree View</td>
-                            <td>✅</td>
-                            <td>❌</td>
-                            <td>❌</td>
+                            <td data-label="Twig">✅</td>
+                            <td data-label="jq">❌</td>
+                            <td data-label="less">❌</td>
                         </tr>
                         <tr>
                             <td>Fuzzy Search</td>
-                            <td>✅</td>
-                            <td>❌</td>
-                            <td>✅</td>
+                            <td data-label="Twig">✅</td>
+                            <td data-label="jq">❌</td>
+                            <td data-label="less">✅</td>
                         </tr>
-                         <tr>
+                        <tr>
                             <td>JSON/YAML Support</td>
-                            <td>✅</td>
-                            <td>✅</td>
-                            <td>⚠️</td>
+                            <td data-label="Twig">✅</td>
+                            <td data-label="jq">✅</td>
+                            <td data-label="less">⚠️</td>
                         </tr>
                     </tbody>
                 </table>
@@ -118,17 +137,17 @@ import Layout from '../layouts/Layout.astro';
     const words = ["Inspect.", "Navigate.", "Understand."];
     const element = document.querySelector(".typing-words");
     const cursor = document.querySelector(".cursor") as HTMLElement;
-    
+
     let wordIndex = 0;
     let charIndex = 0;
     let isDeleting = false;
     let typeSpeed = 100;
-    
+
     function type() {
         if (!element) return;
-        
+
         const currentWord = words[wordIndex];
-        
+
         if (isDeleting) {
             element.innerHTML = currentWord.substring(0, charIndex - 1);
             charIndex--;
@@ -138,7 +157,7 @@ import Layout from '../layouts/Layout.astro';
             charIndex++;
             typeSpeed = 100; // Normal typing
         }
-        
+
         if (!isDeleting && charIndex === currentWord.length) {
             // Finished typing word
             isDeleting = true;
@@ -153,20 +172,20 @@ import Layout from '../layouts/Layout.astro';
             }
             typeSpeed = 500; // Pause before next word
         }
-        
+
         setTimeout(type, typeSpeed);
     }
-    
+
     // Start after load
     setTimeout(type, 500);
 
     // Hero Copy Button
-    const heroBtn = document.getElementById('hero-copy-btn');
-    heroBtn?.addEventListener('click', async () => {
-        await navigator.clipboard.writeText('pipx install twg');
+    const heroBtn = document.getElementById("hero-copy-btn");
+    heroBtn?.addEventListener("click", async () => {
+        await navigator.clipboard.writeText("pipx install twg");
         const original = heroBtn.textContent;
-        heroBtn.textContent = 'Copied!';
-        setTimeout(() => heroBtn.textContent = original, 2000);
+        heroBtn.textContent = "Copied!";
+        setTimeout(() => (heroBtn.textContent = original), 2000);
     });
 </script>
 
@@ -177,13 +196,13 @@ import Layout from '../layouts/Layout.astro';
         max-width: 800px;
         margin: 0 auto;
     }
-    
+
     .typing-header {
         font-size: 3.5rem;
         margin-bottom: 1.5rem;
         min-height: 1.2em;
     }
-    
+
     .cursor {
         display: inline-block;
         width: 3px;
@@ -193,8 +212,19 @@ import Layout from '../layouts/Layout.astro';
         vertical-align: baseline;
         animation: solid 1s infinite;
     }
-    @keyframes blink { 50% { opacity: 0; } }
-    @keyframes solid { 0% { opacity: 1; } 100% { opacity: 1; } }
+    @keyframes blink {
+        50% {
+            opacity: 0;
+        }
+    }
+    @keyframes solid {
+        0% {
+            opacity: 1;
+        }
+        100% {
+            opacity: 1;
+        }
+    }
 
     .tagline {
         font-size: 1.25rem;
@@ -214,7 +244,9 @@ import Layout from '../layouts/Layout.astro';
         font-family: var(--font-mono);
         font-size: 0.95rem;
     }
-    .cmd { color: var(--accent-color); }
+    .cmd {
+        color: var(--accent-color);
+    }
     .copy-btn {
         background: none;
         border: none;
@@ -225,7 +257,10 @@ import Layout from '../layouts/Layout.astro';
         border-radius: 4px;
         transition: all 0.2s;
     }
-    .copy-btn:hover { background: var(--border-color); color: var(--text-primary); }
+    .copy-btn:hover {
+        background: var(--border-color);
+        color: var(--text-primary);
+    }
 
     /* Terminal Demo - High Fidelity */
     .demo {
@@ -239,16 +274,18 @@ import Layout from '../layouts/Layout.astro';
         border-radius: 12px; /* Smoother corners */
         overflow: hidden;
         background: #1e1e2e; /* Catppuccin Base */
-        box-shadow: 
-            0 0 0 1px rgba(0,0,0,0.2),
-            0 20px 50px -10px rgba(0,0,0,0.5);
-        transition: transform 0.4s ease, box-shadow 0.4s ease;
+        box-shadow:
+            0 0 0 1px rgba(0, 0, 0, 0.2),
+            0 20px 50px -10px rgba(0, 0, 0, 0.5);
+        transition:
+            transform 0.4s ease,
+            box-shadow 0.4s ease;
     }
     .terminal-frame:hover {
         transform: translateY(-4px);
-        box-shadow: 
+        box-shadow:
             0 0 0 1px var(--accent-color),
-            0 30px 60px -15px rgba(0,0,0,0.6);
+            0 30px 60px -15px rgba(0, 0, 0, 0.6);
         border-color: var(--accent-color);
     }
 
@@ -268,12 +305,26 @@ import Layout from '../layouts/Layout.astro';
         opacity: 0.8;
     }
     /* Mac Buttons */
-    .dot { width: 12px; height: 12px; border-radius: 50%; }
-    .dot:nth-child(1) { background: #ed8796; } /* Red */
-    .dot:nth-child(2) { background: #eed49f; } /* Yellow */
-    .dot:nth-child(3) { background: #a6da95; } /* Green */
-    
-    img { display: block; width: 100%; opacity: 1; }
+    .dot {
+        width: 12px;
+        height: 12px;
+        border-radius: 50%;
+    }
+    .dot:nth-child(1) {
+        background: #ed8796;
+    } /* Red */
+    .dot:nth-child(2) {
+        background: #eed49f;
+    } /* Yellow */
+    .dot:nth-child(3) {
+        background: #a6da95;
+    } /* Green */
+
+    img {
+        display: block;
+        width: 100%;
+        opacity: 1;
+    }
 
     /* Symmetrical Grid: 2 columns max to prevent orphans */
     .grid-layout {
@@ -283,7 +334,7 @@ import Layout from '../layouts/Layout.astro';
         margin: 6rem auto;
         gap: 2rem;
     }
-    
+
     .feature {
         opacity: 0;
         animation: fadeInUp 0.8s ease-out forwards;
@@ -297,29 +348,46 @@ import Layout from '../layouts/Layout.astro';
         background: var(--bg-surface);
         border-color: var(--border-color);
         transform: translateY(-4px);
-        box-shadow: 0 10px 30px -10px rgba(0,0,0,0.1);
+        box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.1);
     }
-    .feature:nth-child(1) { animation-delay: 0.4s; }
-    .feature:nth-child(2) { animation-delay: 0.5s; }
-    .feature:nth-child(3) { animation-delay: 0.6s; }
-    .feature:nth-child(4) { animation-delay: 0.7s; }
-    
-    .feature h3 { 
-        font-family: var(--font-mono); 
-        font-size: 1.1rem; 
-        margin-bottom: 0.75rem; 
-        color: var(--text-primary); 
+    .feature:nth-child(1) {
+        animation-delay: 0.4s;
+    }
+    .feature:nth-child(2) {
+        animation-delay: 0.5s;
+    }
+    .feature:nth-child(3) {
+        animation-delay: 0.6s;
+    }
+    .feature:nth-child(4) {
+        animation-delay: 0.7s;
+    }
+
+    .feature h3 {
+        font-family: var(--font-mono);
+        font-size: 1.1rem;
+        margin-bottom: 0.75rem;
+        color: var(--text-primary);
     }
     .feature h3::before {
-        content: '/ ';
+        content: "/ ";
         color: var(--accent-color);
         opacity: 0.7;
     }
-    .feature p { margin: 0; font-size: 0.95rem; }
+    .feature p {
+        margin: 0;
+        font-size: 0.95rem;
+    }
 
     @keyframes fadeInUp {
-        from { opacity: 0; transform: translateY(20px); }
-        to { opacity: 1; transform: translateY(0); }
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
 
     /* Tables & Metrics Section */
@@ -331,8 +399,9 @@ import Layout from '../layouts/Layout.astro';
         align-items: stretch;
         margin: 8rem 0;
     }
-    
-    .table-container, .metrics-container {
+
+    .table-container,
+    .metrics-container {
         flex: 1;
         min-width: 340px;
         background: var(--bg-surface);
@@ -342,7 +411,8 @@ import Layout from '../layouts/Layout.astro';
         box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
     }
 
-    .table-container h2, .metrics-container h2 {
+    .table-container h2,
+    .metrics-container h2 {
         font-family: var(--font-mono);
         color: var(--text-primary);
         font-size: 1.25rem;
@@ -351,8 +421,9 @@ import Layout from '../layouts/Layout.astro';
         align-items: center;
         gap: 0.5rem;
     }
-    .table-container h2::before, .metrics-container h2::before {
-        content: '#';
+    .table-container h2::before,
+    .metrics-container h2::before {
+        content: "#";
         color: var(--accent-color);
     }
 
@@ -364,7 +435,7 @@ import Layout from '../layouts/Layout.astro';
         height: calc(100% - 3rem); /* Fill remaining space minus header */
         justify-content: center;
     }
-    
+
     .metric-card {
         display: flex;
         align-items: center;
@@ -406,7 +477,8 @@ import Layout from '../layouts/Layout.astro';
         font-family: var(--font-mono);
         font-size: 0.9rem;
     }
-    th, td {
+    th,
+    td {
         padding: 1rem;
         text-align: left;
         border-bottom: 1px solid var(--border-color);
@@ -420,6 +492,74 @@ import Layout from '../layouts/Layout.astro';
         text-transform: uppercase;
         letter-spacing: 0.05em;
     }
-    tr:last-child td { border-bottom: none; }
-    td:first-child { color: var(--text-primary); font-weight: 500; }
+    tr:last-child td {
+        border-bottom: none;
+    }
+    td:first-child {
+        color: var(--text-primary);
+        font-weight: 500;
+    }
+
+    @media (max-width: 768px) {
+        .table-container,
+        .metrics-container {
+            padding: 1.5rem;
+            min-width: 100%;
+        }
+
+        /* Card Transformation */
+        table,
+        thead,
+        tbody,
+        th,
+        td,
+        tr {
+            display: block;
+        }
+
+        thead {
+            display: none;
+        }
+
+        tr {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin-bottom: 1rem;
+            padding: 1rem;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        td {
+            border: none;
+            position: relative;
+            padding-left: 0;
+            padding-right: 0;
+            padding-top: 0.25rem;
+            padding-bottom: 0.25rem;
+        }
+
+        /* Feature Title */
+        td:first-child {
+            font-size: 1rem;
+            margin-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border-color);
+            padding-bottom: 0.5rem;
+            color: var(--accent-color);
+        }
+
+        /* Comparison Items */
+        td[data-label] {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.95rem;
+        }
+
+        td[data-label]::before {
+            content: attr(data-label);
+            font-weight: 600;
+            color: var(--text-secondary);
+        }
+    }
 </style>
