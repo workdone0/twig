@@ -41,7 +41,7 @@ class Inspector(Container):
     def compose(self) -> ComposeResult:
         with Vertical():
             yield Label("Inspector", id="inspector-title")
-            yield Label("", id="insp-path")
+            yield Static("", id="insp-path")
             
             with VerticalScroll(id="inspector-scroll"):
                 yield Container(id="insp-details-grid")
@@ -49,8 +49,16 @@ class Inspector(Container):
                 yield Static(id="insp-preview_content", classes="insp-section")
                 yield Static(id="insp-raw_content", classes="insp-section")
 
+    def on_mount(self) -> None:
+        """Ensure the view is updated if a node was selected before mount."""
+        if self.selected_node:
+            self.watch_selected_node(self.selected_node)
+
     def watch_selected_node(self, node: Node | None) -> None:
-        path_view = self.query_one("#insp-path", Label)
+        if not self.is_mounted:
+            return
+
+        path_view = self.query_one("#insp-path", Static)
         details_grid = self.query_one("#insp-details-grid", Container)
         insights = self.query_one("#insp-insights", Static)
         preview = self.query_one("#insp-preview_content", Static)
