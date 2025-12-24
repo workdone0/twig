@@ -12,54 +12,18 @@
 
 > **Inspect. Navigate. Understand.**
 >
-> The modern, terminal-based data explorer for **JSON** & **YAML**.
-> Designed for developers who value speed and privacy.
+> A modern, terminal-based explorer for **JSON** and **YAML** files.
+> Built for developers who work with real data in real environments.
 
 ![Twig Demo](asset/demo.gif)
 
 ## What is Twig?
 
-**Twig** is a high-performance **Terminal JSON Viewer** and **YAML Viewer**, designed to replace `cat`, `less`, and `jq` for interactive data exploration.
+**Twig** is a high-performance **terminal UI** for exploring **JSON** and **YAML** files interactively.
 
-It turns raw data into a navigable tree, allowing you to filter, search, and explore deep hierarchies without leaving your terminal.
+It turns deeply nested data into a navigable tree, letting you search, jump, and inspect complex structures without piping commands together or scrolling endlessly.
 
-### Key Features
-
-*   **📂 Multi-Format**: Native support for **JSON** and **YAML**.
-*   **👀 Read Only**: Safely explore production logs or configs without risk of accidental edits.
-*   **🔍 Deep Search**: Instantly find any key or value with fuzzy matching (e.g., matching `Pull` in `imagePullPolicy`).
-*   **🎨 Themes**: Includes beautiful themes like **Catppuccin Mocha** (Default) and **Solarized Dark**.
-*   **⚡️ Performance Optimized**: Built on a streaming SQLite backend to handle files efficiently.
-
-### Comparison
-
-| Feature | **Twig** | `jq` | `less` | `cat` |
-| :--- | :---: | :---: | :---: | :---: |
-| **Interactive Navigation** | ✅ | ❌ | ❌ | ❌ |
-| **Tree View** | ✅ | ❌ | ❌ | ❌ |
-| **Fuzzy Search** | ✅ | ❌ | ✅ | ❌ |
-| **JSON/YAML Support** | ✅ | ✅ | ⚠️ | ❌ |
-| **Learning Curve** | **Low** | High | Low | Low |
-
-## Common Use Cases
-
-*   **Kubernetes Manifests**: Navigate deep hierarchies in K8s YAML files without scrolling for miles.
-*   **Cloud Logs**: Quickly inspect massive JSON log dumps from AWS CloudWatch or GCP.
-*   **API Responses**: Visualize complex nested JSON responses from REST or GraphQL APIs.
-*   **Configuration Management**: Audit large Terraform states or Ansible playbooks safely.
-
-## Performance Benchmarks
-
-Twig is highly optimized for files **under 100MB**, with a "sweet spot" for files under **50MB**.
-
-| File Size | Load Time (Cold Start) | Experience |
-| :--- | :--- | :--- |
-| **< 10MB** | < 1s | ⚡️ Instant |
-| **50MB** | ~8s | 🚀 Fast |
-| **90MB** | ~17s | ✅ Usable |
-| **> 100MB** | 20s+ | 🐢 Slower |
-
-> **Note:** For files larger than 100MB, initial loading will take longer as Twig indexes the entire structure for instant search and navigation.
+Twig is designed for **understanding data**, not editing it. If you want to modify files, tools like `vim` or `jq` are better suited. Twig focuses on helping you *make sense* of large and unfamiliar data safely.
 
 ## Installation
 
@@ -103,6 +67,88 @@ uv tool uninstall twg
 pipx uninstall twg
 ```
 
+## Why Twig Exists
+
+Twig was built out of a very practical problem:
+
+Many real-world JSON and YAML files — API responses, Kubernetes manifests, Terraform state, logs — contain **sensitive information**. Pasting them into browser-based viewers is often not an option.
+
+There are excellent CLI tools that run locally, but many are optimized for **transformation**, not **exploration**, and can feel unintuitive when your goal is simply to *understand* a large, complex structure.
+
+Twig fills that gap:
+- Runs **entirely locally**
+- Works well over **SSH and headless environments**
+- Optimized for **reading and exploration**, not mutation
+
+## Key Features
+
+- **📂 Multi-Format**  
+  Native support for **JSON** and **YAML**.
+
+- **👀 Read-Only by Design**  
+  Safely explore production data, logs, and configs without accidental edits.
+
+- **🔍 Deep Search**  
+  Fast fuzzy search across keys and values  
+  (e.g. `Pull` matches `imagePullPolicy`).
+
+- **🧭 Tree-Based Navigation**  
+  Navigate large, deeply nested files without losing context.
+
+- **🎨 Themes**  
+  Includes **Catppuccin Mocha** (default) and **Solarized Dark**.
+
+- **⚡ Performance-Focused**  
+  Designed to handle large files efficiently with a low memory footprint.
+
+## How Twig Works (High Level)
+
+Twig is built using **[Textual](https://github.com/Textualize/textual)**, a Python framework for building modern terminal UIs.
+
+Under the hood:
+- Files are **parsed and indexed into SQLite**
+- **FTS5 (Full-Text Search)** powers fast global search
+
+This architecture allows Twig to stay responsive even with large files, while enabling instant search and navigation once indexing is complete.
+
+## Performance Benchmarks
+
+Twig is optimized for files **under 100MB**, with a sweet spot below **50MB**.
+
+| File Size | Load Time (Cold Start) | Experience |
+| :--- | :--- | :--- |
+| **< 10MB** | < 1s | ⚡ Instant |
+| **50MB** | ~8s | 🚀 Fast |
+| **90MB** | ~17s | ✅ Usable |
+| **> 100MB** | 20s+ | 🐢 Slower |
+
+> **Note:** Large files take longer on first load because Twig indexes the entire structure to enable instant search and navigation.
+
+## Common Use Cases
+
+- **Kubernetes & Infrastructure**  
+  Navigate large YAML manifests without scrolling endlessly.
+
+- **Logs & API Dumps**  
+  Inspect massive JSON outputs from cloud services or APIs.
+
+- **Configuration Audits**  
+  Explore Terraform state, Ansible playbooks, or generated configs safely.
+
+- **Remote Systems**  
+  Explore data directly over SSH without copying files locally.
+
+## Comparison (Conceptual)
+
+Twig is not a replacement for everything — it’s a complement.
+
+| Tool | Strength | Limitation |
+| --- | --- | --- |
+| `jq` | Powerful transformations | Steep learning curve for exploration |
+| `less` / `cat` | Simple and universal | No structure awareness |
+| Web viewers | Visual and easy | Privacy, size, and trust issues |
+| **Twig** | Interactive understanding | Read-only, exploration-focused |
+
 ## Usage
 
 **Explore a file:**
@@ -138,6 +184,18 @@ twg -p large.json
 | `t` | **Toggle Theme** |
 | `?` | **Help** |
 | `q` | **Quit** |
+
+## Non-Goals
+
+Twig is intentionally **not**:
+
+- A JSON or YAML editor
+- A replacement for `jq` or other transformation tools
+- A streaming log viewer
+- A web-based or SaaS tool
+
+Twig is focused on **reading and understanding structured data well**, especially in local and remote (SSH) environments.
+
 
 ## Contributing
 
