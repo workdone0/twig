@@ -19,36 +19,28 @@
 
 ## What is Twig?
 
-**Twig** is a high-performance **terminal UI** for exploring **JSON** and **YAML** files interactively.
+**Twig** is a high-performance **terminal UI** for exploring **JSON** and **YAML** files interactively. It turns deeply nested data into a navigable tree, letting you search, jump, and inspect complex structures without piping commands together or scrolling endlessly.
 
-It turns deeply nested data into a navigable tree, letting you search, jump, and inspect complex structures without piping commands together or scrolling endlessly.
+Twig is designed for **understanding data**, not editing it. It fills the gap between `cat`/`less` (no structure) and heavy IDEs (too slow/GUI-based), making it perfect for **production logs, Kubernetes manifests, and large API responses**.
 
-Twig is designed for **understanding data**, not editing it. If you want to modify files, tools like `vim` or `jq` are better suited. Twig focuses on helping you *make sense* of large and unfamiliar data safely.
+---
 
 ## Installation
 
 ### Using uv (Recommended)
 The modern, fast, and reliable way to install Python tools.
 
-1. **Install uv** (if you don't have it):
-   
-   **macOS / Linux:**
-   ```bash
-   curl -LsSf https://astral.sh/uv/install.sh | sh
-   ```
-   **Windows:**
-   ```powershell
-   powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
-   ```
+```bash
+# 1. Install uv (if needed)
+curl -LsSf https://astral.sh/uv/install.sh | sh
 
-2. **Install Twig**:
-   ```bash
-   uv tool install twg
-   ```
-
+# 2. Install Twig
+uv tool install twg
+```
 
 ### Other Methods
-> **Note:** Only use these if you are experienced with Python environments and know what you are doing.
+<details>
+<summary>Click to show pipx or pip instructions</summary>
 
 #### Using pipx
 ```bash
@@ -56,98 +48,18 @@ pipx install twg
 ```
 
 #### Using pip
+> **Note:** Recommended only for virtual environments.
 ```bash
 pip install twg
 ```
+</details>
 
-## Uninstalling
+### Uninstalling
 ```bash
 uv tool uninstall twg
-# or if you used pipx
-pipx uninstall twg
 ```
 
-## Why Twig Exists
-
-Twig was built out of a very practical problem:
-
-Many real-world JSON and YAML files — API responses, Kubernetes manifests, Terraform state, logs — contain **sensitive information**. Pasting them into browser-based viewers is often not an option.
-
-There are excellent CLI tools that run locally, but many are optimized for **transformation**, not **exploration**, and can feel unintuitive when your goal is simply to *understand* a large, complex structure.
-
-Twig fills that gap:
-- Runs **entirely locally**
-- Works well over **SSH and headless environments**
-- Optimized for **reading and exploration**, not mutation
-
-## Key Features
-
-- **📂 Multi-Format**  
-  Native support for **JSON** and **YAML**.
-
-- **👀 Read-Only by Design**  
-  Safely explore production data, logs, and configs without accidental edits.
-
-- **🔍 Deep Search**  
-  Fast fuzzy search across keys and values  
-  (e.g. `Pull` matches `imagePullPolicy`).
-
-- **🧭 Tree-Based Navigation**  
-  Navigate large, deeply nested files without losing context.
-
-- **🎨 Themes**  
-  Includes **Catppuccin Mocha** (default) and **Solarized Dark**.
-
-- **⚡ Performance-Focused**  
-  Designed to handle large files efficiently with a low memory footprint.
-
-## How Twig Works (High Level)
-
-Twig is built using **[Textual](https://github.com/Textualize/textual)**, a Python framework for building modern terminal UIs.
-
-Under the hood:
-- Files are **parsed and indexed into SQLite**
-- **FTS5 (Full-Text Search)** powers fast global search
-
-This architecture allows Twig to stay responsive even with large files, while enabling instant search and navigation once indexing is complete.
-
-## Performance Benchmarks
-
-Twig is optimized for files **under 100MB**, with a sweet spot below **50MB**.
-
-| File Size | Load Time (Cold Start) | Experience |
-| :--- | :--- | :--- |
-| **< 10MB** | < 1s | ⚡ Instant |
-| **50MB** | ~8s | 🚀 Fast |
-| **90MB** | ~17s | ✅ Usable |
-| **> 100MB** | 20s+ | 🐢 Slower |
-
-> **Note:** Large files take longer on first load because Twig indexes the entire structure to enable instant search and navigation.
-
-## Common Use Cases
-
-- **Kubernetes & Infrastructure**  
-  Navigate large YAML manifests without scrolling endlessly.
-
-- **Logs & API Dumps**  
-  Inspect massive JSON outputs from cloud services or APIs.
-
-- **Configuration Audits**  
-  Explore Terraform state, Ansible playbooks, or generated configs safely.
-
-- **Remote Systems**  
-  Explore data directly over SSH without copying files locally.
-
-## Comparison (Conceptual)
-
-Twig is not a replacement for everything — it’s a complement.
-
-| Tool | Strength | Limitation |
-| --- | --- | --- |
-| `jq` | Powerful transformations | Steep learning curve for exploration |
-| `less` / `cat` | Simple and universal | No structure awareness |
-| Web viewers | Visual and easy | Privacy, size, and trust issues |
-| **Twig** | Interactive understanding | Read-only, exploration-focused |
+---
 
 ## Usage
 
@@ -169,33 +81,69 @@ twg --fix bad.json -o clean.json
 twg -p large.json
 ```
 
-## Cheat Sheet
+### Controls & Cheat Sheet
 
-| Key | Action |
-| :--- | :--- |
-| **Navigation** | |
-| `Arrow Keys` | **Traverse** Tree |
-| `/` | **Search** (Global) |
-| `n` / `N` | **Next / Prev** Match |
-| `:` | **Jump** to path |
-| **Actions** | |
-| `c` | **Copy Path** |
-| `y` | **Copy Source** (JSON/YAML) |
-| `t` | **Toggle Theme** |
-| `?` | **Help** |
-| `q` | **Quit** |
+| Key | Action | Key | Action |
+| :--- | :--- | :--- | :--- |
+| **Navigation** | | **Actions** | |
+| `Arrow Keys` | **Traverse** Tree | `c` | **Copy Path** |
+| `/` | **Search** (Global) | `y` | **Copy Source** |
+| `n` / `N` | **Next / Prev** Match | `t` | **Toggle Theme** |
+| `:` | **Jump** to path | `?` | **Help** |
+| | | `q` | **Quit** |
 
-## Non-Goals
+---
 
-Twig is intentionally **not**:
+## Key Features
 
-- A JSON or YAML editor
-- A replacement for `jq` or other transformation tools
-- A streaming log viewer
-- A web-based or SaaS tool
+- **📂 Multi-Format**: Native support for **JSON** and **YAML**.
+- **👀 Read-Only by Design**: Safely explore production data, logs, and configs without accidental edits.
+- **🔍 Deep Search**: Fast fuzzy search across keys and values (e.g. `Pull` matches `imagePullPolicy`).
+- **🧭 Tree-Based Navigation**: Navigate large, deeply nested files without losing context.
+- **🎨 Themes**: Includes **Catppuccin Mocha** (default) and **Solarized Dark**.
+- **⚡ Performance-Focused**: Designed to handle large files efficiently with a low memory footprint.
 
-Twig is focused on **reading and understanding structured data well**, especially in local and remote (SSH) environments.
+---
 
+## Why Twig Exists
+
+Many real-world files — API responses, K8s manifests, Terraform state — contain **sensitive information**. Pasting them into web-based viewers is a security risk.
+
+Existing CLI tools like `jq` are powerful for **transformation** but can be unintuitive for **interactive exploration**. Twig focuses purely on the latter:
+
+- Runs **entirely locally**
+- Works well over **SSH and headless environments**
+- Optimized for **reading**, not mutation
+
+### Comparison
+| Tool | Strength | Limitation |
+| --- | --- | --- |
+| `jq` | Powerful transformations | Steep learning curve for exploration |
+| `less` / `cat` | Simple and universal | No structure awareness |
+| Web viewers | Visual and easy | Privacy, size, and trust issues |
+| **Twig** | Interactive understanding | Read-only, exploration-focused |
+
+### Non-Goals
+Twig is **not**:
+- An editor.
+- A replacement for `jq`.
+- A streaming log viewer.
+
+---
+
+## Performance & Architecture
+
+Twig is built using **[Textual](https://github.com/Textualize/textual)** and uses **SQLite** with **FTS5** for indexing. This allows instant search and navigation even for large files.
+
+**Benchmarks:**
+| File Size | Load Time (Cold Start) | Experience |
+| :--- | :--- | :--- |
+| **< 10MB** | < 1s | ⚡ Instant |
+| **50MB** | ~8s | 🚀 Fast |
+| **90MB** | ~17s | ✅ Usable |
+| **> 100MB** | 20s+ | 🐢 Slower |
+
+---
 
 ## Contributing
 
