@@ -12,67 +12,54 @@
 
 > **Inspect. Navigate. Understand.**
 >
-> The modern, terminal-based data explorer for **JSON** & **YAML**.
-> Designed for developers who value speed and privacy.
+> A modern, terminal-based explorer for **JSON** and **YAML** files.
+> Built for developers who work with real data in real environments.
 
 ![Twig Demo](asset/demo.gif)
 
 ## What is Twig?
 
-**Twig** is a high-performance **Terminal JSON Viewer** and **YAML Viewer**, designed to replace `cat`, `less`, and `jq` for interactive data exploration.
+**Twig** is a high-performance **terminal UI** for exploring **JSON** and **YAML** files interactively. It turns deeply nested data into a navigable tree, letting you search, jump, and inspect complex structures without piping commands together or scrolling endlessly.
 
-It turns raw data into a navigable tree, allowing you to filter, search, and explore deep hierarchies without leaving your terminal.
+Twig is designed for **understanding data**, not editing it. It fills the gap between `cat`/`less` (no structure) and heavy IDEs (too slow/GUI-based), making it perfect for **production logs, Kubernetes manifests, and large API responses**.
 
-### Key Features
-
-*   **📂 Multi-Format**: Native support for **JSON** and **YAML**.
-*   **👀 Read Only**: Safely explore production logs or configs without risk of accidental edits.
-*   **🔍 Deep Search**: Instantly find any key or value with fuzzy matching (e.g., matching `Pull` in `imagePullPolicy`).
-*   **🎨 Themes**: Includes beautiful themes like **Catppuccin Mocha** (Default) and **Solarized Dark**.
-*   **⚡️ Performance Optimized**: Built on a streaming SQLite backend to handle files efficiently.
-
-### Comparison
-
-| Feature | **Twig** | `jq` | `less` | `cat` |
-| :--- | :---: | :---: | :---: | :---: |
-| **Interactive Navigation** | ✅ | ❌ | ❌ | ❌ |
-| **Tree View** | ✅ | ❌ | ❌ | ❌ |
-| **Fuzzy Search** | ✅ | ❌ | ✅ | ❌ |
-| **JSON/YAML Support** | ✅ | ✅ | ⚠️ | ❌ |
-| **Learning Curve** | **Low** | High | Low | Low |
-
-## Common Use Cases
-
-*   **Kubernetes Manifests**: Navigate deep hierarchies in K8s YAML files without scrolling for miles.
-*   **Cloud Logs**: Quickly inspect massive JSON log dumps from AWS CloudWatch or GCP.
-*   **API Responses**: Visualize complex nested JSON responses from REST or GraphQL APIs.
-*   **Configuration Management**: Audit large Terraform states or Ansible playbooks safely.
-
-## Performance Benchmarks
-
-Twig is highly optimized for files **under 100MB**, with a "sweet spot" for files under **50MB**.
-
-| File Size | Load Time (Cold Start) | Experience |
-| :--- | :--- | :--- |
-| **< 10MB** | < 1s | ⚡️ Instant |
-| **50MB** | ~8s | 🚀 Fast |
-| **90MB** | ~17s | ✅ Usable |
-| **> 100MB** | 20s+ | 🐢 Slower |
-
-> **Note:** For files larger than 100MB, initial loading will take longer as Twig indexes the entire structure for instant search and navigation.
+---
 
 ## Installation
 
-### Using pipx (Recommended)
-Install in an isolated environment to keep your system clean:
+### Using uv (Recommended)
+The modern, fast, and reliable way to install Python tools.
+
+```bash
+# 1. Install uv (if needed)
+curl -LsSf https://astral.sh/uv/install.sh | sh
+
+# 2. Install Twig
+uv tool install twg
+```
+
+### Other Methods
+<details>
+<summary>Click to show pipx or pip instructions</summary>
+
+#### Using pipx
 ```bash
 pipx install twg
 ```
 
-### Using pip
+#### Using pip
+> **Note:** Recommended only for virtual environments.
 ```bash
 pip install twg
 ```
+</details>
+
+### Uninstalling
+```bash
+uv tool uninstall twg
+```
+
+---
 
 ## Usage
 
@@ -94,21 +81,69 @@ twg --fix bad.json -o clean.json
 twg -p large.json
 ```
 
-## Cheat Sheet
+### Controls & Cheat Sheet
 
-| Key | Action |
-| :--- | :--- |
-| **Navigation** | |
-| `Arrow Keys` | **Traverse** Tree |
-| `/` | **Search** (Global) |
-| `n` / `N` | **Next / Prev** Match |
-| `:` | **Jump** to path |
-| **Actions** | |
-| `c` | **Copy Path** |
-| `y` | **Copy Source** (JSON/YAML) |
-| `t` | **Toggle Theme** |
-| `?` | **Help** |
-| `q` | **Quit** |
+| Key | Action | Key | Action |
+| :--- | :--- | :--- | :--- |
+| **Navigation** | | **Actions** | |
+| `Arrow Keys` | **Traverse** Tree | `c` | **Copy Path** |
+| `/` | **Search** (Global) | `y` | **Copy Source** |
+| `n` / `N` | **Next / Prev** Match | `t` | **Toggle Theme** |
+| `:` | **Jump** to path | `?` | **Help** |
+| | | `q` | **Quit** |
+
+---
+
+## Key Features
+
+- **📂 Multi-Format**: Native support for **JSON** and **YAML**.
+- **👀 Read-Only by Design**: Safely explore production data, logs, and configs without accidental edits.
+- **🔍 Deep Search**: Fast fuzzy search across keys and values (e.g. `Pull` matches `imagePullPolicy`).
+- **🧭 Tree-Based Navigation**: Navigate large, deeply nested files without losing context.
+- **🎨 Themes**: Includes **Catppuccin Mocha** (default) and **Solarized Dark**.
+- **⚡ Performance-Focused**: Designed to handle large files efficiently with a low memory footprint.
+
+---
+
+## Why Twig Exists
+
+Many real-world files — API responses, K8s manifests, Terraform state — contain **sensitive information**. Pasting them into web-based viewers is a security risk.
+
+Existing CLI tools like `jq` are powerful for **transformation** but can be unintuitive for **interactive exploration**. Twig focuses purely on the latter:
+
+- Runs **entirely locally**
+- Works well over **SSH and headless environments**
+- Optimized for **reading**, not mutation
+
+### Comparison
+| Tool | Strength | Limitation |
+| --- | --- | --- |
+| `jq` | Powerful transformations | Steep learning curve for exploration |
+| `less` / `cat` | Simple and universal | No structure awareness |
+| Web viewers | Visual and easy | Privacy, size, and trust issues |
+| **Twig** | Interactive understanding | Read-only, exploration-focused |
+
+### Non-Goals
+Twig is **not**:
+- An editor.
+- A replacement for `jq`.
+- A streaming log viewer.
+
+---
+
+## Performance & Architecture
+
+Twig is built using **[Textual](https://github.com/Textualize/textual)** and uses **SQLite** with **FTS5** for indexing. This allows instant search and navigation even for large files.
+
+**Benchmarks:**
+| File Size | Load Time (Cold Start) | Experience |
+| :--- | :--- | :--- |
+| **< 10MB** | < 1s | ⚡ Instant |
+| **50MB** | ~8s | 🚀 Fast |
+| **90MB** | ~17s | ✅ Usable |
+| **> 100MB** | 20s+ | 🐢 Slower |
+
+---
 
 ## Contributing
 
