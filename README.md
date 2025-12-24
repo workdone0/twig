@@ -63,15 +63,44 @@ Twig is highly optimized for files **under 100MB**, with a "sweet spot" for file
 
 ## Installation
 
-### Using pipx (Recommended)
-Install in an isolated environment to keep your system clean:
+### Using uv (Recommended)
+The modern, fast, and reliable way to install Python tools.
+
+1. **Install uv** (if you don't have it):
+   
+   **macOS / Linux:**
+   ```bash
+   curl -LsSf https://astral.sh/uv/install.sh | sh
+   ```
+   **Windows:**
+   ```powershell
+   powershell -c "irm https://astral.sh/uv/install.ps1 | iex"
+   ```
+
+2. **Install Twig**:
+   ```bash
+   uv tool install twg
+   ```
+
+
+### Other Methods
+> **Note:** Only use these if you are experienced with Python environments and know what you are doing.
+
+#### Using pipx
 ```bash
 pipx install twg
 ```
 
-### Using pip
+#### Using pip
 ```bash
 pip install twg
+```
+
+## Uninstalling
+```bash
+uv tool uninstall twg
+# or if you used pipx
+pipx uninstall twg
 ```
 
 ## Usage
