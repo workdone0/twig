@@ -1,102 +1,156 @@
 ---
-import '../global.css';
+import "../global.css";
 
 interface Props {
-	title: string;
-	description?: string;
+    title: string;
+    description?: string;
 }
 
-const { title, description = "The modern terminal viewer for JSON & YAML. Inspect, navigate, and search with IDE-like fluidity." } = Astro.props;
+const {
+    title,
+    description = "The modern terminal viewer for JSON & YAML. Inspect, navigate, and search with IDE-like fluidity.",
+} = Astro.props;
 ---
 
 <!doctype html>
 <html lang="en">
-	<head>
+    <head>
         <!-- Google tag (gtag.js) -->
-        <script async src="https://www.googletagmanager.com/gtag/js?id=G-L3F72TB67V"></script>
+        <script
+            async
+            src="https://www.googletagmanager.com/gtag/js?id=G-L3F72TB67V"
+        ></script>
         <script is:inline>
             window.dataLayer = window.dataLayer || [];
-            function gtag(){dataLayer.push(arguments);}
-            gtag('js', new Date());
-            gtag('config', 'G-L3F72TB67V');
+            function gtag() {
+                dataLayer.push(arguments);
+            }
+            gtag("js", new Date());
+            gtag("config", "G-L3F72TB67V");
         </script>
-		<meta charset="UTF-8" />
-		<meta name="viewport" content="width=device-width" />
-		<link rel="icon" href="/favicon.ico" sizes="any" />
-		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width" />
+        <link rel="icon" href="/favicon.ico" sizes="any" />
+        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         <link rel="apple-touch-icon" href="/favicon-256x256.png" />
-        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
-        <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png" />
-		<meta name="generator" content={Astro.generator} />
-        <meta name="description" content={description} />
-		<title>{title}</title>
+        <link
+            rel="icon"
+            type="image/png"
+            sizes="32x32"
+            href="/favicon-32x32.png"
+        />
+        <link
+            rel="icon"
+            type="image/png"
+            sizes="48x48"
+            href="/favicon-48x48.png"
+        />
+        <meta name="generator" content={Astro.generator} />
+        <meta
+            name="description"
+            content="Explore large JSON and YAML files in the terminal. Twig is a fast, privacy-first TUI built for infra and backend engineers working with real production data."
+        />
+        <title>Twig - Terminal JSON & YAML Explorer</title>
 
         <!-- SEO & Open Graph -->
         <link rel="canonical" href={new URL(Astro.url.pathname, Astro.site)} />
-        <meta name="keywords" content="json viewer, yaml viewer, terminal data explorer, tui, sqlite, large file viewer, developer tools, json explorer, yaml explorer, kubernetes log viewer, api response viewer" />
-        
+        <meta
+            name="keywords"
+            content="json viewer, yaml viewer, terminal data explorer, tui, sqlite, large file viewer, developer tools, json explorer, yaml explorer, kubernetes log viewer, api response viewer"
+        />
+
         <meta property="og:type" content="website" />
         <meta property="og:url" content={Astro.url} />
         <meta property="og:title" content={title} />
         <meta property="og:description" content={description} />
-        <meta property="og:image" content={new URL("asset/logo.png", Astro.site)} />
+        <meta
+            property="og:image"
+            content={new URL("asset/logo.png", Astro.site)}
+        />
 
         <meta property="twitter:card" content="summary_large_image" />
         <meta property="twitter:title" content={title} />
         <meta property="twitter:description" content={description} />
-        <meta property="twitter:image" content={new URL("asset/logo.png", Astro.site)} />
+        <meta
+            property="twitter:image"
+            content={new URL("asset/logo.png", Astro.site)}
+        />
 
         <!-- Structured Data (JSON-LD) -->
         <script type="application/ld+json" is:inline>
             {
-              "@context": "https://schema.org",
-              "@type": "SoftwareApplication",
-              "name": "Twig",
-              "operatingSystem": "macOS, Linux, Windows",
-              "applicationCategory": "DeveloperApplication",
-              "offers": {
-                "@type": "Offer",
-                "price": "0",
-                "priceCurrency": "USD"
-              },
-              "description": "A high-performance terminal JSON & YAML viewer. Inspect, navigate, and search massive files interactively.",
-              "url": "https://twig.wtf",
-              "image": "https://twig.wtf/asset/logo.png",
-              "author": {
-                  "@type": "Person",
-                  "name": "Shubham Kumar",
-                  "url": "https://workdone0.dev"
-              }
+                "@context": "https://schema.org",
+                "@type": "SoftwareApplication",
+                "name": "Twig",
+                "operatingSystem": "macOS, Linux, Windows",
+                "applicationCategory": "DeveloperApplication",
+                "offers": {
+                    "@type": "Offer",
+                    "price": "0",
+                    "priceCurrency": "USD"
+                },
+                "description": "A high-performance terminal JSON & YAML viewer. Inspect, navigate, and search massive files interactively.",
+                "url": "https://twig.wtf",
+                "image": "https://twig.wtf/asset/logo.png",
+                "author": {
+                    "@type": "Person",
+                    "name": "Shubham Kumar",
+                    "url": "https://workdone0.dev"
+                }
             }
         </script>
 
         <script is:inline>
             // Minimal theme loader
             const theme = (() => {
-                if (typeof localStorage !== 'undefined' && localStorage.getItem('theme')) {
-                    return localStorage.getItem('theme');
+                if (
+                    typeof localStorage !== "undefined" &&
+                    localStorage.getItem("theme")
+                ) {
+                    return localStorage.getItem("theme");
                 }
-                return window.matchMedia('(prefers-color-scheme: light)').matches ? 'light' : 'dark';
+                return window.matchMedia("(prefers-color-scheme: light)")
+                    .matches
+                    ? "light"
+                    : "dark";
             })();
-            document.documentElement.setAttribute('data-theme', theme);
+            document.documentElement.setAttribute("data-theme", theme);
         </script>
-        
-		<link rel="preconnect" href="https://fonts.googleapis.com">
-		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-		<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-	</head>
-	<body>
+
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
+            rel="stylesheet"
+        />
+    </head>
+    <body>
         <div class="container">
             <header>
                 <div class="logo">
-                     <a href={import.meta.env.BASE_URL}>
-                        <img src="https://raw.githubusercontent.com/workdone0/twig/master/asset/logo.png" alt="Twig" height="42" />
-                     </a>
+                    <a href={import.meta.env.BASE_URL}>
+                        <img
+                            src="https://raw.githubusercontent.com/workdone0/twig/master/asset/logo.png"
+                            alt="Twig"
+                            height="42"
+                        />
+                    </a>
                 </div>
                 <nav>
-                    <a href={import.meta.env.BASE_URL === '/' ? '/guide' : `${import.meta.env.BASE_URL}/guide`} class="nav-link">Guide</a>
-                    <a href="https://github.com/workdone0/twig" class="nav-link">GitHub</a>
-                    <button id="theme-toggle" class="theme-btn" aria-label="Toggle Theme">
+                    <a
+                        href={import.meta.env.BASE_URL === "/"
+                            ? "/guide"
+                            : `${import.meta.env.BASE_URL}/guide`}
+                        class="nav-link">Guide</a
+                    >
+                    <a href="https://github.com/workdone0/twig" class="nav-link"
+                        >GitHub</a
+                    >
+                    <button
+                        id="theme-toggle"
+                        class="theme-btn"
+                        aria-label="Toggle Theme"
+                    >
                         <span class="icon sun">Light</span>
                         <span class="icon moon">Dark</span>
                     </button>
@@ -104,42 +158,80 @@ const { title, description = "The modern terminal viewer for JSON & YAML. Inspec
             </header>
 
             <slot />
+        </div>
 
-            <footer>
+        <footer>
+            <div class="footer-container">
                 <div class="footer-content">
                     <div class="col brand">
-                        <strong>Twig</strong>
+                        <a href="/" class="footer-logo">
+                            <img
+                                src="https://raw.githubusercontent.com/workdone0/twig/master/asset/logo.png"
+                                alt="Twig"
+                                height="32"
+                            />
+                        </a>
                         <p>The modern terminal UI for JSON & YAML</p>
-                        <p class="copyright">© {new Date().getFullYear()} Shubham Kumar. MIT Licensed.</p>
+                        <p class="copyright">
+                            © {new Date().getFullYear()} Shubham Kumar. MIT Licensed.<br
+                            />
+                            <span style="opacity: 0.8; font-size: 0.85em;"
+                                >Built with <a
+                                    href="https://python.org"
+                                    target="_blank"
+                                    style="color: inherit; text-decoration: underline;"
+                                    >Python</a
+                                > & <a
+                                    href="https://textual.textualize.io"
+                                    target="_blank"
+                                    style="color: inherit; text-decoration: underline;"
+                                    >Textual</a
+                                ></span
+                            >
+                        </p>
                     </div>
-                    
+
                     <div class="col links">
                         <strong>Resources</strong>
                         <a href="/guide">Documentation</a>
-                        <a href="https://pypi.org/project/twg/" target="_blank">PyPI Package</a>
-                        <a href="https://github.com/workdone0/twig" target="_blank">Source Code</a>
+                        <a href="https://pypi.org/project/twg/" target="_blank"
+                            >PyPI Package</a
+                        >
+                        <a
+                            href="https://github.com/workdone0/twig"
+                            target="_blank">Source Code</a
+                        >
                     </div>
-                    
+
                     <div class="col links">
                         <strong>Project</strong>
-                        <a href="https://github.com/workdone0/twig/issues" target="_blank">Report an Issue</a>
-                        <a href="https://buymeacoffee.com/workdone0" target="_blank">Support Development</a>
-                        <a href="https://workdone0.dev" target="_blank">Author</a>
+                        <a
+                            href="https://github.com/workdone0/twig/issues"
+                            target="_blank">Report an Issue</a
+                        >
+                        <a
+                            href="https://buymeacoffee.com/workdone0"
+                            target="_blank">Support Development</a
+                        >
+                        <a href="https://workdone0.dev" target="_blank"
+                            >Author</a
+                        >
                     </div>
                 </div>
-            </footer>
-        </div>
+            </div>
+        </footer>
 
         <script>
             const toggle = document.getElementById("theme-toggle");
             toggle?.addEventListener("click", () => {
-                const current = document.documentElement.getAttribute("data-theme");
+                const current =
+                    document.documentElement.getAttribute("data-theme");
                 const next = current === "light" ? "dark" : "light";
                 document.documentElement.setAttribute("data-theme", next);
                 localStorage.setItem("theme", next);
             });
         </script>
-	</body>
+    </body>
 </html>
 
 <style>
@@ -151,7 +243,7 @@ const { title, description = "The modern terminal viewer for JSON & YAML. Inspec
         border-bottom: 1px solid var(--border-color);
         margin-bottom: 4rem;
     }
-    
+
     nav {
         display: flex;
         gap: 2rem;
@@ -163,7 +255,9 @@ const { title, description = "The modern terminal viewer for JSON & YAML. Inspec
         font-size: 0.9rem;
         color: var(--text-secondary);
     }
-    .nav-link:hover { color: var(--text-primary); }
+    .nav-link:hover {
+        color: var(--text-primary);
+    }
 
     .theme-btn {
         background: none;
@@ -174,16 +268,28 @@ const { title, description = "The modern terminal viewer for JSON & YAML. Inspec
         font-size: 0.9rem;
         color: var(--text-secondary);
     }
-    .theme-btn:hover { color: var(--text-primary); }
+    .theme-btn:hover {
+        color: var(--text-primary);
+    }
 
-    html[data-theme="light"] .sun { display: none; }
-    html[data-theme="dark"] .moon { display: none; }
+    html[data-theme="light"] .sun {
+        display: none;
+    }
+    html[data-theme="dark"] .moon {
+        display: none;
+    }
 
     /* Footer */
     footer {
         border-top: 1px solid var(--border-color);
         margin-top: 8rem;
         padding: 4rem 0;
+        background: var(--bg-secondary); /* Full width tint */
+    }
+    .footer-container {
+        max-width: var(--max-width);
+        margin: 0 auto;
+        padding: 0 2rem;
     }
     .footer-content {
         display: flex;
@@ -204,14 +310,14 @@ const { title, description = "The modern terminal viewer for JSON & YAML. Inspec
         flex: 1;
         min-width: 150px;
     }
-    
+
     .col strong {
         color: var(--text-primary);
         font-family: var(--font-mono);
         margin-bottom: 0.5rem;
         display: block;
     }
-    
+
     .col p {
         margin: 0;
         font-size: 0.9rem;
@@ -222,7 +328,7 @@ const { title, description = "The modern terminal viewer for JSON & YAML. Inspec
         font-size: 0.8rem !important;
         margin-top: 1rem !important;
     }
-    
+
     .col a {
         color: var(--text-secondary);
         font-size: 0.9rem;
@@ -231,5 +337,43 @@ const { title, description = "The modern terminal viewer for JSON & YAML. Inspec
     }
     .col a:hover {
         color: var(--accent-color);
+    }
+
+    @media (max-width: 768px) {
+        header {
+            flex-direction: column;
+            height: auto;
+            gap: 1.5rem;
+            padding: 2rem 0;
+            margin-bottom: 3rem;
+        }
+        nav {
+            gap: 1.5rem;
+            justify-content: center;
+        }
+
+        .footer-content {
+            display: flex;
+            flex-direction: column;
+            gap: 3rem;
+            text-align: center;
+            align-items: center;
+        }
+
+        /* Reset widths and align center */
+        .col.brand,
+        .col.links,
+        .col {
+            width: 100%;
+            min-width: 0;
+            align-items: center;
+            grid-column: auto; /* Reset grid */
+            margin-bottom: 0;
+        }
+
+        .container,
+        .footer-container {
+            padding: 0 1.5rem;
+        }
     }
 </style>

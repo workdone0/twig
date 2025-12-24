@@ -2,23 +2,33 @@
 import Layout from "../layouts/Layout.astro";
 ---
 
-<Layout title="Twig - High-Performance Terminal JSON & YAML Viewer">
+<Layout title="Twig - Terminal JSON & YAML Explorer">
     <main>
         <section class="hero">
-            <h1 class="typing-header">
-                <span class="typing-words"></span><span class="cursor">|</span>
+            <h1 class="hero-header">
+                A terminal-first<br />
+                <span class="highlight">JSON & YAML</span> explorer
             </h1>
-            <p class="tagline">The modern terminal UI for JSON & YAML</p>
+            <p class="tagline">
+                Understand complex data locally — fast, private, and
+                SSH-friendly.
+            </p>
 
-            <div class="install-block">
-                <span class="cmd">$ pipx install twg</span>
+            <div class="install-block primary">
+                <span class="cmd">$ uv tool install twg</span>
                 <button class="copy-btn" id="hero-copy-btn">Copy</button>
+            </div>
+
+            <div class="hero-links">
+                <a
+                    href="https://github.com/workdone0/twig"
+                    class="secondary-link">View on GitHub</a
+                >
             </div>
         </section>
 
         <section class="demo">
             <div class="terminal-frame">
-                <!-- Mac-style dots -->
                 <div class="frame-header">
                     <span class="dot"></span><span class="dot"></span><span
                         class="dot"></span>
@@ -32,534 +42,547 @@ import Layout from "../layouts/Layout.astro";
             </div>
         </section>
 
-        <section class="grid-layout">
-            <div class="feature">
-                <h3>Multi-Format Support</h3>
+        <!-- SECTION: About Twig (The Narrative) -->
+        <section class="about-section">
+            <div class="about-container">
+                <h2>The missing link in your terminal.</h2>
                 <p>
-                    Native support for <strong>JSON</strong> and <strong
-                        >YAML</strong
-                    >. Inspect Kubernetes manifests, cloud logs, and
-                    configuration files with ease.
+                    <code>cat</code> floods your terminal. <code>jq</code> is powerful,
+                    but not built for reading.
                 </p>
-            </div>
-            <div class="feature">
-                <h3>Privacy by Default</h3>
-                <p>
-                    Your data never leaves your machine. Twig runs 100%
-                    locally—safe for production logs, PII, and sensitive
-                    configurations.
-                </p>
-            </div>
-            <div class="feature">
-                <h3>Fluid Navigation</h3>
-                <p>
-                    Navigate deep hierarchies naturally with standard Arrow
-                    Keys. Smart expansion keeps context clear.
-                </p>
-            </div>
-            <div class="feature">
-                <h3>Deep Search</h3>
-                <p>
-                    Instantly find any key or value with `/`. Uses SQLite FTS5
-                    for sub-millisecond query performance.
+                <p class="highlight-text">
+                    Twig brings structure to your terminal. A zero-config,
+                    interactive explorer for <strong>understanding</strong> JSON and
+                    YAML at a glance.
                 </p>
             </div>
         </section>
 
-        <section class="tables-section">
-            <div class="table-container">
-                <h2>Comparison</h2>
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Feature</th>
-                            <th>Twig</th>
-                            <th>jq</th>
-                            <th>less</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td>Interactive Navigation</td>
-                            <td data-label="Twig">✅</td>
-                            <td data-label="jq">❌</td>
-                            <td data-label="less">❌</td>
-                        </tr>
-                        <tr>
-                            <td>Tree View</td>
-                            <td data-label="Twig">✅</td>
-                            <td data-label="jq">❌</td>
-                            <td data-label="less">❌</td>
-                        </tr>
-                        <tr>
-                            <td>Fuzzy Search</td>
-                            <td data-label="Twig">✅</td>
-                            <td data-label="jq">❌</td>
-                            <td data-label="less">✅</td>
-                        </tr>
-                        <tr>
-                            <td>JSON/YAML Support</td>
-                            <td data-label="Twig">✅</td>
-                            <td data-label="jq">✅</td>
-                            <td data-label="less">⚠️</td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- Redesigned Performance Section: Metrics over Tables -->
-            <div class="metrics-container">
-                <h2>Performance</h2>
-                <div class="metrics-grid">
-                    <div class="metric-card instant">
-                        <div class="metric-icon">⚡️</div>
-                        <div class="metric-value">Instant</div>
-                        <div class="metric-label">&lt; 10MB Files (< 1s)</div>
-                    </div>
-                    <div class="metric-card fast">
-                        <div class="metric-icon">🚀</div>
-                        <div class="metric-value">Fast</div>
-                        <div class="metric-label">50MB Files (~8s)</div>
-                    </div>
-                    <div class="metric-card usable">
-                        <div class="metric-icon">✅</div>
-                        <div class="metric-value">Stable</div>
-                        <div class="metric-label">90MB Files (~17s)</div>
-                    </div>
+        <!-- SECTION: Feature Grid (Inspired by Reference) -->
+        <section class="grid-section">
+            <div class="features-grid">
+                <!-- Card 1: JSON & YAML -->
+                <div class="grid-card">
+                    <div class="icon-box">📂</div>
+                    <h3>Multi-Format Native</h3>
+                    <p>
+                        First-class support for both JSON and YAML. Context
+                        switch instantly.
+                    </p>
                 </div>
+
+                <!-- Card 2: Deep Search -->
+                <div class="grid-card">
+                    <div class="icon-box">🔎</div>
+                    <h3>Deep Search</h3>
+                    <p>
+                        Fuzzy search across keys and values. Type <code>/</code> to
+                        jump deep.
+                    </p>
+                </div>
+
+                <!-- Card 3: Fluid Nav -->
+                <div class="grid-card">
+                    <div class="icon-box">🧭</div>
+                    <h3>Fluid Navigation</h3>
+                    <p>
+                        Move through deep trees with Arrow Keys. Breadcrumbs
+                        keep you oriented.
+                    </p>
+                </div>
+
+                <!-- Card 4: Secure (Consolidated) -->
+                <div class="grid-card">
+                    <div class="icon-box">🔒</div>
+                    <h3>Secure by Design</h3>
+                    <p>
+                        100% Local & Read-Only. Safely explore production
+                        secrets.
+                    </p>
+                </div>
+
+                <!-- Card 5: Instant Load -->
+                <div class="grid-card">
+                    <div class="icon-box">⚡️</div>
+                    <h3>Built for Speed</h3>
+                    <p>
+                        Instant load for files &lt;10MB. SQLite-backend for
+                        larger datasets.
+                    </p>
+                </div>
+
+                <!-- Card 6: Python (New) -->
+                <div class="grid-card">
+                    <div class="icon-box">🐍</div>
+                    <h3>Python & Textual</h3>
+                    <p>
+                        Built on the modern Textual framework for a rich,
+                        native-like TUI experience.
+                    </p>
+                </div>
+            </div>
+        </section>
+
+        <!-- SECTION: Final Install -->
+        <section class="final-cta">
+            <h2>Ready to explore?</h2>
+            <div class="install-block large">
+                <span class="cmd">$ uv tool install twg</span>
+                <button class="copy-btn" id="footer-copy-btn">Copy</button>
             </div>
         </section>
     </main>
 </Layout>
 
 <script>
-    // Hero Typewriter Cycler
-    const words = ["Inspect.", "Navigate.", "Understand."];
-    const element = document.querySelector(".typing-words");
-    const cursor = document.querySelector(".cursor") as HTMLElement;
-
-    let wordIndex = 0;
-    let charIndex = 0;
-    let isDeleting = false;
-    let typeSpeed = 100;
-
-    function type() {
-        if (!element) return;
-
-        const currentWord = words[wordIndex];
-
-        if (isDeleting) {
-            element.innerHTML = currentWord.substring(0, charIndex - 1);
-            charIndex--;
-            typeSpeed = 50; // Faster deletion
-        } else {
-            element.innerHTML = currentWord.substring(0, charIndex + 1);
-            charIndex++;
-            typeSpeed = 100; // Normal typing
-        }
-
-        if (!isDeleting && charIndex === currentWord.length) {
-            // Finished typing word
-            isDeleting = true;
-            typeSpeed = 2000; // Pause at end
-        } else if (isDeleting && charIndex === 0) {
-            // Finished deleting
-            isDeleting = false;
-            wordIndex++;
-            // Loop back to start
-            if (wordIndex >= words.length) {
-                wordIndex = 0;
-            }
-            typeSpeed = 500; // Pause before next word
-        }
-
-        setTimeout(type, typeSpeed);
+    // Copy Logic
+    function setupCopy(btnId: string, text: string) {
+        const btn = document.getElementById(btnId);
+        btn?.addEventListener("click", async () => {
+            await navigator.clipboard.writeText(text);
+            const original = btn.textContent;
+            btn.textContent = "Copied!";
+            btn.classList.add("copied");
+            setTimeout(() => {
+                if (original) btn.textContent = original;
+                btn.classList.remove("copied");
+            }, 2000);
+        });
     }
 
-    // Start after load
-    setTimeout(type, 500);
+    setupCopy("hero-copy-btn", "uv tool install twg");
+    setupCopy("footer-copy-btn", "uv tool install twg");
 
-    // Hero Copy Button
-    const heroBtn = document.getElementById("hero-copy-btn");
-    heroBtn?.addEventListener("click", async () => {
-        await navigator.clipboard.writeText("pipx install twg");
-        const original = heroBtn.textContent;
-        heroBtn.textContent = "Copied!";
-        setTimeout(() => (heroBtn.textContent = original), 2000);
+    // Scroll Animation Observer
+    const observer = new IntersectionObserver(
+        (entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add("visible");
+                }
+            });
+        },
+        { threshold: 0.1 },
+    );
+
+    document.querySelectorAll(".grid-card").forEach((card) => {
+        observer.observe(card);
     });
+
+    // Spotlight Effect
+    const grid = document.querySelector(".features-grid") as HTMLElement;
+    const cards = document.querySelectorAll(
+        ".grid-card",
+    ) as NodeListOf<HTMLElement>;
+
+    if (grid) {
+        grid.addEventListener("mousemove", (e) => {
+            cards.forEach((card) => {
+                const rect = card.getBoundingClientRect();
+                const x = e.clientX - rect.left;
+                const y = e.clientY - rect.top;
+                card.style.setProperty("--mouse-x", `${x}px`);
+                card.style.setProperty("--mouse-y", `${y}px`);
+            });
+        });
+    }
 </script>
 
 <style>
+    /* GLOBAL SPACING */
+    section {
+        margin-bottom: 8rem; /* Increased spacing */
+        padding: 0 1rem;
+    }
+
+    /* HERO STYLES (Preserved) */
     .hero {
         text-align: center;
         padding: 6rem 0 3rem;
         max-width: 800px;
-        margin: 0 auto;
+        margin: 0 auto 5rem;
     }
-
-    .typing-header {
-        font-size: 3.5rem;
+    .hero-header {
+        font-size: 3rem;
         margin-bottom: 1.5rem;
-        min-height: 1.2em;
+        line-height: 1.1;
+        font-weight: 700;
+        letter-spacing: -0.03em;
     }
-
-    .cursor {
+    .highlight {
+        color: var(--accent-color);
+        position: relative;
         display: inline-block;
-        width: 3px;
-        height: 0.9em;
-        background-color: var(--accent-color);
-        margin-left: 6px;
-        vertical-align: baseline;
-        animation: solid 1s infinite;
     }
-    @keyframes blink {
-        50% {
-            opacity: 0;
+    .highlight::after {
+        content: "";
+        position: absolute;
+        bottom: 4px;
+        left: 0;
+        width: 100%;
+        height: 15%;
+        background: var(--accent-color);
+        opacity: 0.15;
+        z-index: -1;
+        border-radius: 4px;
+        pointer-events: none;
+    }
+    @media (min-width: 768px) {
+        .hero-header {
+            font-size: 4.5rem;
         }
     }
-    @keyframes solid {
-        0% {
-            opacity: 1;
-        }
-        100% {
-            opacity: 1;
-        }
-    }
-
     .tagline {
-        font-size: 1.25rem;
+        font-size: 1.2rem;
         color: var(--text-secondary);
-        max-width: 600px;
+        max-width: 580px;
         margin: 0 auto 2.5rem;
+        line-height: 1.6;
+    }
+    .hero-links {
+        margin-top: 2rem;
+    }
+    .secondary-link {
+        color: var(--text-secondary);
+        font-size: 0.9rem;
+        text-decoration: none;
+        transition: color 0.2s;
+    }
+    .secondary-link:hover {
+        color: var(--text-primary);
     }
 
+    /* INSTALL BLOCK */
     .install-block {
         display: inline-flex;
         align-items: center;
         background: var(--bg-surface);
         border: 1px solid var(--border-color);
         padding: 0.75rem 1.25rem;
-        border-radius: 8px;
+        border-radius: 99px; /* Pill shape */
         gap: 1rem;
         font-family: var(--font-mono);
         font-size: 0.95rem;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+        transition:
+            transform 0.2s,
+            box-shadow 0.2s;
+    }
+    .install-block:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
+        border-color: var(--border-focus);
+    }
+    .install-block.large {
+        padding: 1rem 2rem;
+        font-size: 1.1rem;
     }
     .cmd {
-        color: var(--accent-color);
+        color: var(--text-primary);
+        font-weight: 500;
     }
     .copy-btn {
-        background: none;
-        border: none;
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-color);
         color: var(--text-secondary);
         cursor: pointer;
-        padding: 2px 6px;
-        font-size: 0.8rem;
-        border-radius: 4px;
+        padding: 4px 10px;
+        font-size: 0.75rem;
+        border-radius: 12px;
         transition: all 0.2s;
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        font-weight: 600;
     }
     .copy-btn:hover {
-        background: var(--border-color);
         color: var(--text-primary);
+        background: var(--bg-primary);
     }
-
-    /* Terminal Demo - High Fidelity */
-    .demo {
-        margin: 5rem 0;
-        opacity: 0;
-        animation: fadeInUp 0.8s ease-out forwards;
-        animation-delay: 0.2s;
-    }
-    .terminal-frame {
-        border: 1px solid var(--border-color);
-        border-radius: 12px; /* Smoother corners */
-        overflow: hidden;
-        background: #1e1e2e; /* Catppuccin Base */
-        box-shadow:
-            0 0 0 1px rgba(0, 0, 0, 0.2),
-            0 20px 50px -10px rgba(0, 0, 0, 0.5);
-        transition:
-            transform 0.4s ease,
-            box-shadow 0.4s ease;
-    }
-    .terminal-frame:hover {
-        transform: translateY(-4px);
-        box-shadow:
-            0 0 0 1px var(--accent-color),
-            0 30px 60px -15px rgba(0, 0, 0, 0.6);
+    .copy-btn.copied {
+        background: var(--accent-color);
+        color: var(--bg-surface);
         border-color: var(--accent-color);
     }
 
+    /* DEMO */
+    .demo {
+        margin: 0 auto 8rem;
+        max-width: 1000px;
+        position: relative;
+    }
+    /* Glow behind demo */
+    .demo::after {
+        content: "";
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 80%;
+        height: 80%;
+        background: var(--accent-color);
+        opacity: 0.05;
+        filter: blur(100px);
+        z-index: -1;
+    }
+    .terminal-frame {
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        overflow: hidden;
+        background: #1e1e2e;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    }
     .frame-header {
-        background: #181825; /* Catppuccin Mantle */
+        background: #181825;
         padding: 12px 16px;
         display: flex;
         align-items: center;
         gap: 8px;
-        border-bottom: 1px solid var(--border-color);
+        border-bottom: 1px solid #313244;
     }
-    .frame-header .title {
+    .title {
         margin-left: auto;
-        color: var(--text-secondary);
+        color: #a6adc8;
         font-family: var(--font-mono);
         font-size: 0.8rem;
-        opacity: 0.8;
+        opacity: 0.6;
     }
-    /* Mac Buttons */
     .dot {
-        width: 12px;
-        height: 12px;
+        width: 10px;
+        height: 10px;
         border-radius: 50%;
     }
-    .dot:nth-child(1) {
+    .dot.red {
         background: #ed8796;
-    } /* Red */
-    .dot:nth-child(2) {
+    }
+    .dot.yellow {
         background: #eed49f;
-    } /* Yellow */
-    .dot:nth-child(3) {
+    }
+    .dot.green {
         background: #a6da95;
-    } /* Green */
-
+    }
     img {
         display: block;
         width: 100%;
-        opacity: 1;
     }
 
-    /* Symmetrical Grid: 2 columns max to prevent orphans */
-    .grid-layout {
+    /* FEATURE GRID NEW */
+    .grid-section {
+        max-width: 1100px;
+        margin: 0 auto 8rem;
+        padding: 0 1rem;
+    }
+    .features-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-        max-width: 900px; /* Constrain width to force 2x2 */
-        margin: 6rem auto;
-        gap: 2rem;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 1.5rem;
     }
-
-    .feature {
-        opacity: 0;
-        animation: fadeInUp 0.8s ease-out forwards;
-        background: transparent;
-        padding: 1.5rem;
-        border-radius: 12px;
-        border: 1px solid transparent;
-        transition: all 0.3s ease;
-    }
-    .feature:hover {
-        background: var(--bg-surface);
-        border-color: var(--border-color);
-        transform: translateY(-4px);
-        box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.1);
-    }
-    .feature:nth-child(1) {
-        animation-delay: 0.4s;
-    }
-    .feature:nth-child(2) {
-        animation-delay: 0.5s;
-    }
-    .feature:nth-child(3) {
-        animation-delay: 0.6s;
-    }
-    .feature:nth-child(4) {
-        animation-delay: 0.7s;
-    }
-
-    .feature h3 {
-        font-family: var(--font-mono);
-        font-size: 1.1rem;
-        margin-bottom: 0.75rem;
-        color: var(--text-primary);
-    }
-    .feature h3::before {
-        content: "/ ";
-        color: var(--accent-color);
-        opacity: 0.7;
-    }
-    .feature p {
-        margin: 0;
-        font-size: 0.95rem;
-    }
-
-    @keyframes fadeInUp {
-        from {
-            opacity: 0;
-            transform: translateY(20px);
+    @media (max-width: 900px) {
+        .features-grid {
+            grid-template-columns: repeat(2, 1fr);
         }
-        to {
-            opacity: 1;
-            transform: translateY(0);
+    }
+    @media (max-width: 600px) {
+        .features-grid {
+            grid-template-columns: 1fr;
         }
     }
 
-    /* Tables & Metrics Section */
-    .tables-section {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 3rem;
-        justify-content: center;
-        align-items: stretch;
-        margin: 8rem 0;
-    }
-
-    .table-container,
-    .metrics-container {
-        flex: 1;
-        min-width: 340px;
+    .grid-card {
         background: var(--bg-surface);
-        padding: 2.5rem;
-        border-radius: 16px;
         border: 1px solid var(--border-color);
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
-    }
-
-    .table-container h2,
-    .metrics-container h2 {
-        font-family: var(--font-mono);
-        color: var(--text-primary);
-        font-size: 1.25rem;
-        margin-bottom: 1.5rem;
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-    }
-    .table-container h2::before,
-    .metrics-container h2::before {
-        content: "#";
-        color: var(--accent-color);
-    }
-
-    /* Metrics Stlyes */
-    .metrics-grid {
+        border-radius: 12px;
+        padding: 2rem;
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
         display: flex;
         flex-direction: column;
-        gap: 1rem;
-        height: calc(100% - 3rem); /* Fill remaining space minus header */
-        justify-content: center;
+        align-items: flex-start;
+        opacity: 0;
+        transform: translateY(20px);
+        position: relative; /* For spotlight */
+        overflow: hidden; /* For spotlight */
+    }
+    .grid-card::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: radial-gradient(
+            800px circle at var(--mouse-x) var(--mouse-y),
+            rgba(255, 255, 255, 0.04),
+            transparent 40%
+        );
+        z-index: 1;
+        opacity: 0;
+        transition: opacity 0.5s;
+        pointer-events: none;
+    }
+    .features-grid:hover .grid-card::before {
+        opacity: 1;
+    }
+    .grid-card > * {
+        position: relative;
+        z-index: 2;
     }
 
-    .metric-card {
+    .grid-card.visible {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    /* Stagger delays */
+    .grid-card:nth-child(1) {
+        transition-delay: 0ms;
+    }
+    .grid-card:nth-child(2) {
+        transition-delay: 50ms;
+    }
+    .grid-card:nth-child(3) {
+        transition-delay: 100ms;
+    }
+    .grid-card:nth-child(4) {
+        transition-delay: 150ms;
+    }
+    .grid-card:nth-child(5) {
+        transition-delay: 200ms;
+    }
+    .grid-card:nth-child(6) {
+        transition-delay: 250ms;
+    }
+
+    .grid-card:hover {
+        border-color: var(--border-focus);
+        transform: translateY(-5px);
+        box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+    }
+
+    .icon-box {
+        width: 40px;
+        height: 40px;
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
         display: flex;
         align-items: center;
-        gap: 1.5rem;
-        padding: 1.25rem;
-        background: var(--bg-primary); /* Inset look */
-        border: 1px solid var(--border-color);
-        border-radius: 12px;
-        transition: transform 0.2s;
-    }
-    .metric-card:hover {
-        transform: scale(1.02);
-        border-color: var(--accent-color);
+        justify-content: center;
+        font-size: 1.25rem;
+        margin-bottom: 1.5rem;
     }
 
-    .metric-icon {
-        font-size: 1.5rem;
-        width: 40px;
+    .grid-card h3 {
+        font-size: 1.1rem;
+        font-weight: 600;
+        margin: 0 0 0.75rem 0;
+        color: var(--text-primary);
+    }
+
+    .grid-card p {
+        font-size: 0.95rem;
+        color: var(--text-secondary);
+        line-height: 1.6;
+        margin: 0;
+    }
+    .grid-card code {
+        background: var(--bg-primary);
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 0.85em;
+        border: 1px solid var(--border-color);
+    }
+
+    /* FINAL CTA */
+    .final-cta {
+        text-align: center;
+        margin-bottom: 6rem;
+    }
+    .final-cta h2 {
+        margin-bottom: 2rem;
+        font-size: 2rem;
+        letter-spacing: -0.02em;
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 768px) {
+        .typing-header {
+            font-size: 1.8rem;
+        }
+        .hero {
+            padding-top: 2rem;
+        }
+        .why-grid {
+            /* This rule is now unused but kept for fidelity to original */
+            grid-template-columns: 1fr;
+            gap: 2rem;
+        }
+        .feature-grid {
+            /* This rule is now unused but kept for fidelity to original */
+            grid-template-columns: 1fr;
+        }
+        .install-block {
+            width: 100%;
+            justify-content: space-between;
+        }
+    }
+    /* ABOUT SECTION SIMPLIFIED */
+    .about-section {
+        margin-bottom: 8rem;
+        padding: 0 1rem;
         text-align: center;
     }
-    .metric-value {
-        font-family: var(--font-mono);
-        font-weight: 600;
-        font-size: 1.1rem;
-        color: var(--text-primary);
-        min-width: 80px;
+    .about-container {
+        max-width: 700px;
+        margin: 0 auto;
     }
-    .metric-label {
-        color: var(--text-secondary);
-        font-size: 0.9rem;
-        margin-left: auto; /* Push to right */
-    }
+    .about-section h2 {
+        font-size: 3rem;
+        font-weight: 700;
+        margin-bottom: 2.5rem;
+        letter-spacing: -0.03em;
+        line-height: 1.1;
 
-    /* Table Styles */
-    table {
-        width: 100%;
-        border-collapse: separate;
-        border-spacing: 0;
-        font-family: var(--font-mono);
-        font-size: 0.9rem;
+        /* Green Gradient Feature */
+        background: linear-gradient(
+            to right,
+            var(--accent-color),
+            var(--text-primary)
+        );
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
     }
-    th,
-    td {
-        padding: 1rem;
-        text-align: left;
-        border-bottom: 1px solid var(--border-color);
+    .about-section p {
+        font-size: 1.25rem;
+        line-height: 1.7;
         color: var(--text-secondary);
+        margin-bottom: 1.5rem;
     }
-    th {
-        color: var(--text-primary);
-        font-weight: 600;
-        border-bottom: 2px solid var(--border-color);
-        font-size: 0.85rem;
-        text-transform: uppercase;
-        letter-spacing: 0.05em;
-    }
-    tr:last-child td {
-        border-bottom: none;
-    }
-    td:first-child {
+    .about-section .highlight-text {
+        font-size: 1.35rem;
         color: var(--text-primary);
         font-weight: 500;
+        margin-top: 2rem;
+    }
+    .about-section code {
+        background: var(--bg-surface);
+        border: 1px solid var(--border-color);
+        padding: 2px 6px;
+        border-radius: 4px;
+        font-size: 0.9em;
+        color: var(--text-primary);
+        font-family: var(--font-mono);
+    }
+    .about-section strong {
+        color: var(--accent-color);
+        font-weight: 600;
     }
 
     @media (max-width: 768px) {
-        .table-container,
-        .metrics-container {
-            padding: 1.5rem;
-            min-width: 100%;
+        .about-section h2 {
+            font-size: 2rem;
+            margin-bottom: 2rem;
         }
-
-        /* Card Transformation */
-        table,
-        thead,
-        tbody,
-        th,
-        td,
-        tr {
-            display: block;
-        }
-
-        thead {
-            display: none;
-        }
-
-        tr {
-            background: var(--bg-primary);
-            border: 1px solid var(--border-color);
-            border-radius: 8px;
-            margin-bottom: 1rem;
-            padding: 1rem;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-        }
-
-        td {
-            border: none;
-            position: relative;
-            padding-left: 0;
-            padding-right: 0;
-            padding-top: 0.25rem;
-            padding-bottom: 0.25rem;
-        }
-
-        /* Feature Title */
-        td:first-child {
-            font-size: 1rem;
-            margin-bottom: 0.75rem;
-            border-bottom: 1px solid var(--border-color);
-            padding-bottom: 0.5rem;
-            color: var(--accent-color);
-        }
-
-        /* Comparison Items */
-        td[data-label] {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-size: 0.95rem;
-        }
-
-        td[data-label]::before {
-            content: attr(data-label);
-            font-weight: 600;
-            color: var(--text-secondary);
+        .about-section p {
+            font-size: 1.1rem;
+            line-height: 1.6;
         }
     }
 </style>

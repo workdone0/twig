@@ -2,36 +2,54 @@
   --font-body: 'Inter', system-ui, -apple-system, blinkmacsystemfont, 'segoe ui', roboto, oxygen, ubuntu, cantarell, 'fira sans', 'droid sans', 'helvetica neue', sans-serif;
   --font-mono: 'JetBrains Mono', 'Fira Code', ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 
-  /* Catppuccin Mocha (Premium Dark Mode) */
-  --bg-primary: #1e1e2e;
-  --bg-secondary: #181825;
-  --bg-surface: #313244;
-  --border-color: #45475a;
-  --border-focus: #585b70;
-  --text-primary: #cdd6f4;
-  --text-secondary: #a6adc8;
-  --accent-color: #a6e3a1;
+  /* Catppuccin Mocha (Premium Dark Mode) -> UPDATED to Neu-Dark (Zinc-based) */
+  --bg-primary: #09090b;
+  /* Zinc 950 */
+  --bg-secondary: #18181b;
+  /* Zinc 900 */
+  --bg-surface: #27272a;
+  /* Zinc 800 */
+  --border-color: #3f3f46;
+  /* Zinc 700 */
+  --border-focus: #52525b;
+  /* Zinc 600 */
+  --text-primary: #f4f4f5;
+  /* Zinc 100 */
+  --text-secondary: #a1a1aa;
+  /* Zinc 400 */
+  --accent-color: #4ade80;
+  /* Green 400 */
   /* Green */
-  --accent-glow: rgba(166, 227, 161, 0.15);
+  --accent-glow: rgba(74, 222, 128, 0.15);
 
-  --grid-color: rgba(205, 214, 244, 0.03);
+  --grid-color: rgba(255, 255, 255, 0.03);
   --max-width: 1100px;
 }
 
 [data-theme="light"] {
-  /* Catppuccin Latte Adjusted (Clean White Cards) */
-  --bg-primary: #eff1f5;
-  --bg-secondary: #e6e9ef;
+  /* Premium Light (Zinc/Neutral) */
+  --bg-primary: #f9fafb;
+  /* Zinc 50 */
+  --bg-secondary: #f3f4f6;
+  /* Zinc 100 */
   --bg-surface: #ffffff;
-  /* Pure white for cards */
-  --border-color: #dce0e8;
-  --border-focus: #acb0be;
-  --text-primary: #4c4f69;
-  --text-secondary: #6c6f85;
-  --accent-color: #40a02b;
-  /* Green */
-  --accent-glow: rgba(64, 160, 43, 0.1);
-  --grid-color: rgba(76, 79, 105, 0.04);
+  /* White */
+
+  --border-color: #e5e7eb;
+  /* Zinc 200 */
+  --border-focus: #a1a1aa;
+  /* Zinc 400 */
+
+  --text-primary: #111827;
+  /* Zinc 900 - High Contrast */
+  --text-secondary: #4b5563;
+  /* Zinc 600 - Readable Gray */
+
+  --accent-color: #16a34a;
+  /* Green 600 - Darker for visibility */
+  --accent-glow: rgba(22, 163, 74, 0.15);
+
+  --grid-color: rgba(0, 0, 0, 0.04);
 }
 
 * {
