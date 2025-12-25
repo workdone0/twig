@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="asset/logo.png" alt="Twig Logo" width="200"/>
+  <img src="https://raw.githubusercontent.com/workdone0/twig/master/asset/logo.png" alt="Twig Logo" width="200"/>
 </p>
 
 # Twig 🌿
@@ -15,7 +15,7 @@
 > A modern, terminal-based explorer for **JSON** and **YAML** files.
 > Built for developers who work with real data in real environments.
 
-![Twig Demo](asset/demo.gif)
+![Twig Demo](https://raw.githubusercontent.com/workdone0/twig/master/asset/demo.gif)
 
 ## What is Twig?
 

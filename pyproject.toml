@@ -1,6 +1,6 @@
 [project]
 name = "twg"
-version = "2.1.3"
+version = "2.1.4"
 description = "Terminal-based JSON & YAML viewer (TUI) for exploring and searching large files — fast, interactive, and privacy-first."
 readme = "README.md"
 requires-python = ">=3.10"
@@ -42,3 +42,13 @@ twg = "twg.ui.app:run"
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
+authors = [
+  { name = "Shubham Kumar" },
+]
+license = { file = "LICENSE" }
+
+[project.urls]
+Homepage = "https://twig.wtf/"
+Documentation = "https://twig.wtf/guide"
+Repository = "https://github.com/workdone0/twig"
+Issues = "https://github.com/workdone0/twig/issues"
