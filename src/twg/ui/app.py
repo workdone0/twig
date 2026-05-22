@@ -349,7 +349,7 @@ def run():
             print(f"Error: File not found: {args.file}", file=sys.stderr)
             sys.exit(1)
 
-        if not args.file.lower().endswith((".json", ".yaml", ".yml")):
+        if not args.file.lower().endswith((".json", ".yaml", ".yml", ".har")):
             print(f"Error: Invalid file type '{args.file}'. Twig currently only supports .json and .yaml files.", file=sys.stderr)
             sys.exit(1)
             
