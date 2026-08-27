@@ -54,30 +54,15 @@ jobs:
           sudo apt-get install -y -qq shellcheck
           shellcheck install.sh
 
-  miri:
-    # Miri runs only the model + paths tests. core::store and
-    # core::config pull in rusqlite, which uses C FFI to SQLite and
-    # therefore can't be interpreted by Miri.
-    name: Miri (Linux, pure-Rust modules only)
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Install Rust toolchain with miri
-        run: |
-          rustup toolchain install nightly --component miri rustfmt
-          rustup default nightly
-      - name: Cache cargo registry & build artifacts
-        uses: actions/cache@v4
-        with:
-          path: |
-            ~/.cargo/registry
-            ~/.cargo/git
-            target
-          key: miri-${{ hashFiles('Cargo.lock') }}
-      - name: Run miri on model + paths
-        run: |
-          cargo miri setup
-          cargo miri test --lib -- core::model core::paths --no-fail-fast
+  # Note: there used to be a Miri job here. It was removed because
+  # `cargo miri test` compiles the whole library (rusqlite + SQLite
+  # C FFI), which Miri cannot interpret. The argument after `--`
+  # filters which tests run, not which modules get compiled, so
+  # restricting to `core::model core::paths` did not help. Adding
+  # Miri would require either a feature flag for the rusqlite dep
+  # or a separate `[[test]]` target that only links pure-Rust
+  # modules — neither felt worth the complexity for the small
+  # amount of UB coverage it would buy us on this codebase.
 
   bench:
     name: Load test (50MB synthetic JSON)
