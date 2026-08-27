@@ -1,0 +1,70 @@
+name: Auto-tag release
+
+# Watches master for Cargo.toml version changes and creates a v<version>
+# tag when none exists for the current version. The tag push then
+# triggers .github/workflows/release.yml to build binaries and publish
+# a GitHub release, which curl-based installers pick up via the
+# `/releases/latest` endpoint.
+#
+# To make a release, the workflow is:
+#   1. Bump `version` in Cargo.toml on master.
+#   2. Merge the PR / push to master.
+#   3. This workflow creates the matching v<version> tag.
+#   4. release.yml runs on the tag and publishes assets.
+#
+# Idempotent: if the tag for the current version already exists,
+# nothing happens. Safe to re-run.
+
+on:
+  push:
+    branches: [master]
+    paths:
+      - 'Cargo.toml'
+      - 'Cargo.lock'
+
+permissions:
+  contents: write
+
+jobs:
+  tag:
+    name: Tag & trigger release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # need full history to diff vs previous commit
+
+      - name: Read current version from Cargo.toml
+        id: version
+        run: |
+          VERSION=$(grep -E '^version\s*=' Cargo.toml | head -1 | sed -E 's/^version\s*=\s*"([^"]+)"\s*$/\1/')
+          if [[ -z "$VERSION" ]]; then
+            echo "::error::could not parse version from Cargo.toml"
+            exit 1
+          fi
+          echo "version=$VERSION" >> "$GITHUB_OUTPUT"
+          echo "parsed version: $VERSION"
+
+      - name: Check whether tag already exists
+        id: check
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          if git ls-remote --tags origin "refs/tags/v${VERSION}" | grep -q .; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "tag v${VERSION} already exists; nothing to do"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo "tag v${VERSION} does not exist; will create"
+          fi
+
+      - name: Create and push v<version> tag
+        if: steps.check.outputs.exists == 'false'
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -a "v${VERSION}" -m "Release v${VERSION}"
+          git push origin "v${VERSION}"
+          echo "pushed tag v${VERSION}"

@@ -4,9 +4,8 @@
 
 # Twig 🌿
 
-[![PyPI version](https://img.shields.io/pypi/v/twg.svg?style=flat-square&color=2ecc71)](https://pypi.org/project/twg/)
-[![Supported Python versions](https://img.shields.io/pypi/pyversions/twg.svg?style=flat-square)](https://pypi.org/project/twg/)
-[![Downloads](https://static.pepy.tech/badge/twg)](https://pepy.tech/project/twg)
+[![Crates.io](https://img.shields.io/crates/v/twig.svg?style=flat-square&color=2ecc71)](https://crates.io/crates/twig)
+[![Supported Rust versions](https://img.shields.io/badge/rust-1.75%2B-blue.svg?style=flat-square)](https://www.rust-lang.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
 [![Buy Me A Coffee](https://img.shields.io/badge/Buy_Me_A_Coffee-FFDD00?style=flat-square&logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/workdone0)
 
@@ -27,37 +26,77 @@ Twig is designed for **understanding data**, not editing it. It fills the gap be
 
 ## Installation
 
-### Using uv (Recommended)
-The modern, fast, and reliable way to install Python tools.
+### One-line installer (Recommended)
+
+The fastest way to install Twig on macOS or Linux — downloads a prebuilt
+binary from the latest GitHub release, verifies its SHA-256, and installs
+it to `~/.local/bin` (or `/usr/local/bin` when writable):
 
 ```bash
-# 1. Install uv (if needed)
-curl -LsSf https://astral.sh/uv/install.sh | sh
-
-# 2. Install Twig
-uv tool install twg
+curl -fsSL https://twig.wtf/install.sh | sh
 ```
 
-### Other Methods
-<details>
-<summary>Click to show pipx or pip instructions</summary>
+Re-running the command safely **upgrades** an existing install. Pass
+`--to <dir>` to pick a different install directory, `--version <tag>`
+to pin a release, or `--method build` to compile from source instead
+of downloading:
 
-#### Using pipx
 ```bash
-pipx install twg
+# Pin a specific release
+curl -fsSL https://twig.wtf/install.sh | sh -s -- --version v3.0.0
+
+# Install to /usr/local/bin instead of ~/.local/bin
+curl -fsSL https://twig.wtf/install.sh | sh -s -- --to /usr/local/bin
+
+# Build from source instead of downloading
+curl -fsSL https://twig.wtf/install.sh | sh -s -- --method build
 ```
 
-#### Using pip
-> **Note:** Recommended only for virtual environments.
-```bash
-pip install twg
-```
-</details>
+The script supports Linux (x86_64, aarch64), macOS (Intel, Apple
+Silicon), and reports unsupported platforms with a clear error
+instead of failing silently.
 
-### Uninstalling
+### Install with Cargo
+
 ```bash
-uv tool uninstall twg
+# Stable Rust (1.75+)
+cargo install twig
 ```
+
+### Install with cargo-binstall
+
+```bash
+cargo binstall twig
+```
+
+### Download a release binary manually
+
+Grab a prebuilt `.tar.gz` from the [Releases page](https://github.com/workdone0/twig/releases):
+
+- Linux (x86_64, aarch64)
+- macOS (Intel, Apple Silicon)
+- Windows (x86_64)
+
+Each archive contains a single `twig` (or `twig.exe`) binary and a
+matching `.sha256` checksum file.
+
+### Build from source
+
+```bash
+git clone https://github.com/workdone0/twig.git
+cd twig
+cargo build --release
+./target/release/twig --help
+```
+
+### Legacy Python version
+
+Twig was originally written in Python (≤ v2.1.4). The Python
+implementation is preserved on the
+[`legacy-python`](https://github.com/workdone0/twig/tree/legacy-python)
+branch for historical reference and for users who specifically need
+Python 3.10–3.14. New installs and active development live on
+`master`, which is the Rust rewrite shipped since v3.0.0.
 
 ---
 
@@ -65,20 +104,20 @@ uv tool uninstall twg
 
 **Explore a file:**
 ```bash
-twg data.json
+twig data.json
 # or
-twg config.yaml
+twig config.yaml
 ```
 
 **Fix broken JSON:**
-Automatically repair common errors (trailing commas, unquoted keys) or sanitize `NaN`/`Infinity` values:
+Automatically repair common errors (trailing commas, unquoted keys) or sanitize `NaN/Infinity` values:
 ```bash
-twg --fix bad.json -o clean.json
+twig --fix bad.json -o clean.json
 ```
 
 **Pretty Print:**
 ```bash
-twg -p large.json
+twig -p large.json
 ```
 
 ### Controls & Cheat Sheet
@@ -98,10 +137,10 @@ twg -p large.json
 
 - **📂 Multi-Format**: Native support for **JSON** and **YAML**.
 - **👀 Read-Only by Design**: Safely explore production data, logs, and configs without accidental edits.
-- **🔍 Deep Search**: Fast fuzzy search across keys and values (e.g. `Pull` matches `imagePullPolicy`).
+- **🔍 Deep Search**: Fast substring search across keys and values (e.g. `Pull` matches `imagePullPolicy`).
 - **🧭 Tree-Based Navigation**: Navigate large, deeply nested files without losing context.
 - **🎨 Themes**: Includes **Catppuccin Mocha** (default) and **Solarized Dark**.
-- **⚡ Performance-Focused**: Designed to handle large files efficiently with a low memory footprint.
+- **⚡ Performance-Focused**: Streaming ingestion, SQLite FTS5 indexing, and `--release` LTO keep cold-start load times low on huge files.
 
 ---
 
@@ -111,7 +150,7 @@ Many real-world files — API responses, K8s manifests, Terraform state — cont
 
 Existing CLI tools like `jq` are powerful for **transformation** but can be unintuitive for **interactive exploration**. Twig focuses purely on the latter:
 
-- Runs **entirely locally**
+- Runs **entirely locally**, no network calls
 - Works well over **SSH and headless environments**
 - Optimized for **reading**, not mutation
 
@@ -133,22 +172,43 @@ Twig is **not**:
 
 ## Performance & Architecture
 
-Twig is built using **[Textual](https://github.com/Textualize/textual)** and uses **SQLite** with **FTS5** for indexing. This allows instant search and navigation even for large files.
+Twig is built using **[ratatui](https://github.com/ratatui/ratatui)** for the TUI and an embedded **SQLite** + **FTS5** engine for the data layer. See [`CONTRIBUTING.md`](CONTRIBUTING.md) for the full architecture notes.
 
-**Benchmarks:**
-| File Size | Load Time (Cold Start) | Experience |
-| :--- | :--- | :--- |
-| **< 10MB** | < 1s | ⚡ Instant |
-| **50MB** | ~8s | 🚀 Fast |
-| **90MB** | ~17s | ✅ Usable |
-| **> 100MB** | 20s+ | 🐢 Slower |
+**Benchmarks (50 MB JSON, cold start):**
+| Build | Load Time |
+| :--- | :--- |
+| Debug | ~6s |
+| Release (LTO) | ~2s |
 
 ---
 
 ## Contributing
 
-We welcome contributions! Please see [CONTRIBUTING.md](CONTRIBUTING.md) for architecture details and setup instructions.
+We welcome contributions! See [`CONTRIBUTING.md`](CONTRIBUTING.md) for setup, architecture, and submission guidelines.
+
+## Releasing a new version
+
+Releases are fully automated. The flow is:
+
+1. Bump the `version` field in `Cargo.toml` and push to `master`.
+2. `.github/workflows/auto-release.yml` detects the version change on
+   master and creates a `v<version>` tag (idempotent — skips if the tag
+   already exists).
+3. The tag push triggers `.github/workflows/release.yml`, which
+   cross-compiles for Linux (x86_64 + aarch64), macOS (x86_64 +
+   aarch64), and Windows (x86_64), uploads `.tar.gz` archives with
+   matching `.sha256` files, and publishes them to a GitHub release.
+4. `curl -fsSL https://twig.wtf/install.sh | sh` always picks up
+   the highest-versioned release from the GitHub Releases API.
+
+If you need to cut a release manually (e.g. for a hotfix), just push
+the tag:
+
+```bash
+git tag v3.0.1
+git push origin v3.0.1
+```
 
 ## Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=workdone0/twig&type=timeline&legend=bottom-right)](https://www.star-history.com/#workdone0/twig&type=timeline&legend=bottom-right)
+[![Star History Chart](https://api.star-history.com/svg?repos=workdone0/twig&type=timeline&legend=bottom-right)](https://star-history.com/#workdone0/twig&type=timeline&legend=bottom-right)

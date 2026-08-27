@@ -1,0 +1,115 @@
+name: CI
+
+on:
+  push:
+    branches: [master, rewrite/rust-port]
+  pull_request:
+
+jobs:
+  test:
+    name: Test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo registry & build artifacts
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+
+      - name: Clippy
+        run: cargo clippy --all-targets -- -D warnings
+
+      - name: Build
+        run: cargo build --locked --all-targets
+
+      - name: Test
+        run: cargo test --locked --all-targets
+
+  shellcheck:
+    name: Lint install.sh
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run shellcheck on install.sh
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y -qq shellcheck
+          shellcheck install.sh
+
+  # Note: there used to be a Miri job here. It was removed because
+  # `cargo miri test` compiles the whole library (rusqlite + SQLite
+  # C FFI), which Miri cannot interpret. The argument after `--`
+  # filters which tests run, not which modules get compiled, so
+  # restricting to `core::model core::paths` did not help. Adding
+  # Miri would require either a feature flag for the rusqlite dep
+  # or a separate `[[test]]` target that only links pure-Rust
+  # modules — neither felt worth the complexity for the small
+  # amount of UB coverage it would buy us on this codebase.
+
+  bench:
+    name: Load test (50MB synthetic JSON)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+      - name: Cache cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: bench-${{ hashFiles('Cargo.lock') }}
+      - name: Build release
+        run: cargo build --release --locked
+      # Generate ~50MB of synthetic JSON. We aim for 50MB+, not the
+      # 11MB that 20k items produced in earlier versions of this
+      # job. 90k items gets us there with room to grow.
+      - name: Generate 50MB synthetic JSON
+        run: |
+          python3 - <<'EOF'
+          import json, random
+          random.seed(42)
+          root = {
+              "items": [
+                  {
+                      "id": i,
+                      "uuid": f"item-{i:08x}",
+                      "tags": random.sample(["red", "blue", "green", "yellow", "purple"], k=3),
+                      "payload": {
+                          "nested": list(range(10)),
+                          "label": "x" * 200,
+                          "deep": [{"k": j, "v": i * j} for j in range(10)],
+                      },
+                  }
+                  for i in range(90000)
+              ]
+          }
+          with open("/tmp/big.json", "w") as f:
+              json.dump(root, f)
+          EOF
+          ls -lh /tmp/big.json
+      # twig --check exercises the streaming JSON ingestion pipeline
+      # without opening a TUI, so it works in CI's non-TTY environment.
+      - name: Load via twig --check
+        run: |
+          time ./target/release/twig --check /tmp/big.json

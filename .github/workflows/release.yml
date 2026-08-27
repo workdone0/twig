@@ -1,0 +1,111 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build (${{ matrix.target }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Asset names MUST match what install.sh builds via
+          # detect_target(). On Linux: <arch>-unknown-linux-gnu.
+          # On macOS: <arch>-apple-darwin. On Windows: pc-windows-msvc.
+          - target: x86_64-unknown-linux-gnu
+            archive: twig-x86_64-unknown-linux-gnu
+            binary: twig
+            ext: ''
+          - target: aarch64-unknown-linux-gnu
+            archive: twig-aarch64-unknown-linux-gnu
+            binary: twig
+            ext: ''
+          - target: x86_64-apple-darwin
+            archive: twig-x86_64-apple-darwin
+            binary: twig
+            ext: ''
+          - target: aarch64-apple-darwin
+            archive: twig-aarch64-apple-darwin
+            binary: twig
+            ext: ''
+          - target: x86_64-pc-windows-msvc
+            archive: twig-x86_64-pc-windows-msvc
+            binary: twig.exe
+            ext: '.exe'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Cache cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: release-${{ matrix.target }}-${{ hashFiles('Cargo.lock') }}
+
+      - name: Build
+        run: cargo build --release --locked --target ${{ matrix.target }}
+
+      - name: Strip binary (Unix only)
+        if: matrix.target != 'x86_64-pc-windows-msvc'
+        run: |
+          strip "target/${{ matrix.target }}/release/${{ matrix.binary }}"
+
+      # Package as a tarball containing a file named `twig` (or `twig.exe`)
+      # so install.sh can extract the binary by predictable name.
+      - name: Package tarball
+        run: |
+          mkdir -p release-artifacts/staging
+          cp "target/${{ matrix.target }}/release/${{ matrix.binary }}" \
+             "release-artifacts/staging/twig${{ matrix.ext }}"
+          (cd release-artifacts/staging && tar -czf "../${{ matrix.archive }}.tar.gz" \
+              "twig${{ matrix.ext }}")
+          rm -rf release-artifacts/staging
+          ls -la release-artifacts/
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.archive }}
+          path: release-artifacts/${{ matrix.archive }}.tar.gz
+          if-no-files-found: error
+
+  release:
+    name: Publish GitHub release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+      - name: Rename binaries inside tarballs for the release page
+        run: |
+          cd artifacts
+          # Generate sha256sum-compatible checksum files. The format
+          # must be "<hash>  <filename>" (two spaces) for sha256sum -c
+          # to verify in-place.
+          for f in *.tar.gz; do
+            sha256sum "$f" > "$f.sha256"
+          done
+          ls -la
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/**/*
+          generate_release_notes: true
