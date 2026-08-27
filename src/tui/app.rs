@@ -52,6 +52,7 @@ pub struct App {
     pub frame: usize,
     pub modal_input: String,
     pub last_search_query: Option<String>,
+    pub format: String,
     config: Config,
 }
 
@@ -78,6 +79,7 @@ impl App {
             frame: 0,
             modal_input: String::new(),
             last_search_query: None,
+            format: Self::format_for(file),
             config,
         }
     }
@@ -91,6 +93,18 @@ impl App {
         {
             Some("yaml") | Some("yml") => Box::new(crate::adapters::yaml_loader::YamlLoader::new()),
             _ => Box::new(crate::adapters::json_loader::JsonLoader::new()),
+        }
+    }
+
+    fn format_for(file: &Path) -> String {
+        match file
+            .extension()
+            .and_then(|e| e.to_str())
+            .map(|s| s.to_ascii_lowercase())
+            .as_deref()
+        {
+            Some("yaml") | Some("yml") => "yaml".to_string(),
+            _ => "json".to_string(),
         }
     }
 
@@ -358,29 +372,38 @@ fn render(f: &mut ratatui::Frame, app: &mut App) {
             );
         }
         AppMode::Normal => {
-            if let Some(nav) = app.navigator.as_mut() {
-                nav.render(f, chunks[2], theme);
-            } else {
-                let text = format!("Loaded {}", app.file.display());
-                f.render_widget(
-                    Paragraph::new(Line::from(text)).block(Block::default()),
-                    chunks[2],
-                );
-            }
+            // Refresh focused node from navigator so the inspector
+            // tracks the user's selection.
             if app.focused.is_none() {
                 if let Some(nav) = app.navigator.as_ref() {
                     app.focused = nav.focused().cloned();
                 }
             }
-            if app.focused.is_none() {
+            // Body: 75% navigator, 25% inspector.
+            let body_chunks = Layout::default()
+                .direction(Direction::Horizontal)
+                .constraints([
+                    Constraint::Percentage(75),
+                    Constraint::Percentage(25),
+                ])
+                .split(chunks[2]);
+            if let Some(nav) = app.navigator.as_mut() {
+                nav.render(f, body_chunks[0], theme);
+            } else {
                 let text = format!("Loaded {}", app.file.display());
                 f.render_widget(
                     Paragraph::new(Line::from(text)).block(Block::default()),
-                    chunks[2],
+                    body_chunks[0],
                 );
             }
-            // Suppress the duplicate text-rendering path below.
-            let _ = app.focused.is_some();
+            crate::tui::widgets::inspector::render(
+                f,
+                body_chunks[1],
+                theme,
+                app.focused.as_ref(),
+                app.navigator.as_ref().map(|n| &n.store),
+                &app.format,
+            );
         }
         AppMode::Exiting | AppMode::Search | AppMode::Jump | AppMode::Help => {}
     }
