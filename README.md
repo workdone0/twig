@@ -26,9 +26,37 @@ Twig is designed for **understanding data**, not editing it. It fills the gap be
 
 ## Installation
 
-### Install with Cargo (Recommended)
+### One-line installer (Recommended)
 
-The easiest way to install Twig — a single static binary, no runtime dependencies:
+The fastest way to install Twig on macOS or Linux — downloads a prebuilt
+binary from the latest GitHub release, verifies its SHA-256, and installs
+it to `~/.local/bin` (or `/usr/local/bin` when writable):
+
+```bash
+curl -fsSL https://twig.wtf/install.sh | sh
+```
+
+Re-running the command safely **upgrades** an existing install. Pass
+`--to <dir>` to pick a different install directory, `--version <tag>`
+to pin a release, or `--method build` to compile from source instead
+of downloading:
+
+```bash
+# Pin a specific release
+curl -fsSL https://twig.wtf/install.sh | sh -s -- --version v3.0.0
+
+# Install to /usr/local/bin instead of ~/.local/bin
+curl -fsSL https://twig.wtf/install.sh | sh -s -- --to /usr/local/bin
+
+# Build from source instead of downloading
+curl -fsSL https://twig.wtf/install.sh | sh -s -- --method build
+```
+
+The script supports Linux (x86_64, aarch64), macOS (Intel, Apple
+Silicon), and reports unsupported platforms with a clear error
+instead of failing silently.
+
+### Install with Cargo
 
 ```bash
 # Stable Rust (1.75+)
@@ -41,13 +69,16 @@ cargo install twig
 cargo binstall twig
 ```
 
-### Download a release binary
+### Download a release binary manually
 
-Grab a prebuilt binary from the [Releases page](https://github.com/workdone0/twig/releases):
+Grab a prebuilt `.tar.gz` from the [Releases page](https://github.com/workdone0/twig/releases):
 
 - Linux (x86_64, aarch64)
 - macOS (Intel, Apple Silicon)
 - Windows (x86_64)
+
+Each archive contains a single `twig` (or `twig.exe`) binary and a
+matching `.sha256` checksum file.
 
 ### Build from source
 
@@ -57,6 +88,15 @@ cd twig
 cargo build --release
 ./target/release/twig --help
 ```
+
+### Legacy Python version
+
+Twig was originally written in Python (≤ v2.1.4). The Python
+implementation is preserved on the
+[`legacy-python`](https://github.com/workdone0/twig/tree/legacy-python)
+branch for historical reference and for users who specifically need
+Python 3.10–3.14. New installs and active development live on
+`master`, which is the Rust rewrite shipped since v3.0.0.
 
 ---
 

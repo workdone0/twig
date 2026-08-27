@@ -17,20 +17,25 @@ jobs:
       matrix:
         include:
           - target: x86_64-unknown-linux-gnu
-            artifact: twig-linux-amd64
+            archive: twig-linux-amd64
             binary: twig
+            ext: ''
           - target: aarch64-unknown-linux-gnu
-            artifact: twig-linux-arm64
+            archive: twig-linux-arm64
             binary: twig
+            ext: ''
           - target: x86_64-apple-darwin
-            artifact: twig-macos-amd64
+            archive: twig-macos-amd64
             binary: twig
+            ext: ''
           - target: aarch64-apple-darwin
-            artifact: twig-macos-arm64
+            archive: twig-macos-arm64
             binary: twig
+            ext: ''
           - target: x86_64-pc-windows-msvc
-            artifact: twig-windows-amd64.exe
+            archive: twig-windows-amd64
             binary: twig.exe
+            ext: '.exe'
 
     steps:
       - uses: actions/checkout@v4
@@ -56,16 +61,24 @@ jobs:
         if: matrix.target != 'x86_64-pc-windows-msvc'
         run: |
           strip "target/${{ matrix.target }}/release/${{ matrix.binary }}"
-      - name: Rename binary
+
+      # Package as a tarball containing a file named `twig` (or `twig.exe`)
+      # so install.sh can extract the binary by predictable name.
+      - name: Package tarball
         run: |
-          mkdir -p release-artifacts
-          cp "target/${{ matrix.target }}/release/${{ matrix.binary }}" "release-artifacts/${{ matrix.artifact }}"
+          mkdir -p release-artifacts/staging
+          cp "target/${{ matrix.target }}/release/${{ matrix.binary }}" \
+             "release-artifacts/staging/twig${{ matrix.ext }}"
+          (cd release-artifacts/staging && tar -czf "../${{ matrix.archive }}.tar.gz" \
+              "twig${{ matrix.ext }}")
+          rm -rf release-artifacts/staging
+          ls -la release-artifacts/
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.artifact }}
-          path: release-artifacts/${{ matrix.artifact }}
+          name: ${{ matrix.archive }}
+          path: release-artifacts/${{ matrix.archive }}.tar.gz
           if-no-files-found: error
 
   release:
@@ -78,10 +91,13 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           path: artifacts
-      - name: Create checksums
+      - name: Rename binaries inside tarballs for the release page
         run: |
           cd artifacts
-          for f in *; do
+          # Generate sha256sum-compatible checksum files. The format
+          # must be "<hash>  <filename>" (two spaces) for sha256sum -c
+          # to verify in-place.
+          for f in *.tar.gz; do
             sha256sum "$f" > "$f.sha256"
           done
           ls -la
