@@ -1,0 +1,92 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    name: Build (${{ matrix.target }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: x86_64-unknown-linux-gnu
+            artifact: twig-linux-amd64
+            binary: twig
+          - target: aarch64-unknown-linux-gnu
+            artifact: twig-linux-arm64
+            binary: twig
+          - target: x86_64-apple-darwin
+            artifact: twig-macos-amd64
+            binary: twig
+          - target: aarch64-apple-darwin
+            artifact: twig-macos-arm64
+            binary: twig
+          - target: x86_64-pc-windows-msvc
+            artifact: twig-windows-amd64.exe
+            binary: twig.exe
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+
+      - name: Cache cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: release-${{ matrix.target }}-${{ hashFiles('Cargo.lock') }}
+
+      - name: Build
+        run: cargo build --release --locked --target ${{ matrix.target }}
+
+      - name: Strip binary (Unix only)
+        if: matrix.target != 'x86_64-pc-windows-msvc'
+        run: |
+          strip "target/${{ matrix.target }}/release/${{ matrix.binary }}"
+      - name: Rename binary
+        run: |
+          mkdir -p release-artifacts
+          cp "target/${{ matrix.target }}/release/${{ matrix.binary }}" "release-artifacts/${{ matrix.artifact }}"
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.artifact }}
+          path: release-artifacts/${{ matrix.artifact }}
+          if-no-files-found: error
+
+  release:
+    name: Publish GitHub release
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download all artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+      - name: Create checksums
+        run: |
+          cd artifacts
+          for f in *; do
+            sha256sum "$f" > "$f.sha256"
+          done
+          ls -la
+      - name: Create release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/**/*
+          generate_release_notes: true

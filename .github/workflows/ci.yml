@@ -1,0 +1,113 @@
+name: CI
+
+on:
+  push:
+    branches: [master, rewrite/rust-port]
+  pull_request:
+
+jobs:
+  test:
+    name: Test (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, macos-latest, windows-latest]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Cache cargo registry & build artifacts
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('Cargo.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-cargo-
+
+      - name: Check formatting
+        run: cargo fmt --all -- --check
+
+      - name: Clippy
+        run: cargo clippy --all-targets -- -D warnings
+
+      - name: Build
+        run: cargo build --locked --all-targets
+
+      - name: Test
+        run: cargo test --locked --all-targets
+
+  miri:
+    name: Miri (Linux)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Rust toolchain with miri
+        run: |
+          rustup toolchain install nightly --component miri rustfmt
+          rustup default nightly
+      - name: Cache cargo registry & build artifacts
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: miri-${{ hashFiles('Cargo.lock') }}
+      - name: Run miri on the core lib
+        run: |
+          cargo miri setup
+          cargo miri test --lib -- core::model core::paths core::store --no-fail-fast
+
+  bench:
+    name: Load test (50MB synthetic JSON)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Rust toolchain
+        uses: dtolnay/rust-toolchain@stable
+      - name: Cache cargo
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: bench-${{ hashFiles('Cargo.lock') }}
+      - name: Build release
+        run: cargo build --release --locked
+      - name: Generate 50MB synthetic JSON
+        run: |
+          python3 - <<'EOF'
+          import json, random
+          random.seed(42)
+          root = {
+              "items": [
+                  {
+                      "id": i,
+                      "uuid": f"item-{i:08x}",
+                      "tags": random.sample(["red", "blue", "green", "yellow", "purple"], k=3),
+                      "payload": {
+                          "nested": list(range(10)),
+                          "label": "x" * 200,
+                          "deep": [{"k": j, "v": i * j} for j in range(10)],
+                      },
+                  }
+                  for i in range(20000)
+              ]
+          }
+          with open("/tmp/big.json", "w") as f:
+              json.dump(root, f)
+          EOF
+      - name: Load via twig
+        run: |
+          time ./target/release/twig /tmp/big.json
+      - name: Kill after 30s
+        if: always()
+        run: pkill -f twig || true
