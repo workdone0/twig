@@ -141,7 +141,7 @@ impl Loader for JsonLoader {
     }
 }
 
-struct Emitter {
+pub struct Emitter {
     stack: Vec<Frame>,
 }
 
@@ -150,12 +150,18 @@ struct Frame {
     count: i64,
 }
 
+impl Default for Emitter {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Emitter {
-    fn new() -> Self {
+    pub fn new() -> Self {
         Self { stack: Vec::new() }
     }
 
-    fn reset(&mut self) {
+    pub fn reset(&mut self) {
         self.stack.clear();
     }
 
@@ -171,7 +177,7 @@ impl Emitter {
         self.stack.last_mut()
     }
 
-    fn emit_value(
+    pub fn emit_value(
         &mut self,
         parent: Option<Uuid>,
         key: &str,
@@ -245,7 +251,7 @@ impl Emitter {
 
 /// Build the jq-style child path under `parent_path`. `array_index` is
 /// true for items inside an array.
-fn child_path(parent_path: &str, array_index: bool, key: &str) -> String {
+pub fn child_path(parent_path: &str, array_index: bool, key: &str) -> String {
     if array_index {
         format!("{parent_path}[{key}]")
     } else if parent_path == "." {
