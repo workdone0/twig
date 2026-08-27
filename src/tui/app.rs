@@ -4,10 +4,6 @@
 //! the current theme, and the modal-mode state machine. The actual
 //! rendering is delegated to widgets; this module owns the event loop
 //! and key dispatch.
-//!
-//! Wiring of background ingestion, breadcrumbs, inspector, status bar,
-//! modals, and clipboard all lands in subsequent commits; this commit
-//! only lands the shell so later ones fill in the rest.
 
 use std::path::Path;
 use std::sync::mpsc;
@@ -16,13 +12,13 @@ use anyhow::Result;
 use crossterm::event::{Event, KeyCode, KeyEvent, KeyEventKind, KeyModifiers};
 use ratatui::backend::Backend;
 use ratatui::layout::{Constraint, Direction, Layout};
-use ratatui::style::Style;
 use ratatui::text::Line;
-use ratatui::widgets::{Block, Borders, Paragraph};
+use ratatui::widgets::{Block, Paragraph};
 use ratatui::Terminal;
 
 use crate::adapters::loader::Loader;
 use crate::core::config::Config;
+use crate::core::model::Node;
 use crate::core::store::Store;
 use crate::tui::theme::{Theme, ALL_THEMES, CATPPUCCIN_MOCHA};
 
@@ -46,6 +42,9 @@ pub struct App {
     pub theme: Theme,
     pub status_message: Option<String>,
     pub error: Option<String>,
+    pub focused: Option<Node>,
+    pub search_stats: Option<String>,
+    pub frame: usize,
     config: Config,
 }
 
@@ -67,11 +66,13 @@ impl App {
             theme,
             status_message: None,
             error: None,
+            focused: None,
+            search_stats: None,
+            frame: 0,
             config,
         }
     }
 
-    /// Pick the appropriate loader based on file extension.
     pub fn loader_for(file: &Path) -> Box<dyn Loader> {
         match file
             .extension()
@@ -99,9 +100,6 @@ impl App {
         }
     }
 
-    /// Drive the event loop until the user quits. Spawns the loader
-    /// on a background thread, pumps events from crossterm, and
-    /// dispatches keys based on the current [`AppMode`].
     pub fn run<B: Backend>(&mut self, terminal: &mut Terminal<B>) -> Result<()>
     where
         B::Error: std::fmt::Debug + Send + Sync + 'static,
@@ -123,7 +121,6 @@ impl App {
 
         let tick = std::time::Duration::from_millis(50);
         loop {
-            // Drain loader events.
             while let Ok(ev) = rx.try_recv() {
                 match ev {
                     LoadEvent::Loaded(store) => {
@@ -153,11 +150,11 @@ impl App {
                     }
                 }
             }
+            self.frame = self.frame.wrapping_add(1);
         }
     }
 
     fn on_key(&mut self, key: KeyEvent) {
-        // Ctrl-C always exits, regardless of mode.
         if key.modifiers.contains(KeyModifiers::CONTROL) && key.code == KeyCode::Char('c') {
             self.mode = AppMode::Exiting;
             return;
@@ -187,16 +184,17 @@ impl App {
 fn render(f: &mut ratatui::Frame, app: &mut App) {
     let area = f.area();
     let theme = &app.theme;
-    let bg = theme.base_style();
 
-    f.render_widget(Block::default().style(bg), area);
+    f.render_widget(Block::default().style(theme.base_style()), area);
 
+    // Top-level vertical split: header / body / status.
     let chunks = Layout::default()
         .direction(Direction::Vertical)
         .constraints([
-            Constraint::Length(1), // header
-            Constraint::Min(1),    // body
-            Constraint::Length(1), // status
+            Constraint::Length(1),  // header
+            Constraint::Length(1),  // breadcrumbs
+            Constraint::Min(1),     // body
+            Constraint::Length(1),  // status
         ])
         .split(area);
 
@@ -212,18 +210,25 @@ fn render(f: &mut ratatui::Frame, app: &mut App) {
     .block(Block::default());
     f.render_widget(header, chunks[0]);
 
-    let body = match app.mode {
-        AppMode::Loading => Paragraph::new(Line::from(format!(
-            "Loading {}…",
-            app.file.display()
-        )))
-        .style(theme.primary_style())
-        .block(
-            Block::default()
-                .borders(Borders::ALL)
-                .border_style(Style::default().fg(theme.primary))
-                .title("Loading"),
-        ),
+    crate::tui::widgets::breadcrumbs::render(
+        f,
+        chunks[1],
+        theme,
+        app.focused.as_ref(),
+        app.store.as_ref(),
+    );
+
+    // Body: loading splash or placeholder main view.
+    match app.mode {
+        AppMode::Loading => {
+            crate::tui::widgets::loading::render(
+                f,
+                chunks[2],
+                theme,
+                &app.file.display().to_string(),
+                app.frame,
+            );
+        }
         AppMode::Normal => {
             let text = if let Some(store) = &app.store {
                 format!(
@@ -234,23 +239,41 @@ fn render(f: &mut ratatui::Frame, app: &mut App) {
             } else {
                 "No data loaded.".to_string()
             };
-            Paragraph::new(Line::from(text))
-                .style(theme.base_style())
-                .block(Block::default().borders(Borders::ALL))
+            f.render_widget(
+                Paragraph::new(Line::from(text)).block(Block::default()),
+                chunks[2],
+            );
         }
-        AppMode::Exiting => Paragraph::new(Line::from("Exiting…")),
-    };
-    f.render_widget(body, chunks[1]);
+        AppMode::Exiting => {}
+    }
 
-    let status = match (&app.error, &app.status_message) {
-        (Some(e), _) => format!(" ERROR: {e}"),
-        (None, Some(s)) => format!(" {s}"),
-        (None, None) => " Press ? for help, q to quit ".to_string(),
-    };
-    let status_widget = Paragraph::new(Line::from(status))
-        .style(theme.surface_style())
-        .block(Block::default());
-    f.render_widget(status_widget, chunks[2]);
+    crate::tui::widgets::status_bar::render(
+        f,
+        chunks[3],
+        theme,
+        &app.file,
+        app.focused.as_ref(),
+        app.search_stats.as_deref(),
+    );
+
+    // Status / message text on top of the body for transient messages.
+    match (&app.error, &app.status_message) {
+        (Some(_), _) => {} // Errors shown in status bar; nothing extra.
+        (None, Some(s)) => {
+            // Lightweight on-body hint.
+            let hint = Paragraph::new(Line::from(format!(" {s}")))
+                .style(theme.primary_style())
+                .block(Block::default());
+            f.render_widget(
+                hint,
+                Layout::default()
+                    .direction(Direction::Vertical)
+                    .constraints([Constraint::Min(1), Constraint::Length(1)])
+                    .split(chunks[2])[1],
+            );
+        }
+        (None, None) => {}
+    }
 }
 
 #[cfg(test)]
@@ -263,9 +286,7 @@ mod tests {
         let backend = TestBackend::new(80, 24);
         let mut terminal = Terminal::new(backend).unwrap();
         let app = App::new(std::path::Path::new("does-not-exist.json"), false);
-        terminal
-            .draw(|f| render(f, &mut { app }))
-            .unwrap();
+        terminal.draw(|f| render(f, &mut { app })).unwrap();
     }
 
     #[test]
