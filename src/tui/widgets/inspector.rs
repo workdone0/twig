@@ -52,10 +52,10 @@ pub fn render(
         .direction(Direction::Vertical)
         .constraints([
             Constraint::Length(1), // path
-            Constraint::Length(7), // details grid
-            Constraint::Length(5), // insights
-            Constraint::Min(5),    // preview
-            Constraint::Min(5),    // source
+            Constraint::Length(5), // details grid
+            Constraint::Length(4), // insights
+            Constraint::Min(3),    // preview
+            Constraint::Min(3),    // source
         ])
         .split(inner);
 
@@ -148,19 +148,26 @@ fn detail_line(label: &str, value: impl Into<String>, theme: &Theme) -> Line<'st
 
 fn build_path_chain(node: &Node, store: &Store) -> Vec<String> {
     let mut chain = Vec::new();
-    let mut current = Some(node.clone());
-    while let Some(n) = current {
-        let label = if n.key.is_empty() {
+    let mut current = node.clone();
+    let mut seen = std::collections::HashSet::new();
+    seen.insert(current.id);
+    loop {
+        let label = if current.key.is_empty() {
             "root".to_string()
         } else {
-            n.key.clone()
+            current.key.clone()
         };
         chain.push(label);
-        current = store
-            .get_node(n.parent.unwrap_or(uuid::Uuid::nil()))
-            .ok()
-            .flatten()
-            .filter(|p| p.id != n.id);
+        let Some(parent_id) = current.parent else {
+            break;
+        };
+        if !seen.insert(parent_id) {
+            break;
+        }
+        let Ok(Some(parent)) = store.get_node(parent_id) else {
+            break;
+        };
+        current = parent;
     }
     chain.reverse();
     chain

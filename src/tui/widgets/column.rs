@@ -78,10 +78,13 @@ impl Column {
             .borders(Borders::RIGHT)
             .border_style(Style::default().fg(theme.secondary))
             .title(title);
+        // Selection is communicated purely through the highlight style
+        // (bg + bold). No `highlight_symbol` here — using one together
+        // with the `▶` icon in `build_item` produced a double chevron
+        // on highlighted containers.
         let list = List::new(items)
             .block(block)
-            .highlight_style(highlighted(theme))
-            .highlight_symbol("▶ ");
+            .highlight_style(highlighted(theme));
         f.render_stateful_widget(list, area, &mut self.state);
     }
 

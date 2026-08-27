@@ -24,7 +24,7 @@ pub fn render(
         .constraints([
             Constraint::Percentage(35),
             Constraint::Min(10),
-            Constraint::Length(10),
+            Constraint::Length(12),
             Constraint::Length(20),
         ])
         .split(area);
