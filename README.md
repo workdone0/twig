@@ -2,11 +2,26 @@
   <img src="https://raw.githubusercontent.com/workdone0/twig/master/asset/logo.png" alt="Twig Logo" width="200"/>
 </p>
 
-# Twig 🌿
+> ⚠️ **You are on the legacy Python branch (`legacy-python`).**
+>
+> Twig has been rewritten in Rust and is now shipped as a single static
+> binary. The Python implementation is preserved here for historical
+> reference and for users who specifically need Python 3.10–3.14.
+>
+> 👉 **For new installs and active development, switch to `master` and
+> install the Rust build:**
+>
+> ```
+> curl -fsSL https://twig.wtf/install.sh | sh
+> ```
+>
+> See <https://github.com/workdone0/twig> for the current README.
+
+# Twig 🌿 (Python, archived)
 
 [![PyPI version](https://img.shields.io/pypi/v/twg.svg?style=flat-square&color=2ecc71)](https://pypi.org/project/twg/)
 [![Supported Python versions](https://img.shields.io/pypi/pyversions/twg.svg?style=flat-square)](https://pypi.org/project/twg/)
-[![Downloads](https://static.pepy.tech/badge/twg)](https://pepy.tech/project/twg)
+[![Downloads](https://static.pepy.tech/badge/twg)](https://static.pepy.tech/badge/twg)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square)](https://opensource.org/licenses/MIT)
 [![Buy Me A Coffee](https://img.shields.io/badge/Buy_Me_A_Coffee-FFDD00?style=flat-square&logo=buy-me-a-coffee&logoColor=black)](https://buymeacoffee.com/workdone0)
 
