@@ -164,12 +164,179 @@ fn column_no_double_chevron_on_highlight() {
         })
         .unwrap();
     let buf = terminal.backend().buffer().clone();
-    // The first row is the highlighted one (default selection = 0).
-    // Walk the row contents and assert we don't see two `▶` glyphs
-    // back-to-back — that was the bug the user reported.
     let row0: String = (0..40).map(|x| buf[(x, 1)].symbol().to_string()).collect();
     assert!(
         !row0.contains("▶▶"),
         "highlighted row should not show two chevrons: {row0:?}"
+    );
+}
+
+#[test]
+fn column_fills_full_width_when_alone() {
+    // When the navigator has only one column, it should expand to
+    // fill the available width (Constraint::Min(WIDTH)) instead of
+    // leaving a wide empty region to the right (the bug where a
+    // 120-wide terminal showed a 32-wide column with 88 empty cols).
+    use ratatui::backend::TestBackend;
+    use ratatui::Terminal;
+    use twig::tui::widgets::navigator::ColumnNavigator;
+
+    let cache = tempfile::tempdir().unwrap();
+    let store = load_sample(cache.path());
+    let mut nav = ColumnNavigator::new(store);
+    let backend = TestBackend::new(120, 20);
+    let mut terminal = Terminal::new(backend).unwrap();
+    terminal
+        .draw(|f| {
+            nav.render(
+                f,
+                ratatui::layout::Rect::new(0, 0, 120, 20),
+                &twig::tui::theme::CATPPUCCIN_MOCHA,
+            );
+        })
+        .unwrap();
+    let buf = terminal.backend().buffer().clone();
+    // The right border of the column should be at the very right edge
+    // (column 119) — i.e. the column fills the area.
+    let right_col_x = (0..120)
+        .rev()
+        .find(|x| buf[(*x, 1)].symbol() == "│")
+        .expect("right border present");
+    assert!(
+        right_col_x >= 115,
+        "single column should expand to fill area; right border at x={right_col_x}, expected ~119"
+    );
+}
+
+#[test]
+fn help_screen_shows_url_line() {
+    // Regression: there used to be two render calls to the same
+    // chunk in the help modal — the URL was overwritten by a
+    // duplicate "Keyboard Shortcuts" header. Make sure the URL
+    // appears in the rendered output.
+    use ratatui::backend::TestBackend;
+    use ratatui::Terminal;
+
+    let backend = TestBackend::new(80, 24);
+    let mut terminal = Terminal::new(backend).unwrap();
+    terminal
+        .draw(|f| {
+            twig::tui::widgets::help::render(
+                f,
+                ratatui::layout::Rect::new(0, 0, 80, 24),
+                &twig::tui::theme::CATPPUCCIN_MOCHA,
+                "3.0.0",
+            );
+        })
+        .unwrap();
+    let buf = terminal.backend().buffer().clone();
+    let mut flat = String::new();
+    for y in 0..24 {
+        for x in 0..80 {
+            flat.push_str(buf[(x, y)].symbol());
+        }
+        flat.push('\n');
+    }
+    assert!(
+        flat.contains("https://twig.wtf"),
+        "help screen missing URL line"
+    );
+    assert!(
+        !flat.contains("Keyboard Shortcuts"),
+        "help screen should not render the old 'Keyboard Shortcuts' subheader (it was dropping the URL)"
+    );
+}
+
+#[test]
+fn status_bar_fits_context_text_on_narrow_terminal() {
+    // Regression: the context column used to be Percentage(35)/Min(10)
+    // with a " READ ONLY" badge on Length(10), so "cloud_provider :
+    // String" got clipped to "cloud_provider : St" on 80-wide
+    // terminals. After the fix the context column should show the
+    // full text.
+    use ratatui::backend::TestBackend;
+    use ratatui::Terminal;
+
+    let cache = tempfile::tempdir().unwrap();
+    let store = load_sample(cache.path());
+    let nav = ColumnNavigator::new(store);
+    let focused = nav.focused().cloned();
+
+    let backend = TestBackend::new(80, 24);
+    let mut terminal = Terminal::new(backend).unwrap();
+    terminal
+        .draw(|f| {
+            twig::tui::widgets::status_bar::render(
+                f,
+                ratatui::layout::Rect::new(0, 23, 80, 1),
+                &twig::tui::theme::CATPPUCCIN_MOCHA,
+                std::path::Path::new("/tmp/small.json"),
+                focused.as_ref(),
+                None,
+            );
+        })
+        .unwrap();
+    let buf = terminal.backend().buffer().clone();
+    let row: String = (0..80).map(|x| buf[(x, 23)].symbol().to_string()).collect();
+    // The focused node is the first child of the root ('account_id'
+    // in cloud_infrastructure.json / 'cloud_provider' in our
+    // /tmp/small.json). Either way, " : String" or " : Object"
+    // should be visible in full.
+    assert!(
+        row.contains("Object") || row.contains("String"),
+        "status bar should show full type label, got: {row:?}"
+    );
+    // And the badge should still be present.
+    assert!(
+        row.contains("READ ONLY"),
+        "status bar missing READ ONLY badge"
+    );
+}
+
+#[test]
+fn inspector_hides_empty_insights_panel() {
+    // Regression: Smart Insights box used to be drawn around empty
+    // content for nodes that don't match URL/hex/ISO patterns.
+    use ratatui::backend::TestBackend;
+    use ratatui::Terminal;
+    use twig::tui::widgets::inspector;
+
+    let cache = tempfile::tempdir().unwrap();
+    let store = load_sample(cache.path());
+    let mut nav = ColumnNavigator::new(store);
+    // Pick a primitive string that doesn't match any pattern.
+    let target = nav
+        .store
+        .find_next_node("cloud_provider", None, 1)
+        .unwrap()
+        .unwrap();
+    nav.expand_to_node(target.id);
+    let focused = nav.focused().cloned();
+
+    let backend = TestBackend::new(40, 24);
+    let mut terminal = Terminal::new(backend).unwrap();
+    terminal
+        .draw(|f| {
+            inspector::render(
+                f,
+                ratatui::layout::Rect::new(0, 0, 40, 24),
+                &twig::tui::theme::CATPPUCCIN_MOCHA,
+                focused.as_ref(),
+                Some(&nav.store),
+                "json",
+            );
+        })
+        .unwrap();
+    let buf = terminal.backend().buffer().clone();
+    let mut flat = String::new();
+    for y in 0..24 {
+        for x in 0..40 {
+            flat.push_str(buf[(x, y)].symbol());
+        }
+        flat.push('\n');
+    }
+    assert!(
+        !flat.contains("Smart Insights"),
+        "inspector should not render empty Smart Insights box"
     );
 }

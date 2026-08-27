@@ -59,9 +59,10 @@ pub fn render(
         ])
         .split(inner);
 
-    // Path header.
+    // Path header (truncate to column width so it doesn't bleed).
     let chain = build_path_chain(node, store);
     let path_text = chain.join(" › ");
+    let path_text = truncate_path(&path_text, inner.width as usize);
     f.render_widget(
         Paragraph::new(Line::from(path_text))
             .alignment(Alignment::Center)
@@ -96,18 +97,20 @@ pub fn render(
     let detail_items: Vec<ListItem> = details_lines.into_iter().map(ListItem::new).collect();
     f.render_widget(List::new(detail_items).style(theme.base_style()), rows[1]);
 
-    // Insights.
-    let insights_block = Block::default()
-        .title(" Smart Insights ")
-        .borders(Borders::ALL)
-        .border_style(Style::default().add_modifier(Modifier::DIM));
-    let insights_inner = insights_block.inner(rows[2]);
-    f.render_widget(insights_block, rows[2]);
+    // Insights (only draw the box if there's content to show).
     let insight_lines = build_insights(node, theme);
-    f.render_widget(
-        Paragraph::new(insight_lines).wrap(Wrap { trim: false }),
-        insights_inner,
-    );
+    if !insight_lines.is_empty() {
+        let insights_block = Block::default()
+            .title(" Smart Insights ")
+            .borders(Borders::ALL)
+            .border_style(Style::default().add_modifier(Modifier::DIM));
+        let insights_inner = insights_block.inner(rows[2]);
+        f.render_widget(insights_block, rows[2]);
+        f.render_widget(
+            Paragraph::new(insight_lines).wrap(Wrap { trim: false }),
+            insights_inner,
+        );
+    }
 
     // Content Preview.
     let preview_block = Block::default()
@@ -134,6 +137,26 @@ pub fn render(
         Paragraph::new(source_lines).wrap(Wrap { trim: false }),
         source_inner,
     );
+}
+
+fn truncate_path(path: &str, max_cols: usize) -> String {
+    if max_cols == 0 || path.chars().count() <= max_cols {
+        return path.to_string();
+    }
+    if max_cols <= 4 {
+        return "…".to_string();
+    }
+    let keep = max_cols - 1; // 1 char for the leading ellipsis
+    let mut iter = path.chars();
+    let tail: String = iter
+        .by_ref()
+        .rev()
+        .take(keep)
+        .collect::<String>()
+        .chars()
+        .rev()
+        .collect();
+    format!("…{tail}")
 }
 
 fn detail_line(label: &str, value: impl Into<String>, theme: &Theme) -> Line<'static> {

@@ -157,11 +157,24 @@ impl ColumnNavigator {
     }
 
     pub fn render(&mut self, f: &mut Frame, area: Rect, theme: &Theme) {
-        let widths: Vec<ratatui::layout::Constraint> = self
-            .columns
-            .iter()
-            .map(|_| ratatui::layout::Constraint::Length(Column::WIDTH))
-            .collect();
+        let n = self.columns.len();
+        if n == 0 {
+            return;
+        }
+        // Each column gets `WIDTH` columns of horizontal space, except
+        // the last one which expands to fill whatever remains. This
+        // way a single-column navigator fills the available area
+        // (instead of leaving a wide empty region to its right), and
+        // multi-column navigators still get the full Miller-column
+        // scrolling affordance.
+        let mut widths: Vec<ratatui::layout::Constraint> = Vec::with_capacity(n);
+        for i in 0..n {
+            if i + 1 == n {
+                widths.push(ratatui::layout::Constraint::Min(Column::WIDTH));
+            } else {
+                widths.push(ratatui::layout::Constraint::Length(Column::WIDTH));
+            }
+        }
         let chunks = ratatui::layout::Layout::default()
             .direction(ratatui::layout::Direction::Horizontal)
             .constraints(widths)

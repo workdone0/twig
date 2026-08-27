@@ -92,14 +92,6 @@ pub fn render(f: &mut Frame, area: Rect, theme: &Theme, version: &str) {
             .wrap(Wrap { trim: false }),
         chunks[3],
     );
-    f.render_widget(
-        Paragraph::new(Line::from(Span::styled(
-            "Keyboard Shortcuts",
-            Style::default().add_modifier(Modifier::BOLD | Modifier::UNDERLINED),
-        )))
-        .alignment(Alignment::Center),
-        chunks[3],
-    );
 
     let key_lines: Vec<Line> = KEYBINDINGS
         .iter()

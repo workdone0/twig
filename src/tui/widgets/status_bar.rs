@@ -11,6 +11,12 @@ use ratatui::Frame;
 use crate::core::model::{DataType, Node};
 use crate::tui::theme::Theme;
 
+/// Single-line bar split into four columns: file · context · READ ONLY · search.
+///
+/// Layout uses percentage + length constraints so the file column gets ~30% and
+/// the context column fills whatever's left after the fixed-width badges. The
+/// context string is truncated to its column width so longer paths/key names
+/// don't bleed into the right side.
 pub fn render(
     f: &mut Frame,
     area: Rect,
@@ -19,19 +25,23 @@ pub fn render(
     node: Option<&Node>,
     search_stats: Option<&str>,
 ) {
+    // The badges ("READ ONLY", "SEARCH: ...") need a fixed slot so
+    // they never wrap; the file column is percentage so long file
+    // paths don't squeeze out the context column. The middle column
+    // is a Min so it absorbs whatever's left.
     let chunks = Layout::default()
         .direction(Direction::Horizontal)
         .constraints([
-            Constraint::Percentage(35),
-            Constraint::Min(10),
-            Constraint::Length(12),
+            Constraint::Percentage(30),
+            Constraint::Min(20),
+            Constraint::Length(11),
             Constraint::Length(20),
         ])
         .split(area);
 
     let file_str = format!(" FILE: {}", file.display());
     f.render_widget(
-        Paragraph::new(Line::from(file_str)).style(Style::default().fg(theme.primary)),
+        Paragraph::new(file_str).style(Style::default().fg(theme.primary)),
         chunks[0],
     );
 
