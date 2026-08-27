@@ -15,6 +15,7 @@ use ratatui::layout::{Constraint, Direction, Layout};
 use ratatui::text::Line;
 use ratatui::widgets::{Block, Paragraph};
 use ratatui::Terminal;
+use uuid::Uuid;
 
 use crate::adapters::loader::Loader;
 use crate::core::config::Config;
@@ -27,6 +28,9 @@ use crate::tui::widgets::navigator::ColumnNavigator;
 pub enum AppMode {
     Loading,
     Normal,
+    Search,
+    Jump,
+    Help,
     Exiting,
 }
 
@@ -46,6 +50,8 @@ pub struct App {
     pub focused: Option<Node>,
     pub search_stats: Option<String>,
     pub frame: usize,
+    pub modal_input: String,
+    pub last_search_query: Option<String>,
     config: Config,
 }
 
@@ -70,6 +76,8 @@ impl App {
             focused: None,
             search_stats: None,
             frame: 0,
+            modal_input: String::new(),
+            last_search_query: None,
             config,
         }
     }
@@ -170,11 +178,18 @@ impl App {
                 KeyCode::Char('q') => self.mode = AppMode::Exiting,
                 KeyCode::Char('t') => self.cycle_theme(),
                 KeyCode::Char('?') | KeyCode::Char('h') => {
-                    self.status_message = Some(
-                        "Twig: ←/→ columns • ↑/↓ row • / search • : jump • t theme • ? help • q quit"
-                            .to_string(),
-                    );
+                    self.mode = AppMode::Help;
                 }
+                KeyCode::Char('/') => {
+                    self.modal_input.clear();
+                    self.mode = AppMode::Search;
+                }
+                KeyCode::Char(':') => {
+                    self.modal_input.clear();
+                    self.mode = AppMode::Jump;
+                }
+                KeyCode::Char('n') => self.next_match(1),
+                KeyCode::Char('N') => self.next_match(-1),
                 KeyCode::Down => {
                     if let Some(n) = self.navigator.as_mut() {
                         n.move_down();
@@ -197,11 +212,99 @@ impl App {
                 }
                 _ => {}
             },
+            AppMode::Search => match key.code {
+                KeyCode::Esc => self.mode = AppMode::Normal,
+                KeyCode::Enter => self.run_search(),
+                KeyCode::Backspace => {
+                    self.modal_input.pop();
+                }
+                KeyCode::Char(c) => self.modal_input.push(c),
+                _ => {}
+            },
+            AppMode::Jump => match key.code {
+                KeyCode::Esc => self.mode = AppMode::Normal,
+                KeyCode::Enter => self.run_jump(),
+                KeyCode::Backspace => {
+                    self.modal_input.pop();
+                }
+                KeyCode::Char(c) => self.modal_input.push(c),
+                _ => {}
+            },
+            AppMode::Help => {
+                if matches!(key.code, KeyCode::Esc | KeyCode::Char('?') | KeyCode::Char('h') | KeyCode::Enter) {
+                    self.mode = AppMode::Normal;
+                }
+            }
             AppMode::Exiting => {}
         }
         // Refresh focused node.
         if let Some(nav) = &self.navigator {
             self.focused = nav.focused().cloned();
+        }
+    }
+
+    fn next_match(&mut self, direction: i32) {
+        let query = match &self.last_search_query {
+            Some(q) => q.clone(),
+            None => {
+                self.status_message = Some("No active search query.".to_string());
+                return;
+            }
+        };
+        if let Some(nav) = self.navigator.as_mut() {
+            if let Some(node) = nav.find_next(&query, direction) {
+                nav.expand_to_node(node.id);
+                nav.set_search(self.last_search_query.clone());
+                self.focused = Some(node.clone());
+                self.update_search_stats(&node.id, &query);
+            } else {
+                self.status_message = Some(format!("Not found: '{query}'"));
+            }
+        }
+    }
+
+    fn run_search(&mut self) {
+        let query = self.modal_input.trim().to_string();
+        self.mode = AppMode::Normal;
+        if query.is_empty() {
+            return;
+        }
+        self.last_search_query = Some(query.clone());
+        self.next_match(1);
+        if let Some(nav) = self.navigator.as_mut() {
+            nav.set_search(Some(query));
+        }
+    }
+
+    fn run_jump(&mut self) {
+        let path = self.modal_input.trim().to_string();
+        self.mode = AppMode::Normal;
+        if path.is_empty() {
+            return;
+        }
+        if let Some(nav) = self.navigator.as_mut() {
+            match nav.store.resolve_path(&path) {
+                Ok(Some(node)) => {
+                    nav.expand_to_node(node.id);
+                    self.focused = Some(node);
+                }
+                Ok(None) => {
+                    self.status_message = Some(format!("Path not found: {path}"));
+                }
+                Err(e) => {
+                    self.status_message = Some(format!("{e}"));
+                }
+            }
+        }
+    }
+
+    fn update_search_stats(&mut self, current_id: &Uuid, query: &str) {
+        if let Some(nav) = &self.navigator {
+            if let Ok((current, total)) = nav.store.get_search_stats(query, Some(*current_id)) {
+                if total > 0 {
+                    self.search_stats = Some(format!("{current}/{total}"));
+                }
+            }
         }
     }
 }
@@ -279,7 +382,7 @@ fn render(f: &mut ratatui::Frame, app: &mut App) {
             // Suppress the duplicate text-rendering path below.
             let _ = app.focused.is_some();
         }
-        AppMode::Exiting => {}
+        AppMode::Exiting | AppMode::Search | AppMode::Jump | AppMode::Help => {}
     }
 
     crate::tui::widgets::status_bar::render(
@@ -290,6 +393,20 @@ fn render(f: &mut ratatui::Frame, app: &mut App) {
         app.focused.as_ref(),
         app.search_stats.as_deref(),
     );
+
+    // Modal overlays.
+    match app.mode {
+        AppMode::Search => {
+            crate::tui::widgets::search::render(f, area, theme, &app.modal_input);
+        }
+        AppMode::Jump => {
+            crate::tui::widgets::jump::render(f, area, theme, &app.modal_input);
+        }
+        AppMode::Help => {
+            crate::tui::widgets::help::render(f, area, theme, env!("CARGO_PKG_VERSION"));
+        }
+        _ => {}
+    }
 
     // Status / message text on top of the body for transient messages.
     match (&app.error, &app.status_message) {
