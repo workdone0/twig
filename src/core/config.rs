@@ -11,6 +11,7 @@ use std::path::{Path, PathBuf};
 use serde::{Deserialize, Serialize};
 
 use crate::core::paths::config_dir;
+use crate::tui::theme::DEFAULT_THEME_NAME;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct Config(BTreeMap<String, serde_json::Value>);
@@ -18,12 +19,10 @@ pub struct Config(BTreeMap<String, serde_json::Value>);
 impl Default for Config {
     fn default() -> Self {
         let mut map = BTreeMap::new();
-        map.insert("theme".into(), serde_json::Value::from(DEFAULT_THEME));
+        map.insert("theme".into(), serde_json::Value::from(DEFAULT_THEME_NAME));
         Self(map)
     }
 }
-
-pub const DEFAULT_THEME: &str = "catppuccin-mocha";
 
 impl Config {
     /// Load the config from disk, falling back to defaults if the file
@@ -97,7 +96,7 @@ mod tests {
     #[test]
     fn default_config_has_catppuccin_theme() {
         let cfg = Config::default();
-        assert_eq!(cfg.get_string("theme"), Some(DEFAULT_THEME));
+        assert_eq!(cfg.get_string("theme"), Some(DEFAULT_THEME_NAME));
     }
 
     #[test]
@@ -136,7 +135,7 @@ mod tests {
         std::fs::write(&path, "this is not json").unwrap();
 
         let cfg = Config::load_from(&path);
-        assert_eq!(cfg.get_string("theme"), Some(DEFAULT_THEME));
+        assert_eq!(cfg.get_string("theme"), Some(DEFAULT_THEME_NAME));
     }
 
     #[test]
@@ -144,6 +143,6 @@ mod tests {
         let tmp = tempfile::tempdir().unwrap();
         let path = tmp.path().join("does-not-exist.json");
         let cfg = Config::load_from(&path);
-        assert_eq!(cfg.get_string("theme"), Some(DEFAULT_THEME));
+        assert_eq!(cfg.get_string("theme"), Some(DEFAULT_THEME_NAME));
     }
 }

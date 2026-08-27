@@ -1,8 +1,19 @@
 //! Theme palettes used by the TUI.
 //!
-//! Mirrors `src/twg/ui/themes.py` from the Python version: two named
-//! palettes (Catppuccin Mocha default, Solarized Dark) and helpers to
-//! turn a [`Theme`] into ratatui [`Style`]s.
+//! **Catppuccin Mocha is the default theme.** That guarantee is locked
+//! in three places:
+//!
+//!   1. `ALL_THEMES[0]` is `CATPPUCCIN_MOCHA` (compile-time const), so
+//!      `App::cycle_theme` advances *from* Catppuccin on first press
+//!      of `t`.
+//!   2. `Config::DEFAULT_THEME = "catppuccin-mocha"` is what fresh
+//!      installs write into `config.json`.
+//!   3. `App::new` falls back to `CATPPUCCIN_MOCHA` whenever the
+//!      config file is missing, unreadable, or references an unknown
+//!      theme name. A regression test in this module asserts that
+//!      `ALL_THEMES[0]` stays Catppuccin Mocha.
+//!
+//! Solarized Dark is the second entry for the `t` cycle.
 
 use ratatui::style::{Color, Style};
 
@@ -52,7 +63,13 @@ pub const SOLARIZED_DARK: Theme = Theme {
     is_dark: true,
 };
 
+/// Order matters: `[0]` is the default. Don't shuffle.
 pub const ALL_THEMES: &[&Theme] = &[&CATPPUCCIN_MOCHA, &SOLARIZED_DARK];
+
+/// Name of the default theme. Used by `Config::default()` and asserted
+/// against by tests so a reorder of `ALL_THEMES` can't silently change
+/// the default.
+pub const DEFAULT_THEME_NAME: &str = CATPPUCCIN_MOCHA.name;
 
 impl Theme {
     pub fn base_style(&self) -> Style {
@@ -101,5 +118,17 @@ mod tests {
         let names: Vec<_> = ALL_THEMES.iter().map(|t| t.name).collect();
         assert!(names.contains(&"catppuccin-mocha"));
         assert!(names.contains(&"solarized-dark"));
+    }
+
+    /// Catppuccin must be the *first* entry in ALL_THEMES so a fresh
+    /// install always boots into it. Reordering the slice silently
+    /// would change the default — this test refuses that.
+    #[test]
+    fn catppuccin_is_default_theme() {
+        assert_eq!(
+            ALL_THEMES[0].name, CATPPUCCIN_MOCHA.name,
+            "ALL_THEMES[0] must be Catppuccin Mocha; reorder the slice carefully"
+        );
+        assert_eq!(DEFAULT_THEME_NAME, "catppuccin-mocha");
     }
 }

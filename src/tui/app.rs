@@ -21,7 +21,7 @@ use crate::adapters::loader::Loader;
 use crate::core::config::Config;
 use crate::core::model::Node;
 use crate::core::store::Store;
-use crate::tui::theme::{Theme, ALL_THEMES, CATPPUCCIN_MOCHA};
+use crate::tui::theme::{Theme, ALL_THEMES};
 use crate::tui::widgets::navigator::ColumnNavigator;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -59,12 +59,14 @@ pub struct App {
 impl App {
     pub fn new(file: &Path, force_rebuild: bool) -> Self {
         let config = Config::load();
-        let theme_name = config.get_string("theme").unwrap_or(CATPPUCCIN_MOCHA.name);
-        let theme = ALL_THEMES
-            .iter()
-            .find(|t| t.name == theme_name)
-            .copied()
-            .unwrap_or(&CATPPUCCIN_MOCHA)
+        // Pick the theme from config; fall back to the registered
+        // default (Catppuccin Mocha) if config has none or refers to
+        // an unknown theme. The `ALL_THEMES[0]` lookup ensures the
+        // registered default and the fallback can't drift.
+        let configured = config.get_string("theme");
+        let theme = configured
+            .and_then(|name| ALL_THEMES.iter().find(|t| t.name == name).copied())
+            .unwrap_or(ALL_THEMES[0])
             .clone();
         Self {
             file: file.to_path_buf(),
@@ -109,6 +111,9 @@ impl App {
     }
 
     pub fn cycle_theme(&mut self) {
+        // Cycle through ALL_THEMES in declaration order. Default
+        // (Catppuccin Mocha, at index 0) is reachable from any other
+        // theme by cycling enough times.
         let names: Vec<&'static str> = ALL_THEMES.iter().map(|t| t.name).collect();
         let current = names
             .iter()
@@ -531,5 +536,18 @@ mod tests {
         app.cycle_theme();
         let second = app.theme.name.to_string();
         assert_ne!(first, second);
+    }
+
+    /// First-press of `t` on a fresh install must move *away* from
+    /// Catppuccin (i.e. Catppuccin must be the boot theme), and the
+    /// second press must land back on Catppuccin.
+    #[test]
+    fn default_theme_is_catppuccin_and_cycle_round_trips() {
+        let mut app = App::new(std::path::Path::new("x.json"), false);
+        assert_eq!(app.theme.name, "catppuccin-mocha");
+        app.cycle_theme();
+        assert_ne!(app.theme.name, "catppuccin-mocha");
+        app.cycle_theme();
+        assert_eq!(app.theme.name, "catppuccin-mocha");
     }
 }
