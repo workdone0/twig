@@ -186,6 +186,29 @@ Twig is built using **[ratatui](https://github.com/ratatui/ratatui)** for the TU
 
 We welcome contributions! See [`CONTRIBUTING.md`](CONTRIBUTING.md) for setup, architecture, and submission guidelines.
 
+## Releasing a new version
+
+Releases are fully automated. The flow is:
+
+1. Bump the `version` field in `Cargo.toml` and push to `master`.
+2. `.github/workflows/auto-release.yml` detects the version change on
+   master and creates a `v<version>` tag (idempotent — skips if the tag
+   already exists).
+3. The tag push triggers `.github/workflows/release.yml`, which
+   cross-compiles for Linux (x86_64 + aarch64), macOS (x86_64 +
+   aarch64), and Windows (x86_64), uploads `.tar.gz` archives with
+   matching `.sha256` files, and publishes them to a GitHub release.
+4. `curl -fsSL https://twig.wtf/install.sh | sh` always picks up
+   the highest-versioned release from the GitHub Releases API.
+
+If you need to cut a release manually (e.g. for a hotfix), just push
+the tag:
+
+```bash
+git tag v3.0.1
+git push origin v3.0.1
+```
+
 ## Star History
 
 [![Star History Chart](https://api.star-history.com/svg?repos=workdone0/twig&type=timeline&legend=bottom-right)](https://star-history.com/#workdone0/twig&type=timeline&legend=bottom-right)

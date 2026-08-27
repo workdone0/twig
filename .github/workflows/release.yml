@@ -16,24 +16,27 @@ jobs:
       fail-fast: false
       matrix:
         include:
+          # Asset names MUST match what install.sh builds via
+          # detect_target(). On Linux: <arch>-unknown-linux-gnu.
+          # On macOS: <arch>-apple-darwin. On Windows: pc-windows-msvc.
           - target: x86_64-unknown-linux-gnu
-            archive: twig-linux-amd64
+            archive: twig-x86_64-unknown-linux-gnu
             binary: twig
             ext: ''
           - target: aarch64-unknown-linux-gnu
-            archive: twig-linux-arm64
+            archive: twig-aarch64-unknown-linux-gnu
             binary: twig
             ext: ''
           - target: x86_64-apple-darwin
-            archive: twig-macos-amd64
+            archive: twig-x86_64-apple-darwin
             binary: twig
             ext: ''
           - target: aarch64-apple-darwin
-            archive: twig-macos-arm64
+            archive: twig-aarch64-apple-darwin
             binary: twig
             ext: ''
           - target: x86_64-pc-windows-msvc
-            archive: twig-windows-amd64
+            archive: twig-x86_64-pc-windows-msvc
             binary: twig.exe
             ext: '.exe'
 
