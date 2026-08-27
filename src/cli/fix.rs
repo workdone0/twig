@@ -51,6 +51,7 @@ pub fn run_from_path(path: &Path) -> Result<()> {
         file: path.to_path_buf(),
         fix: true,
         print: false,
+        check: false,
         output: Some(path.to_path_buf()),
         indent: 2,
         rebuild_db: false,

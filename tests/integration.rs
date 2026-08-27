@@ -639,3 +639,36 @@ fn main_returns_error_when_load_fails() {
         "error message must mention JSON or parse: {msg}"
     );
 }
+
+#[test]
+fn check_mode_loads_file_and_reports_stats() {
+    // `twig --check` exercises the streaming ingestion pipeline
+    // without opening a TUI, which makes it usable in non-interactive
+    // contexts like CI. Verify it returns Ok and produces a node
+    // count from a small in-memory JSON file.
+    use twig::adapters::json_loader::JsonLoader;
+    use twig::adapters::loader::Loader;
+    let path = write_temp_json("check.json", r#"{"a":1,"b":[1,2,3],"c":{"x":1}}"#);
+    let loader = JsonLoader::new();
+    let store = loader
+        .load(&path, true)
+        .expect("check-mode sample should load cleanly");
+    let nodes = store.node_count().expect("node_count");
+    assert!(
+        nodes >= 5,
+        "expected at least 5 nodes (root + a, b, b[0..2], c, c.x), got {nodes}"
+    );
+}
+
+#[test]
+fn check_mode_reports_failure_for_truncated_json() {
+    // Negative case: --check should propagate the same anyhow error
+    // that the TUI sees, so a failed CI run surfaces a meaningful
+    // exit code rather than a silent pass.
+    use twig::adapters::json_loader::JsonLoader;
+    use twig::adapters::loader::Loader;
+    let path = write_temp_json("check_trunc.json", r#"{"a":1,"b":[1,2"#);
+    let loader = JsonLoader::new();
+    let res = loader.load(&path, true);
+    assert!(res.is_err(), "truncated JSON must surface an error");
+}

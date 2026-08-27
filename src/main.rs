@@ -4,12 +4,15 @@ use owo_colors::{OwoColorize, Stream::Stdout};
 use ratatui::backend::CrosstermBackend;
 use ratatui::Terminal;
 
-use twig::cli::{fix, print as print_mode, Cli};
+use twig::cli::{check, fix, print as print_mode, Cli};
 use twig::tui::app::App;
 
 fn main() -> Result<()> {
     let cli = Cli::parse();
 
+    if cli.check {
+        return check::run(&cli.file, cli.rebuild_db);
+    }
     if cli.fix {
         return fix::run(&cli);
     }

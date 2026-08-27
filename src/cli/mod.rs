@@ -1,8 +1,10 @@
 //! CLI argument parsing and non-interactive subcommands.
 //!
-//! `Cli` is the `clap` parser; `fix::run` and `print::run` implement
-//! the two non-TUI modes (`--fix` and `--print` / `-p`).
+//! `Cli` is the `clap` parser; `fix::run`, `print::run`, and
+//! `check::run` implement the three non-TUI modes (`--fix`,
+//! `--print` / `-p`, and `--check`).
 
+pub mod check;
 pub mod fix;
 pub mod print;
 
@@ -41,4 +43,10 @@ pub struct Cli {
     /// Force rebuild of the internal SQLite database cache.
     #[arg(long)]
     pub rebuild_db: bool,
+
+    /// Load the file via the streaming ingestion pipeline, print
+    /// timing stats, and exit. Useful for benchmarking and CI;
+    /// does not open the TUI.
+    #[arg(long)]
+    pub check: bool,
 }

@@ -55,7 +55,10 @@ jobs:
           shellcheck install.sh
 
   miri:
-    name: Miri (Linux)
+    # Miri runs only the model + paths tests. core::store and
+    # core::config pull in rusqlite, which uses C FFI to SQLite and
+    # therefore can't be interpreted by Miri.
+    name: Miri (Linux, pure-Rust modules only)
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -71,10 +74,10 @@ jobs:
             ~/.cargo/git
             target
           key: miri-${{ hashFiles('Cargo.lock') }}
-      - name: Run miri on the core lib
+      - name: Run miri on model + paths
         run: |
           cargo miri setup
-          cargo miri test --lib -- core::model core::paths core::store --no-fail-fast
+          cargo miri test --lib -- core::model core::paths --no-fail-fast
 
   bench:
     name: Load test (50MB synthetic JSON)
@@ -93,6 +96,9 @@ jobs:
           key: bench-${{ hashFiles('Cargo.lock') }}
       - name: Build release
         run: cargo build --release --locked
+      # Generate ~50MB of synthetic JSON. We aim for 50MB+, not the
+      # 11MB that 20k items produced in earlier versions of this
+      # job. 90k items gets us there with room to grow.
       - name: Generate 50MB synthetic JSON
         run: |
           python3 - <<'EOF'
@@ -110,15 +116,15 @@ jobs:
                           "deep": [{"k": j, "v": i * j} for j in range(10)],
                       },
                   }
-                  for i in range(20000)
+                  for i in range(90000)
               ]
           }
           with open("/tmp/big.json", "w") as f:
               json.dump(root, f)
           EOF
-      - name: Load via twig
+          ls -lh /tmp/big.json
+      # twig --check exercises the streaming JSON ingestion pipeline
+      # without opening a TUI, so it works in CI's non-TTY environment.
+      - name: Load via twig --check
         run: |
-          time ./target/release/twig /tmp/big.json
-      - name: Kill after 30s
-        if: always()
-        run: pkill -f twig || true
+          time ./target/release/twig --check /tmp/big.json
