@@ -29,6 +29,19 @@ pub struct Store {
     pub root_id: Option<Uuid>,
 }
 
+// Expose the inner connection for adapter use. We don't try to enforce
+// single-writer semantics at the type level — the loaders take care of
+// that by holding the only `&mut Store` during ingestion.
+impl Store {
+    pub fn db_conn(&self) -> &Connection {
+        &self.conn
+    }
+
+    pub fn db_conn_mut(&mut self) -> &mut Connection {
+        &mut self.conn
+    }
+}
+
 #[derive(Debug, thiserror::Error)]
 pub enum StoreError {
     #[error("sqlite error: {0}")]
