@@ -204,6 +204,8 @@ impl App {
                 }
                 KeyCode::Char('n') => self.next_match(1),
                 KeyCode::Char('N') => self.next_match(-1),
+                KeyCode::Char('c') => self.copy_path(),
+                KeyCode::Char('y') => self.copy_source(),
                 KeyCode::Down => {
                     if let Some(n) = self.navigator.as_mut() {
                         n.move_down();
@@ -319,6 +321,52 @@ impl App {
                     self.search_stats = Some(format!("{current}/{total}"));
                 }
             }
+        }
+    }
+
+    fn copy_path(&mut self) {
+        let Some(node) = self.focused.clone() else {
+            return;
+        };
+        let Some(nav) = &self.navigator else {
+            return;
+        };
+        let path = match nav.store.get_path(node.id) {
+            Ok(p) => p,
+            Err(_) => ".".to_string(),
+        };
+        match crate::tui::widgets::clipboard::Clipboard::copy(&path) {
+            Ok(()) => self.status_message = Some(format!("Copied path: {path}")),
+            Err(e) => self.status_message = Some(format!("Clipboard: {e}")),
+        }
+    }
+
+    fn copy_source(&mut self) {
+        let Some(node) = self.focused.clone() else {
+            return;
+        };
+        let Some(nav) = &self.navigator else {
+            return;
+        };
+        let value = if node.is_container() {
+            nav.store.reconstruct_value(node.id, 5).unwrap_or(serde_json::Value::Null)
+        } else {
+            node.value.clone().unwrap_or(serde_json::Value::Null)
+        };
+        let text = if self.format == "yaml" {
+            serde_yml::to_string(&value).unwrap_or_default()
+        } else {
+            serde_json::to_string_pretty(&value).unwrap_or_default()
+        };
+        let label = if self.format == "yaml" { "YAML source" } else { "source" };
+        match crate::tui::widgets::clipboard::Clipboard::copy(&text) {
+            Ok(()) => {
+                let preview: String = text.chars().take(50).collect();
+                let preview = preview.replace('\n', " ");
+                let suffix = if text.len() > 50 { "..." } else { "" };
+                self.status_message = Some(format!("Copied {label}: {preview}{suffix}"));
+            }
+            Err(e) => self.status_message = Some(format!("Clipboard: {e}")),
         }
     }
 }
