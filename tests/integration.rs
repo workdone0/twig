@@ -304,7 +304,6 @@ fn inspector_hides_empty_insights_panel() {
     let cache = tempfile::tempdir().unwrap();
     let store = load_sample(cache.path());
     let mut nav = ColumnNavigator::new(store);
-    // Pick a primitive string that doesn't match any pattern.
     let target = nav
         .store
         .find_next_node("cloud_provider", None, 1)
@@ -338,5 +337,107 @@ fn inspector_hides_empty_insights_panel() {
     assert!(
         !flat.contains("Smart Insights"),
         "inspector should not render empty Smart Insights box"
+    );
+}
+
+#[test]
+fn column_renders_without_titles() {
+    // Regression: Column::render used to add a " root " / " col N "
+    // title to each Block. User feedback was that the labels are
+    // noisy; the visible right-border alone is enough separator.
+    use ratatui::backend::TestBackend;
+    use ratatui::Terminal;
+
+    let cache = tempfile::tempdir().unwrap();
+    let store = load_sample(cache.path());
+    let parent_id = store.root_id.unwrap();
+    let mut col = Column::new(&store, parent_id, 0);
+
+    let backend = TestBackend::new(40, 6);
+    let mut terminal = Terminal::new(backend).unwrap();
+    terminal
+        .draw(|f| {
+            col.render(
+                f,
+                ratatui::layout::Rect::new(0, 0, 40, 6),
+                &twig::tui::theme::CATPPUCCIN_MOCHA,
+            );
+        })
+        .unwrap();
+    let buf = terminal.backend().buffer().clone();
+    let mut flat = String::new();
+    for y in 0..6 {
+        for x in 0..40 {
+            flat.push_str(buf[(x, y)].symbol());
+        }
+        flat.push('\n');
+    }
+    assert!(
+        !flat.contains("col 0") && !flat.contains(" root "),
+        "column should not render a title; got:\n{flat}"
+    );
+}
+
+#[test]
+fn hints_bar_renders_all_keys() {
+    use ratatui::backend::TestBackend;
+    use ratatui::Terminal;
+    use twig::tui::widgets::hints;
+
+    let backend = TestBackend::new(120, 1);
+    let mut terminal = Terminal::new(backend).unwrap();
+    terminal
+        .draw(|f| {
+            hints::render(
+                f,
+                ratatui::layout::Rect::new(0, 0, 120, 1),
+                &twig::tui::theme::CATPPUCCIN_MOCHA,
+            );
+        })
+        .unwrap();
+    let buf = terminal.backend().buffer().clone();
+    let row: String = (0..120).map(|x| buf[(x, 0)].symbol().to_string()).collect();
+    for label in ["search", "jump", "theme", "help", "quit", "path", "src"] {
+        assert!(
+            row.contains(label),
+            "hints bar missing '{label}' label; got: {row:?}"
+        );
+    }
+}
+
+#[test]
+fn search_modal_shows_cursor_indicator() {
+    // Regression: the search input line used to be a flat
+    // "> {query}" string. Add a cursor block at the end of the
+    // typed text so users can see where the next character lands.
+    use ratatui::backend::TestBackend;
+    use ratatui::Terminal;
+
+    let backend = TestBackend::new(80, 10);
+    let mut terminal = Terminal::new(backend).unwrap();
+    terminal
+        .draw(|f| {
+            twig::tui::widgets::search::render(
+                f,
+                ratatui::layout::Rect::new(0, 0, 80, 10),
+                &twig::tui::theme::CATPPUCCIN_MOCHA,
+                "available",
+            );
+        })
+        .unwrap();
+    let buf = terminal.backend().buffer().clone();
+    let mut flat = String::new();
+    for y in 0..10 {
+        for x in 0..80 {
+            flat.push_str(buf[(x, y)].symbol());
+        }
+        flat.push('\n');
+    }
+    assert!(flat.contains("available"), "search input not visible");
+    // The ▏ block-element cursor should be present somewhere after
+    // the typed text.
+    assert!(
+        flat.contains('▏'),
+        "search modal should render a cursor indicator (▏) after the typed text"
     );
 }

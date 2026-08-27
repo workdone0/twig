@@ -2,7 +2,7 @@
 
 use ratatui::layout::{Alignment, Constraint, Direction, Layout, Rect};
 use ratatui::style::{Modifier, Style};
-use ratatui::text::Line;
+use ratatui::text::{Line, Span};
 use ratatui::widgets::{Block, Borders, Clear, Paragraph};
 use ratatui::Frame;
 
@@ -41,8 +41,14 @@ pub fn render(f: &mut Frame, area: Rect, theme: &Theme, query: &str) {
             .style(Style::default().add_modifier(Modifier::BOLD)),
         rows[0],
     );
+    let cursor = Span::styled("▏", Style::default().fg(theme.accent));
+    let input_line = Line::from(vec![
+        Span::styled("> ", Style::default().fg(theme.primary)),
+        Span::styled(query.to_string(), theme.primary_style()),
+        cursor,
+    ]);
     f.render_widget(
-        Paragraph::new(Line::from(format!("> {query}"))).style(theme.primary_style()),
+        Paragraph::new(input_line).style(theme.base_style()),
         rows[1],
     );
     f.render_widget(

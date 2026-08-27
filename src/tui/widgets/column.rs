@@ -69,15 +69,9 @@ impl Column {
             .iter()
             .map(|c| build_item(c, self.last_query.as_deref(), theme))
             .collect();
-        let title = if self.index == 0 {
-            " root ".to_string()
-        } else {
-            format!(" col {} ", self.index)
-        };
         let block = Block::default()
             .borders(Borders::RIGHT)
-            .border_style(Style::default().fg(theme.secondary))
-            .title(title);
+            .border_style(Style::default().fg(theme.secondary));
         // Selection is communicated purely through the highlight style
         // (bg + bold). No `highlight_symbol` here — using one together
         // with the `▶` icon in `build_item` produced a double chevron

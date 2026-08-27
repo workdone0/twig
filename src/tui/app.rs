@@ -386,13 +386,14 @@ fn render(f: &mut ratatui::Frame, app: &mut App) {
 
     f.render_widget(Block::default().style(theme.base_style()), area);
 
-    // Top-level vertical split: header / body / status.
+    // Top-level vertical split: header / breadcrumbs / body / hints / status.
     let chunks = Layout::default()
         .direction(Direction::Vertical)
         .constraints([
             Constraint::Length(1), // header
             Constraint::Length(1), // breadcrumbs
             Constraint::Min(1),    // body
+            Constraint::Length(1), // hints / keybinding bar
             Constraint::Length(1), // status
         ])
         .split(area);
@@ -459,9 +460,11 @@ fn render(f: &mut ratatui::Frame, app: &mut App) {
         AppMode::Exiting | AppMode::Search | AppMode::Jump | AppMode::Help => {}
     }
 
+    crate::tui::widgets::hints::render(f, chunks[3], theme);
+
     crate::tui::widgets::status_bar::render(
         f,
-        chunks[3],
+        chunks[4],
         theme,
         &app.file,
         app.focused.as_ref(),

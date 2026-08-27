@@ -4,6 +4,7 @@ pub mod breadcrumbs;
 pub mod clipboard;
 pub mod column;
 pub mod help;
+pub mod hints;
 pub mod inspector;
 pub mod jump;
 pub mod loading;

@@ -12,6 +12,7 @@ use ratatui::layout::{Constraint, Direction, Layout};
 use ratatui::text::Line;
 use ratatui::widgets::Paragraph;
 use ratatui::Terminal;
+use twig::tui::widgets::hints;
 use twig::tui::widgets::jump;
 
 use twig::adapters::json_loader::JsonLoader;
@@ -47,6 +48,7 @@ fn split_app(
     ratatui::layout::Rect,
     ratatui::layout::Rect,
     ratatui::layout::Rect,
+    ratatui::layout::Rect,
 ) {
     let vertical = Layout::default()
         .direction(Direction::Vertical)
@@ -54,6 +56,7 @@ fn split_app(
             Constraint::Length(1),
             Constraint::Length(1),
             Constraint::Min(1),
+            Constraint::Length(1), // hints
             Constraint::Length(1),
         ])
         .split(area);
@@ -61,7 +64,7 @@ fn split_app(
         .direction(Direction::Horizontal)
         .constraints([Constraint::Percentage(75), Constraint::Percentage(25)])
         .split(vertical[2]);
-    (vertical[0], vertical[1], body[0], vertical[3])
+    (vertical[0], vertical[1], body[0], vertical[3], vertical[4])
 }
 
 fn load(path: &std::path::Path) -> Store {
@@ -88,7 +91,7 @@ fn main() {
         let nav = ColumnNavigator::new(store);
         let focused = nav.focused().cloned();
         term.draw(|f| {
-            let (header, breadcrumb, _body, status) = split_app(f.area());
+            let (header, breadcrumb, _body, hints_area, status) = split_app(f.area());
             let _ = nav;
             let filename = path.file_name().and_then(|s| s.to_str()).unwrap_or("?");
             f.render_widget(
@@ -107,6 +110,8 @@ fn main() {
                 Some(&nav.store),
             );
             status_bar::render(f, status, &CATPPUCCIN_MOCHA, &path, focused.as_ref(), None);
+            hints::render(f, hints_area, &CATPPUCCIN_MOCHA);
+            hints::render(f, hints_area, &CATPPUCCIN_MOCHA);
         })
         .unwrap();
         dump("shell-only 80x24", &term);
@@ -190,7 +195,7 @@ fn main() {
             nav.expand_to(first.id, 0);
         }
         term.draw(|f| {
-            let (header, breadcrumb, nav_area, status) = split_app(f.area());
+            let (header, breadcrumb, nav_area, hints_area, status) = split_app(f.area());
             nav.render(f, nav_area, &CATPPUCCIN_MOCHA);
             let focused = nav.focused();
             let filename = path.file_name().and_then(|s| s.to_str()).unwrap_or("?");
@@ -232,6 +237,7 @@ fn main() {
                 "json",
             );
             status_bar::render(f, status, &CATPPUCCIN_MOCHA, &path, focused, None);
+            hints::render(f, hints_area, &CATPPUCCIN_MOCHA);
         })
         .unwrap();
         dump("full-app 120x40", &term);
@@ -247,7 +253,7 @@ fn main() {
             nav.expand_to_node(target.id);
         }
         term.draw(|f| {
-            let (header, breadcrumb, nav_area, status) = split_app(f.area());
+            let (header, breadcrumb, nav_area, hints_area, status) = split_app(f.area());
             nav.render(f, nav_area, &CATPPUCCIN_MOCHA);
             let focused = nav.focused();
             let filename = path.file_name().and_then(|s| s.to_str()).unwrap_or("?");
@@ -289,6 +295,7 @@ fn main() {
                 "json",
             );
             status_bar::render(f, status, &CATPPUCCIN_MOCHA, &path, focused, None);
+            hints::render(f, hints_area, &CATPPUCCIN_MOCHA);
         })
         .unwrap();
         dump("full-app deep 120x40", &term);
@@ -309,7 +316,7 @@ fn main() {
             nav.expand_to(first.id, 0);
         }
         term.draw(|f| {
-            let (header, breadcrumb, nav_area, status) = split_app(f.area());
+            let (header, breadcrumb, nav_area, hints_area, status) = split_app(f.area());
             nav.render(f, nav_area, &CATPPUCCIN_MOCHA);
             let focused = nav.focused();
             let filename = path.file_name().and_then(|s| s.to_str()).unwrap_or("?");
@@ -351,6 +358,7 @@ fn main() {
                 "json",
             );
             status_bar::render(f, status, &CATPPUCCIN_MOCHA, &path, focused, None);
+            hints::render(f, hints_area, &CATPPUCCIN_MOCHA);
         })
         .unwrap();
         dump("full-app 80x24", &term);
