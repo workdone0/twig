@@ -112,7 +112,15 @@ impl Loader for YamlLoader {
         for (rank, doc) in (0_i64..).zip(iter) {
             let value: Value = match serde::Deserialize::deserialize(doc) {
                 Ok(v) => v,
-                Err(e) => return Err(anyhow::anyhow!("YAML parse error: {e}")),
+                Err(e) => {
+                    let (line, col) = e
+                        .location()
+                        .map(|l| (l.line(), l.column()))
+                        .unwrap_or((0, 0));
+                    return Err(anyhow::anyhow!(
+                        "YAML parse error at line {line}, column {col}: {e}"
+                    ));
+                }
             };
             let base = format!(".[{rank}]");
             emitter.reset();

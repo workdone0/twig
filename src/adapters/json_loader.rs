@@ -101,16 +101,27 @@ impl Loader for JsonLoader {
         let mut batch: Vec<Node> = Vec::with_capacity(BATCH);
         let mut emitter = Emitter::new();
 
+        // Catch the empty-file case explicitly: a valid empty
+        // document would still yield one Value (Null), so an
+        // exhausted iterator without a single event means the file
+        // was literally empty (or only whitespace). Surface that as
+        // a clear error instead of silently producing an empty tree.
+        let mut received_any = false;
+
         for top in stream {
             if self.cancelled.load(Ordering::Relaxed) {
                 break;
             }
             let value = match top {
-                Ok(v) => v,
+                Ok(v) => {
+                    received_any = true;
+                    v
+                }
                 Err(e) => {
                     return Err(anyhow::anyhow!(
-                        "Failed to parse JSON at depth {}: {}",
+                        "Failed to parse JSON at line {}, column {}: {}",
                         e.line(),
+                        e.column(),
                         e
                     ));
                 }
@@ -126,6 +137,12 @@ impl Loader for JsonLoader {
 
         if !batch.is_empty() {
             store.bulk_load(&batch)?;
+        }
+
+        if !received_any {
+            return Err(anyhow::anyhow!(
+                "Failed to parse JSON: file is empty or contains only whitespace"
+            ));
         }
 
         rebuild_indexes(&store)?;

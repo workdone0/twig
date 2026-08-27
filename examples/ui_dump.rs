@@ -12,6 +12,7 @@ use ratatui::layout::{Constraint, Direction, Layout};
 use ratatui::text::Line;
 use ratatui::widgets::Paragraph;
 use ratatui::Terminal;
+use twig::tui::widgets::error as error_widget;
 use twig::tui::widgets::hints;
 use twig::tui::widgets::jump;
 
@@ -132,6 +133,22 @@ fn main() {
         })
         .unwrap();
         dump("loading 80x24", &term);
+    }
+
+    // 2b) Error screen (unformatted file scenario).
+    {
+        let backend = TestBackend::new(80, 24);
+        let mut term = Terminal::new(backend).unwrap();
+        term.draw(|f| {
+            error_widget::render(
+                f,
+                ratatui::layout::Rect::new(0, 0, 80, 24),
+                &CATPPUCCIN_MOCHA,
+                Some("Failed to parse JSON at line 3, column 12: expected `,` or `}`"),
+            );
+        })
+        .unwrap();
+        dump("error 80x24", &term);
     }
 
     // 3) Help modal at 80x24.

@@ -1,5 +1,6 @@
 use anyhow::{Context, Result};
 use clap::Parser;
+use owo_colors::{OwoColorize, Stream::Stdout};
 use ratatui::backend::CrosstermBackend;
 use ratatui::Terminal;
 
@@ -36,6 +37,46 @@ fn main() -> Result<()> {
         crossterm::event::DisableMouseCapture
     );
 
-    res?;
+    if let Err(err) = res {
+        eprintln!();
+        let error_label = "Error"
+            .if_supports_color(Stdout, |t| t.bright_red())
+            .to_string();
+        let detail = err
+            .to_string()
+            .if_supports_color(Stdout, |t| t.white())
+            .to_string();
+        eprintln!(" {error_label}: {detail}");
+
+        // Suggest --fix for parse errors, since that's the most likely
+        // failure mode when a user runs `twig some-bad.json`.
+        let lower = format!("{err:#}").to_lowercase();
+        let hint_label = "Tip"
+            .if_supports_color(Stdout, |t| t.bright_yellow())
+            .to_string();
+        if lower.contains("json")
+            || lower.contains("parse")
+            || lower.contains("expected")
+            || lower.contains("trailing")
+        {
+            let cmd = format!(
+                "twig --fix {} -o {}",
+                cli.file.display(),
+                cli.file.display()
+            );
+            let cmd_colored = cmd.if_supports_color(Stdout, |t| t.green()).to_string();
+            eprintln!(" {hint_label}: this looks like a parse error — try:");
+            eprintln!("   {cmd_colored}");
+        } else if !lower.contains("permission") && !lower.contains("not found") {
+            eprintln!(" {hint_label}: re-run with --fix if the file is malformed:");
+            eprintln!(
+                "   twig --fix {} -o {}",
+                cli.file.display(),
+                cli.file.display()
+            );
+        }
+        eprintln!();
+        std::process::exit(1);
+    }
     Ok(())
 }

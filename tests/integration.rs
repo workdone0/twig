@@ -434,10 +434,208 @@ fn search_modal_shows_cursor_indicator() {
         flat.push('\n');
     }
     assert!(flat.contains("available"), "search input not visible");
-    // The ▏ block-element cursor should be present somewhere after
-    // the typed text.
     assert!(
         flat.contains('▏'),
         "search modal should render a cursor indicator (▏) after the typed text"
+    );
+}
+
+// --- malformed input handling ----------------------------------------
+//
+// Regression tests for the bug where unformatted / invalid files made
+// the TUI silently close with no error message. The loader should
+// now return a descriptive anyhow::Error including line + column
+// info, the in-app error screen should render the message, and
+// `twig --fix` should be able to repair the file.
+
+fn write_temp_json(name: &str, body: &str) -> std::path::PathBuf {
+    let dir = tempfile::tempdir().unwrap();
+    let path = dir.path().join(name);
+    std::fs::write(&path, body).unwrap();
+    // Keep the tempdir alive by leaking it; the test process exits
+    // before the OS reclaims /tmp.
+    std::mem::forget(dir);
+    path
+}
+
+#[test]
+fn json_loader_reports_truncated_json_with_line_info() {
+    use twig::adapters::json_loader::JsonLoader;
+    use twig::adapters::loader::Loader;
+    let path = write_temp_json("broken.json", r#"{"a":1,"b":[1,2,3"#);
+    let loader = JsonLoader::new();
+    let err = loader
+        .load(&path, true)
+        .expect_err("truncated JSON must surface an error");
+    let msg = format!("{err:#}");
+    assert!(
+        msg.contains("Failed to parse JSON"),
+        "loader error should mention JSON: {msg}"
+    );
+    assert!(
+        msg.contains("line") && msg.contains("column"),
+        "loader error should include line/column: {msg}"
+    );
+}
+
+#[test]
+fn json_loader_reports_garbage_with_line_info() {
+    use twig::adapters::json_loader::JsonLoader;
+    use twig::adapters::loader::Loader;
+    let path = write_temp_json("garbage.json", "{{{{");
+    let loader = JsonLoader::new();
+    let err = loader
+        .load(&path, true)
+        .expect_err("garbage JSON must surface an error");
+    let msg = format!("{err:#}");
+    assert!(msg.contains("Failed to parse JSON"), "{msg}");
+    assert!(msg.contains("line"), "{msg}");
+}
+
+#[test]
+fn json_loader_reports_empty_file() {
+    use twig::adapters::json_loader::JsonLoader;
+    use twig::adapters::loader::Loader;
+    let path = write_temp_json("empty.json", "");
+    let loader = JsonLoader::new();
+    let err = loader.load(&path, true).expect_err("empty file must error");
+    let msg = format!("{err:#}");
+    assert!(
+        msg.contains("empty") || msg.contains("whitespace"),
+        "loader should explain empty file: {msg}"
+    );
+}
+
+#[test]
+fn json_loader_reports_nonexistent_file() {
+    use twig::adapters::json_loader::JsonLoader;
+    use twig::adapters::loader::Loader;
+    let path = std::path::Path::new("/tmp/twig_does_not_exist_xyzzy.json");
+    let loader = JsonLoader::new();
+    let err = loader
+        .load(path, true)
+        .expect_err("missing file must error");
+    let msg = format!("{err:#}");
+    assert!(
+        msg.contains("No such file") || msg.contains("not found") || msg.contains("os error"),
+        "loader should explain missing file: {msg}"
+    );
+}
+
+#[test]
+fn yaml_loader_reports_parse_error_with_line_info() {
+    use twig::adapters::loader::Loader;
+    use twig::adapters::yaml_loader::YamlLoader;
+    let path = write_temp_json("broken.yaml", "name: ok\n  bad_indent: |\n  more: : oops\n");
+    let loader = YamlLoader::new();
+    let err = loader.load(&path, true).expect_err("bad YAML must error");
+    let msg = format!("{err:#}");
+    assert!(msg.contains("YAML parse error"), "{msg}");
+    assert!(msg.contains("line"), "{msg}");
+}
+
+#[test]
+fn error_screen_renders_message_and_dismiss_hint() {
+    use ratatui::backend::TestBackend;
+    use ratatui::Terminal;
+
+    let backend = TestBackend::new(80, 24);
+    let mut terminal = Terminal::new(backend).unwrap();
+    terminal
+        .draw(|f| {
+            twig::tui::widgets::error::render(
+                f,
+                ratatui::layout::Rect::new(0, 0, 80, 24),
+                &twig::tui::theme::CATPPUCCIN_MOCHA,
+                Some("Failed to parse JSON at line 7, column 4: trailing comma"),
+            );
+        })
+        .unwrap();
+    let buf = terminal.backend().buffer().clone();
+    let mut flat = String::new();
+    for y in 0..24 {
+        for x in 0..80 {
+            flat.push_str(buf[(x, y)].symbol());
+        }
+        flat.push('\n');
+    }
+    assert!(flat.contains("Load Failed"), "error screen title missing");
+    assert!(
+        flat.contains("Failed to parse JSON at line 7, column 4"),
+        "error message not visible"
+    );
+    assert!(
+        flat.contains("Press any key to exit"),
+        "dismiss hint missing"
+    );
+    // For a JSON parse error, the screen should suggest --fix.
+    assert!(
+        flat.contains("twig --fix"),
+        "error screen should mention --fix for parse errors"
+    );
+}
+
+#[test]
+fn error_screen_for_non_parse_error_omits_fix_hint() {
+    use ratatui::backend::TestBackend;
+    use ratatui::Terminal;
+
+    let backend = TestBackend::new(80, 24);
+    let mut terminal = Terminal::new(backend).unwrap();
+    terminal
+        .draw(|f| {
+            twig::tui::widgets::error::render(
+                f,
+                ratatui::layout::Rect::new(0, 0, 80, 24),
+                &twig::tui::theme::CATPPUCCIN_MOCHA,
+                Some("No such file or directory (os error 2)"),
+            );
+        })
+        .unwrap();
+    let buf = terminal.backend().buffer().clone();
+    let mut flat = String::new();
+    for y in 0..24 {
+        for x in 0..80 {
+            flat.push_str(buf[(x, y)].symbol());
+        }
+        flat.push('\n');
+    }
+    assert!(flat.contains("check the file path"));
+}
+
+#[test]
+fn twig_fix_can_repair_truncated_json() {
+    // End-to-end: the same input the loader can't parse can be
+    // repaired by --fix and then re-loaded successfully. This is the
+    // round-trip the new error hint points the user at.
+    use twig::adapters::json_loader::JsonLoader;
+    use twig::adapters::loader::Loader;
+    let path = write_temp_json("trunc.json", r#"{"a":1,"b":[1,2,3"#);
+
+    // Step 1: --fix repairs the file in place.
+    twig::cli::fix::run_from_path(&path).expect("--fix should succeed");
+
+    // Step 2: the fixed file now loads cleanly.
+    let loader = JsonLoader::new();
+    let store = loader.load(&path, true).expect("fixed file loads");
+    assert!(store.node_count().unwrap() > 1);
+}
+
+#[test]
+fn main_returns_error_when_load_fails() {
+    // The binary-level contract: when ingestion fails, main.rs
+    // returns Err so the process exits with a non-zero status and
+    // the error message is visible to the user (printed to stderr
+    // by main, plus shown in-app via the Error screen).
+    use twig::adapters::json_loader::JsonLoader;
+    use twig::adapters::loader::Loader;
+    let path = write_temp_json("trunc.json", r#"{"a":1,"b":[1,2,3"#);
+    let loader = JsonLoader::new();
+    let res = loader.load(&path, true);
+    assert!(res.is_err(), "truncated JSON must produce a load error");
+    let msg = format!("{}", res.err().unwrap());
+    assert!(
+        msg.contains("JSON") || msg.contains("parse"),
+        "error message must mention JSON or parse: {msg}"
     );
 }

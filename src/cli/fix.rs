@@ -43,6 +43,21 @@ pub fn run(cli: &Cli) -> Result<()> {
     Ok(())
 }
 
+/// Repair `path` and overwrite it in place. Convenience helper for
+/// tests and for callers that already have a PathBuf (e.g. the TUI
+/// hint code paths).
+pub fn run_from_path(path: &Path) -> Result<()> {
+    let cli = Cli {
+        file: path.to_path_buf(),
+        fix: true,
+        print: false,
+        output: Some(path.to_path_buf()),
+        indent: 2,
+        rebuild_db: false,
+    };
+    run(&cli)
+}
+
 fn is_yaml(p: &Path) -> bool {
     matches!(p.extension().and_then(|s| s.to_str()), Some("yaml" | "yml"))
 }
