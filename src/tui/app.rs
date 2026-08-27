@@ -387,10 +387,12 @@ fn render(f: &mut ratatui::Frame, app: &mut App) {
     f.render_widget(Block::default().style(theme.base_style()), area);
 
     // Top-level vertical split: header / breadcrumbs / body / hints / status.
+    // The header gets 2 rows so the title line and the bottom border don't
+    // touch the breadcrumbs directly.
     let chunks = Layout::default()
         .direction(Direction::Vertical)
         .constraints([
-            Constraint::Length(1), // header
+            Constraint::Length(2), // header (with bottom border)
             Constraint::Length(1), // breadcrumbs
             Constraint::Min(1),    // body
             Constraint::Length(1), // hints / keybinding bar
@@ -404,7 +406,11 @@ fn render(f: &mut ratatui::Frame, app: &mut App) {
         app.theme.name
     )))
     .style(theme.surface_style())
-    .block(Block::default());
+    .block(
+        Block::default()
+            .borders(ratatui::widgets::Borders::BOTTOM)
+            .border_style(theme.surface_style()),
+    );
     f.render_widget(header, chunks[0]);
 
     crate::tui::widgets::breadcrumbs::render(

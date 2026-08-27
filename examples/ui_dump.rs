@@ -53,11 +53,11 @@ fn split_app(
     let vertical = Layout::default()
         .direction(Direction::Vertical)
         .constraints([
-            Constraint::Length(1),
-            Constraint::Length(1),
-            Constraint::Min(1),
+            Constraint::Length(2), // header (with bottom border)
+            Constraint::Length(1), // breadcrumbs
+            Constraint::Min(1),    // body
             Constraint::Length(1), // hints
-            Constraint::Length(1),
+            Constraint::Length(1), // status
         ])
         .split(area);
     let body = Layout::default()
@@ -221,7 +221,7 @@ fn main() {
                     Layout::default()
                         .direction(Direction::Vertical)
                         .constraints([
-                            Constraint::Length(1),
+                            Constraint::Length(2),
                             Constraint::Length(1),
                             Constraint::Min(1),
                             Constraint::Length(1),
@@ -279,7 +279,7 @@ fn main() {
                     Layout::default()
                         .direction(Direction::Vertical)
                         .constraints([
-                            Constraint::Length(1),
+                            Constraint::Length(2),
                             Constraint::Length(1),
                             Constraint::Min(1),
                             Constraint::Length(1),
@@ -342,7 +342,7 @@ fn main() {
                     Layout::default()
                         .direction(Direction::Vertical)
                         .constraints([
-                            Constraint::Length(1),
+                            Constraint::Length(2),
                             Constraint::Length(1),
                             Constraint::Min(1),
                             Constraint::Length(1),

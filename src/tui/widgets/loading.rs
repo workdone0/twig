@@ -24,7 +24,8 @@ pub fn render(f: &mut Frame, area: Rect, theme: &Theme, file: &str, frame: usize
     let block = Block::default()
         .title(" Loading ")
         .borders(Borders::ALL)
-        .border_style(Style::default().fg(theme.primary));
+        .border_style(Style::default().fg(theme.primary))
+        .padding(ratatui::widgets::Padding::new(2, 2, 1, 1));
     let modal_h = (logo_lines + 4 + 2)
         .min(area.height.saturating_sub(2))
         .max(6);

@@ -69,9 +69,14 @@ impl Column {
             .iter()
             .map(|c| build_item(c, self.last_query.as_deref(), theme))
             .collect();
+        // Pad the column one row from the top so the first row isn't
+        // pinned against the breadcrumbs bar above (which is what
+        // the user reported as "cramped"). The right border stays
+        // to visually separate adjacent columns.
         let block = Block::default()
             .borders(Borders::RIGHT)
-            .border_style(Style::default().fg(theme.secondary));
+            .border_style(Style::default().fg(theme.secondary))
+            .padding(ratatui::widgets::Padding::new(0, 0, 1, 0));
         // Selection is communicated purely through the highlight style
         // (bg + bold). No `highlight_symbol` here — using one together
         // with the `▶` icon in `build_item` produced a double chevron

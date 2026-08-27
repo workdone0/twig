@@ -37,6 +37,7 @@ pub fn render(
             Constraint::Length(11),
             Constraint::Length(20),
         ])
+        .margin(0)
         .split(area);
 
     let file_str = format!(" FILE: {}", file.display());
