@@ -82,6 +82,8 @@ pub struct Node {
     pub parent: Option<Uuid>,
     pub path: String,
     pub is_expanded: bool,
+    /// Sibling position under `parent`. Used for `ORDER BY rank` queries.
+    pub rank: i64,
 }
 
 impl Node {
