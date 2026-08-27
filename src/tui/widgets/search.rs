@@ -46,8 +46,7 @@ pub fn render(f: &mut Frame, area: Rect, theme: &Theme, query: &str) {
         rows[0],
     );
     f.render_widget(
-        Paragraph::new(Line::from(format!("> {query}")))
-            .style(theme.primary_style()),
+        Paragraph::new(Line::from(format!("> {query}"))).style(theme.primary_style()),
         rows[1],
     );
     f.render_widget(

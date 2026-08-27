@@ -19,14 +19,12 @@ pub fn run(cli: &Cli) -> Result<()> {
     let is_yaml = is_yaml(file);
 
     if is_yaml {
-        return Err(anyhow!(
-            "--fix is currently only supported for JSON files."
-        ));
+        return Err(anyhow!("--fix is currently only supported for JSON files."));
     }
 
     let mut content = String::new();
-    let mut fh = std::fs::File::open(file)
-        .with_context(|| format!("opening {}", file.display()))?;
+    let mut fh =
+        std::fs::File::open(file).with_context(|| format!("opening {}", file.display()))?;
     fh.read_to_string(&mut content)
         .with_context(|| format!("reading {}", file.display()))?;
 
@@ -46,8 +44,5 @@ pub fn run(cli: &Cli) -> Result<()> {
 }
 
 fn is_yaml(p: &Path) -> bool {
-    matches!(
-        p.extension().and_then(|s| s.to_str()),
-        Some("yaml" | "yml")
-    )
+    matches!(p.extension().and_then(|s| s.to_str()), Some("yaml" | "yml"))
 }

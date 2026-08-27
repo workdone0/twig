@@ -94,10 +94,7 @@ pub fn render(
         }
     }
     let detail_items: Vec<ListItem> = details_lines.into_iter().map(ListItem::new).collect();
-    f.render_widget(
-        List::new(detail_items).style(theme.base_style()),
-        rows[1],
-    );
+    f.render_widget(List::new(detail_items).style(theme.base_style()), rows[1]);
 
     // Insights.
     let insights_block = Block::default()
@@ -218,11 +215,16 @@ fn build_insights(node: &Node, theme: &Theme) -> Vec<Line<'static>> {
         )));
         lines.push(Line::from(Span::styled(
             s.to_string(),
-            Style::default().fg(theme.secondary).add_modifier(Modifier::UNDERLINED),
+            Style::default()
+                .fg(theme.secondary)
+                .add_modifier(Modifier::UNDERLINED),
         )));
     } else if hex_pat.is_match(s) {
         lines.push(Line::from(vec![
-            Span::styled("Color preview: ", Style::default().add_modifier(Modifier::BOLD)),
+            Span::styled(
+                "Color preview: ",
+                Style::default().add_modifier(Modifier::BOLD),
+            ),
             Span::styled("██████", Style::default().bg(parse_hex(s))),
             Span::raw(format!(" {s}")),
         ]));
@@ -272,7 +274,11 @@ fn build_preview(node: &Node, store: &Store) -> Vec<Line<'static>> {
         let val = if child.is_container() {
             "...".to_string()
         } else {
-            let v = child.value.as_ref().map(|v| v.to_string()).unwrap_or_default();
+            let v = child
+                .value
+                .as_ref()
+                .map(|v| v.to_string())
+                .unwrap_or_default();
             if v.len() > 50 {
                 format!("{}...", &v[..47])
             } else {
@@ -305,10 +311,12 @@ fn build_source(node: &Node, store: &Store, format: &str) -> Vec<Line<'static>> 
     }
     let value = match store.reconstruct_value(node.id, 4) {
         Ok(v) => v,
-        Err(_) => return vec![Line::from(Span::styled(
-            "Failed to load source.",
-            Style::default().fg(theme_fg_error()),
-        ))],
+        Err(_) => {
+            return vec![Line::from(Span::styled(
+                "Failed to load source.",
+                Style::default().fg(theme_fg_error()),
+            ))]
+        }
     };
     let serialized = if format == "yaml" {
         serde_yml::to_string(&value).unwrap_or_default()
@@ -348,7 +356,13 @@ fn colorize_source(text: &str, format: &str) -> Vec<Line<'static>> {
                 '-' | '0'..='9' => {
                     let mut s = String::from(c);
                     while let Some(&n) = chars.peek() {
-                        if n.is_ascii_digit() || n == '.' || n == 'e' || n == 'E' || n == '+' || n == '-' {
+                        if n.is_ascii_digit()
+                            || n == '.'
+                            || n == 'e'
+                            || n == 'E'
+                            || n == '+'
+                            || n == '-'
+                        {
                             s.push(chars.next().unwrap());
                         } else {
                             break;

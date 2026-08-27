@@ -20,16 +20,16 @@ pub fn run(cli: &Cli) -> Result<()> {
     let is_yaml = is_yaml(file);
 
     let mut content = String::new();
-    let mut fh = std::fs::File::open(file)
-        .with_context(|| format!("opening {}", file.display()))?;
+    let mut fh =
+        std::fs::File::open(file).with_context(|| format!("opening {}", file.display()))?;
     fh.read_to_string(&mut content)
         .with_context(|| format!("reading {}", file.display()))?;
 
     if is_yaml {
-        let parsed: serde_yml::Value = serde_yml::from_str(&content)
-            .map_err(|e| anyhow!("failed to parse YAML: {e}"))?;
-        let serialized = serde_yml::to_string(&parsed)
-            .map_err(|e| anyhow!("failed to serialize YAML: {e}"))?;
+        let parsed: serde_yml::Value =
+            serde_yml::from_str(&content).map_err(|e| anyhow!("failed to parse YAML: {e}"))?;
+        let serialized =
+            serde_yml::to_string(&parsed).map_err(|e| anyhow!("failed to serialize YAML: {e}"))?;
         let meta = build_yaml_metadata(file, &content, &parsed);
         write_metadata(&meta)?;
         if let Some(out) = &cli.output {
@@ -52,7 +52,7 @@ pub fn run(cli: &Cli) -> Result<()> {
     let meta = build_json_metadata(file, &content, &parsed);
     write_metadata(&meta)?;
 
-if let Some(out) = &cli.output {
+    if let Some(out) = &cli.output {
         std::fs::File::create(out)
             .with_context(|| format!("creating {}", out.display()))?
             .write_all(serialized.as_bytes())
@@ -70,10 +70,7 @@ if let Some(out) = &cli.output {
 }
 
 fn is_yaml(p: &Path) -> bool {
-    matches!(
-        p.extension().and_then(|s| s.to_str()),
-        Some("yaml" | "yml")
-    )
+    matches!(p.extension().and_then(|s| s.to_str()), Some("yaml" | "yml"))
 }
 
 fn indent(text: &str, n: usize) -> String {
@@ -136,15 +133,9 @@ fn write_metadata(m: &Metadata) -> Result<()> {
     let header = "── Twig ──"
         .if_supports_color(Stdout, |t| t.bright_cyan())
         .to_string();
-    let file_label = "File:"
-        .if_supports_color(Stdout, |t| t.bold())
-        .to_string();
-    let size_label = "Size:"
-        .if_supports_color(Stdout, |t| t.bold())
-        .to_string();
-    let type_label = "Type:"
-        .if_supports_color(Stdout, |t| t.bold())
-        .to_string();
+    let file_label = "File:".if_supports_color(Stdout, |t| t.bold()).to_string();
+    let size_label = "Size:".if_supports_color(Stdout, |t| t.bold()).to_string();
+    let type_label = "Type:".if_supports_color(Stdout, |t| t.bold()).to_string();
 
     let mut out = std::io::stderr().lock();
     writeln!(out, "{header}")?;
@@ -240,7 +231,10 @@ fn print_colored_json(text: &str) {
                 }
             }
             '{' | '}' | '[' | ']' | ',' | ':' => {
-                let colored = c.to_string().if_supports_color(Stdout, |t| t.dimmed()).to_string();
+                let colored = c
+                    .to_string()
+                    .if_supports_color(Stdout, |t| t.dimmed())
+                    .to_string();
                 out.push_str(&colored);
             }
             other => out.push(other),

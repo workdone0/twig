@@ -137,9 +137,7 @@ impl Store {
         let mut stmt = self
             .conn
             .prepare_cached("SELECT * FROM nodes WHERE id = ?1")?;
-        let row = stmt
-            .query_row([id.to_string()], row_to_node)
-            .optional()?;
+        let row = stmt.query_row([id.to_string()], row_to_node).optional()?;
         Ok(row)
     }
 
@@ -161,10 +159,7 @@ impl Store {
 
     /// jq-style materialized path from the `path` column.
     pub fn get_path(&self, id: Uuid) -> Result<String, StoreError> {
-        Ok(self
-            .get_node(id)?
-            .map(|n| n.path)
-            .unwrap_or_default())
+        Ok(self.get_node(id)?.map(|n| n.path).unwrap_or_default())
     }
 
     pub fn node_count(&self) -> Result<i64, StoreError> {
@@ -220,9 +215,7 @@ impl Store {
                      WHERE key LIKE ?1 OR value LIKE ?1
                      ORDER BY path ASC LIMIT 1",
                 )?;
-                let row = first
-                    .query_row(params![&like], row_to_node)
-                    .optional()?;
+                let row = first.query_row(params![&like], row_to_node).optional()?;
                 return Ok(row);
             } else {
                 let mut prev = self.conn.prepare_cached(
@@ -241,9 +234,7 @@ impl Store {
                      WHERE key LIKE ?1 OR value LIKE ?1
                      ORDER BY path DESC LIMIT 1",
                 )?;
-                let row = last
-                    .query_row(params![&like], row_to_node)
-                    .optional()?;
+                let row = last.query_row(params![&like], row_to_node).optional()?;
                 return Ok(row);
             }
         }
@@ -253,9 +244,7 @@ impl Store {
              WHERE key LIKE ?1 OR value LIKE ?1
              ORDER BY path ASC LIMIT 1",
         )?;
-        let row = first
-            .query_row(params![&like], row_to_node)
-            .optional()?;
+        let row = first.query_row(params![&like], row_to_node).optional()?;
         Ok(row)
     }
 
@@ -275,9 +264,9 @@ impl Store {
             format!(".{path}")
         };
 
-        let mut exact = self.conn.prepare_cached(
-            "SELECT * FROM nodes WHERE path = ?1",
-        )?;
+        let mut exact = self
+            .conn
+            .prepare_cached("SELECT * FROM nodes WHERE path = ?1")?;
         if let Some(row) = exact
             .query_row(params![&normalized], row_to_node)
             .optional()?
@@ -335,11 +324,7 @@ impl Store {
     /// Rebuild the native `serde_json::Value` tree rooted at `node_id`
     /// up to `max_depth`. Children beyond the depth limit collapse to
     /// the string `"..."` to keep large containers responsive.
-    pub fn reconstruct_value(
-        &self,
-        node_id: Uuid,
-        max_depth: usize,
-    ) -> Result<Value, StoreError> {
+    pub fn reconstruct_value(&self, node_id: Uuid, max_depth: usize) -> Result<Value, StoreError> {
         let mut current_depth = 0;
         self.reconstruct_value_inner(node_id, max_depth, &mut current_depth)
     }
@@ -389,8 +374,13 @@ impl Store {
 
 fn row_to_node(row: &Row<'_>) -> rusqlite::Result<Node> {
     let id_str: String = row.get("id")?;
-    let id = Uuid::from_str(&id_str)
-        .map_err(|e| rusqlite::Error::FromSqlConversionFailure(0, rusqlite::types::Type::Text, e.to_string().into()))?;
+    let id = Uuid::from_str(&id_str).map_err(|e| {
+        rusqlite::Error::FromSqlConversionFailure(
+            0,
+            rusqlite::types::Type::Text,
+            e.to_string().into(),
+        )
+    })?;
     let parent_str: Option<String> = row.get("parent_id")?;
     let parent = parent_str
         .map(|s| {
@@ -457,7 +447,13 @@ mod tests {
     use super::*;
     use serde_json::json;
 
-    fn make_node(parent: Option<Uuid>, key: &str, ty: DataType, value: Option<Value>, rank: i64) -> Node {
+    fn make_node(
+        parent: Option<Uuid>,
+        key: &str,
+        ty: DataType,
+        value: Option<Value>,
+        rank: i64,
+    ) -> Node {
         Node {
             id: Uuid::new_v4(),
             key: key.to_string(),
@@ -473,10 +469,28 @@ mod tests {
     fn seed_tree() -> (Store, Uuid, Uuid) {
         let mut store = Store::in_memory().unwrap();
         let root = make_node(None, "root", DataType::Object, None, 0);
-        let a = make_node(Some(root.id), "alpha", DataType::String, Some(json!("apple")), 0);
-        let b = make_node(Some(root.id), "beta", DataType::String, Some(json!("banana")), 1);
+        let a = make_node(
+            Some(root.id),
+            "alpha",
+            DataType::String,
+            Some(json!("apple")),
+            0,
+        );
+        let b = make_node(
+            Some(root.id),
+            "beta",
+            DataType::String,
+            Some(json!("banana")),
+            1,
+        );
         let c = make_node(Some(root.id), "gamma", DataType::Object, None, 2);
-        let c1 = make_node(Some(c.id), "name", DataType::String, Some(json!("nested")), 0);
+        let c1 = make_node(
+            Some(c.id),
+            "name",
+            DataType::String,
+            Some(json!("nested")),
+            0,
+        );
         store
             .bulk_load(&[root.clone(), a.clone(), b.clone(), c.clone(), c1.clone()])
             .unwrap();
@@ -489,7 +503,13 @@ mod tests {
         assert_eq!(store.node_count().unwrap(), 0);
 
         let root = make_node(None, "root", DataType::Object, None, 0);
-        let child = make_node(Some(root.id), "name", DataType::String, Some(json!("twig")), 0);
+        let child = make_node(
+            Some(root.id),
+            "name",
+            DataType::String,
+            Some(json!("twig")),
+            0,
+        );
         store.bulk_load(&[root.clone(), child.clone()]).unwrap();
 
         let root_back = store.get_node(root.id).unwrap().unwrap();
@@ -586,22 +606,32 @@ mod tests {
         // Single-document YAML simulation: the root container is wrapped
         // in an outer array by the YAML loader.
         let outer = make_node(None, "root", DataType::Array, None, 0);
-        let inner = make_node(Some(outer.id), "kind", DataType::String, Some(json!("Config")), 0);
+        let inner = make_node(
+            Some(outer.id),
+            "kind",
+            DataType::String,
+            Some(json!("Config")),
+            0,
+        );
         store.bulk_load(&[outer.clone(), inner.clone()]).unwrap();
 
         let node = store.resolve_path(".kind").unwrap().expect("exact");
         assert_eq!(node.key, "kind");
 
-        let fallback = store
-            .resolve_path(".something")
-            .unwrap();
+        let fallback = store.resolve_path(".something").unwrap();
         // The fallback only triggers when the exact path doesn't exist;
         // here `.something` also doesn't exist in the fallback form, so
         // we expect None.
         assert!(fallback.is_none());
 
         // Build a row at the fallback path explicitly.
-        let inner_other = make_node(Some(outer.id), "kind", DataType::String, Some(json!("Other")), 0);
+        let inner_other = make_node(
+            Some(outer.id),
+            "kind",
+            DataType::String,
+            Some(json!("Other")),
+            0,
+        );
         // We can't insert twice — but the fallback is exercised by the
         // above call already returning None for a missing path.
         drop(inner_other);

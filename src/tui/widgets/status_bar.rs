@@ -56,7 +56,11 @@ pub fn render(
 }
 
 fn format_node_context(node: &Node) -> String {
-    let key = if node.key.is_empty() { "root" } else { &node.key };
+    let key = if node.key.is_empty() {
+        "root"
+    } else {
+        &node.key
+    };
     let ty = node.ty.as_str();
     format!("{key} : {}", capitalize(ty))
 }

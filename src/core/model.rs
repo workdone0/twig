@@ -106,10 +106,7 @@ mod tests {
 
     #[test]
     fn from_value_distinguishes_int_and_float() {
-        assert_eq!(
-            DataType::from_value(&Value::from(42i64)),
-            DataType::Integer
-        );
+        assert_eq!(DataType::from_value(&Value::from(42i64)), DataType::Integer);
         assert_eq!(
             DataType::from_value(&serde_json::json!(1.5)),
             DataType::Float

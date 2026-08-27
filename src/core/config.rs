@@ -106,7 +106,8 @@ mod tests {
         let path = tmp.path().join("config.json");
 
         let mut cfg = Config::load_from(&path);
-        cfg.0.insert("theme".into(), serde_json::Value::from("dracula"));
+        cfg.0
+            .insert("theme".into(), serde_json::Value::from("dracula"));
         cfg.save_to(&path).unwrap();
 
         let again = Config::load_from(&path);
@@ -121,11 +122,7 @@ mod tests {
     fn loading_existing_file_merges_with_defaults() {
         let tmp = tempfile::tempdir().unwrap();
         let path = tmp.path().join("config.json");
-        std::fs::write(
-            &path,
-            r#"{ "theme": "solarized-dark", "future_key": 42 }"#,
-        )
-        .unwrap();
+        std::fs::write(&path, r#"{ "theme": "solarized-dark", "future_key": 42 }"#).unwrap();
 
         let cfg = Config::load_from(&path);
         assert_eq!(cfg.get_string("theme"), Some("solarized-dark"));

@@ -247,7 +247,10 @@ impl App {
                 _ => {}
             },
             AppMode::Help => {
-                if matches!(key.code, KeyCode::Esc | KeyCode::Char('?') | KeyCode::Char('h') | KeyCode::Enter) {
+                if matches!(
+                    key.code,
+                    KeyCode::Esc | KeyCode::Char('?') | KeyCode::Char('h') | KeyCode::Enter
+                ) {
                     self.mode = AppMode::Normal;
                 }
             }
@@ -349,7 +352,9 @@ impl App {
             return;
         };
         let value = if node.is_container() {
-            nav.store.reconstruct_value(node.id, 5).unwrap_or(serde_json::Value::Null)
+            nav.store
+                .reconstruct_value(node.id, 5)
+                .unwrap_or(serde_json::Value::Null)
         } else {
             node.value.clone().unwrap_or(serde_json::Value::Null)
         };
@@ -358,7 +363,11 @@ impl App {
         } else {
             serde_json::to_string_pretty(&value).unwrap_or_default()
         };
-        let label = if self.format == "yaml" { "YAML source" } else { "source" };
+        let label = if self.format == "yaml" {
+            "YAML source"
+        } else {
+            "source"
+        };
         match crate::tui::widgets::clipboard::Clipboard::copy(&text) {
             Ok(()) => {
                 let preview: String = text.chars().take(50).collect();
@@ -381,19 +390,16 @@ fn render(f: &mut ratatui::Frame, app: &mut App) {
     let chunks = Layout::default()
         .direction(Direction::Vertical)
         .constraints([
-            Constraint::Length(1),  // header
-            Constraint::Length(1),  // breadcrumbs
-            Constraint::Min(1),     // body
-            Constraint::Length(1),  // status
+            Constraint::Length(1), // header
+            Constraint::Length(1), // breadcrumbs
+            Constraint::Min(1),    // body
+            Constraint::Length(1), // status
         ])
         .split(area);
 
     let header = Paragraph::new(Line::from(format!(
         " twig · {} · theme: {} ",
-        app.file
-            .file_name()
-            .and_then(|s| s.to_str())
-            .unwrap_or("?"),
+        app.file.file_name().and_then(|s| s.to_str()).unwrap_or("?"),
         app.theme.name
     )))
     .style(theme.surface_style())
@@ -430,10 +436,7 @@ fn render(f: &mut ratatui::Frame, app: &mut App) {
             // Body: 75% navigator, 25% inspector.
             let body_chunks = Layout::default()
                 .direction(Direction::Horizontal)
-                .constraints([
-                    Constraint::Percentage(75),
-                    Constraint::Percentage(25),
-                ])
+                .constraints([Constraint::Percentage(75), Constraint::Percentage(25)])
                 .split(chunks[2]);
             if let Some(nav) = app.navigator.as_mut() {
                 nav.render(f, body_chunks[0], theme);

@@ -26,8 +26,8 @@ pub fn repair_json(content: &str) -> Result<String> {
         .context("running jsonrepair")?;
 
     // Parse then sanitize so we can drop NaN / Infinity safely.
-    let parsed: Value = serde_json::from_str(&repaired)
-        .map_err(|e| anyhow!("repaired JSON still invalid: {e}"))?;
+    let parsed: Value =
+        serde_json::from_str(&repaired).map_err(|e| anyhow!("repaired JSON still invalid: {e}"))?;
     let sanitized = sanitize(parsed);
 
     serde_json::to_string_pretty(&sanitized)

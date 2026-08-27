@@ -77,7 +77,8 @@ impl Loader for YamlLoader {
             std::fs::remove_file(db_path.with_extension("db-shm")).ok();
         }
 
-        let mut store = Store::open(&db_path).context("opening fresh sqlite database for yaml load")?;
+        let mut store =
+            Store::open(&db_path).context("opening fresh sqlite database for yaml load")?;
         store.db_conn_mut().execute_batch(
             "PRAGMA synchronous = OFF;
              PRAGMA journal_mode = MEMORY;",
@@ -115,7 +116,13 @@ impl Loader for YamlLoader {
             };
             let base = format!(".[{rank}]");
             emitter.reset();
-            emitter.emit_value(Some(virtual_root_id), &rank.to_string(), &base, &value, &mut batch);
+            emitter.emit_value(
+                Some(virtual_root_id),
+                &rank.to_string(),
+                &base,
+                &value,
+                &mut batch,
+            );
             if batch.len() >= BATCH {
                 let drained = std::mem::take(&mut batch);
                 store.bulk_load(&drained)?;
@@ -160,7 +167,10 @@ mod tests {
             .resolve_path(".[0].kind")
             .unwrap()
             .expect("kind should be reachable");
-        assert_eq!(node.value.as_ref().unwrap(), &Value::String("Deployment".into()));
+        assert_eq!(
+            node.value.as_ref().unwrap(),
+            &Value::String("Deployment".into())
+        );
     }
 
     #[test]
@@ -170,8 +180,14 @@ mod tests {
         let store = loader.load(&sample(), true).unwrap();
 
         // `.kind` (no `[0]`) should fall back to `.[0].kind`.
-        let node = store.resolve_path(".kind").unwrap().expect("single-doc fallback");
-        assert_eq!(node.value.as_ref().unwrap(), &Value::String("Deployment".into()));
+        let node = store
+            .resolve_path(".kind")
+            .unwrap()
+            .expect("single-doc fallback");
+        assert_eq!(
+            node.value.as_ref().unwrap(),
+            &Value::String("Deployment".into())
+        );
     }
 
     #[test]

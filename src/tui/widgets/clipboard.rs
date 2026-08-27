@@ -18,8 +18,8 @@ pub struct Clipboard;
 
 impl Clipboard {
     pub fn copy(text: &str) -> Result<(), ClipboardError> {
-        let mut cb = arboard::Clipboard::new()
-            .map_err(|e| ClipboardError::Unavailable(e.to_string()))?;
+        let mut cb =
+            arboard::Clipboard::new().map_err(|e| ClipboardError::Unavailable(e.to_string()))?;
         cb.set_text(text.to_string())
             .map_err(|e| ClipboardError::Copy(e.to_string()))
     }

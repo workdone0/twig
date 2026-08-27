@@ -29,7 +29,11 @@ fn smart_search_via_resolve_path_and_navigator() {
     let mut nav = ColumnNavigator::new(store);
     // The sample has `regions` as an object, not an array.
     let path = ".regions.us-east-1.vpcs[0]";
-    let node = nav.store.resolve_path(path).unwrap().expect("path resolves");
+    let node = nav
+        .store
+        .resolve_path(path)
+        .unwrap()
+        .expect("path resolves");
     nav.expand_to_node(node.id);
     let focused = nav.focused().expect("focused after expand");
     assert!(focused.path.contains("vpcs[0]"));

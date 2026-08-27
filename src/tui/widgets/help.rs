@@ -70,7 +70,11 @@ pub fn render(f: &mut Frame, area: Rect, theme: &Theme, version: &str) {
     f.render_widget(
         Paragraph::new(Line::from("Inspect. Navigate. Understand."))
             .alignment(Alignment::Center)
-            .style(Style::default().fg(theme.success).add_modifier(Modifier::BOLD)),
+            .style(
+                Style::default()
+                    .fg(theme.success)
+                    .add_modifier(Modifier::BOLD),
+            ),
         rows[2],
     );
     f.render_widget(

@@ -17,8 +17,8 @@ fn main() -> Result<()> {
     }
 
     // Interactive TUI.
-    let mut terminal = Terminal::new(CrosstermBackend::new(std::io::stdout()))
-        .context("opening terminal")?;
+    let mut terminal =
+        Terminal::new(CrosstermBackend::new(std::io::stdout())).context("opening terminal")?;
     crossterm::terminal::enable_raw_mode().context("enabling raw mode")?;
     let _ = crossterm::execute!(
         std::io::stdout(),

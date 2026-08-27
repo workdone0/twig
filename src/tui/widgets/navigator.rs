@@ -12,8 +12,8 @@ use uuid::Uuid;
 
 use crate::core::model::Node;
 use crate::core::store::Store;
-use crate::tui::widgets::column::Column;
 use crate::tui::theme::Theme;
+use crate::tui::widgets::column::Column;
 
 pub struct ColumnNavigator {
     pub store: Store,
