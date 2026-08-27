@@ -1,0 +1,1 @@
+// SQLite schema constant pending implementation.

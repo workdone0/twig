@@ -1,0 +1,46 @@
+[package]
+name = "twig"
+version = "3.0.0"
+description = "Terminal-based JSON & YAML viewer (TUI) for exploring and searching large files — fast, interactive, and privacy-first."
+readme = "README.md"
+authors = ["Shubham Kumar"]
+license = "MIT"
+edition = "2021"
+rust-version = "1.75"
+repository = "https://github.com/workdone0/twig"
+keywords = ["json", "yaml", "viewer", "explorer", "terminal", "tui", "cli", "kubernetes", "developer-tools"]
+categories = ["command-line-utilities", "data-structures"]
+
+[[bin]]
+name = "twig"
+path = "src/main.rs"
+
+[lib]
+name = "twig"
+path = "src/lib.rs"
+
+[dependencies]
+ratatui = "0.30"
+crossterm = "0.28"
+rusqlite = { version = "0.32", features = ["bundled"] }
+clap = { version = "4", features = ["derive"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = { version = "1", features = ["preserve_order"] }
+serde_yml = "0.0.12"
+arboard = "3"
+jsonrepair = "0.1"
+uuid = { version = "1", features = ["v4"] }
+regex = "1"
+owo-colors = { version = "4", features = ["supports-colors"] }
+chrono = { version = "0.4", default-features = false, features = ["clock"] }
+dirs = "5"
+anyhow = "1"
+thiserror = "1"
+
+[dev-dependencies]
+tempfile = "3"
+
+[profile.release]
+lto = "thin"
+codegen-units = 1
+strip = "symbols"
