@@ -21,6 +21,7 @@ use crate::core::config::Config;
 use crate::core::model::Node;
 use crate::core::store::Store;
 use crate::tui::theme::{Theme, ALL_THEMES, CATPPUCCIN_MOCHA};
+use crate::tui::widgets::navigator::ColumnNavigator;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum AppMode {
@@ -37,7 +38,7 @@ pub enum LoadEvent {
 pub struct App {
     pub file: std::path::PathBuf,
     pub force_rebuild: bool,
-    pub store: Option<Store>,
+    pub navigator: Option<ColumnNavigator>,
     pub mode: AppMode,
     pub theme: Theme,
     pub status_message: Option<String>,
@@ -61,7 +62,7 @@ impl App {
         Self {
             file: file.to_path_buf(),
             force_rebuild,
-            store: None,
+            navigator: None,
             mode: AppMode::Loading,
             theme,
             status_message: None,
@@ -124,7 +125,7 @@ impl App {
             while let Ok(ev) = rx.try_recv() {
                 match ev {
                     LoadEvent::Loaded(store) => {
-                        self.store = Some(store);
+                        self.navigator = Some(ColumnNavigator::new(store));
                         self.mode = AppMode::Normal;
                     }
                     LoadEvent::Error(msg) => {
@@ -174,9 +175,33 @@ impl App {
                             .to_string(),
                     );
                 }
+                KeyCode::Down => {
+                    if let Some(n) = self.navigator.as_mut() {
+                        n.move_down();
+                    }
+                }
+                KeyCode::Up => {
+                    if let Some(n) = self.navigator.as_mut() {
+                        n.move_up();
+                    }
+                }
+                KeyCode::Right => {
+                    if let Some(n) = self.navigator.as_mut() {
+                        n.drill();
+                    }
+                }
+                KeyCode::Left => {
+                    if let Some(n) = self.navigator.as_mut() {
+                        n.step_back();
+                    }
+                }
                 _ => {}
             },
             AppMode::Exiting => {}
+        }
+        // Refresh focused node.
+        if let Some(nav) = &self.navigator {
+            self.focused = nav.focused().cloned();
         }
     }
 }
@@ -215,10 +240,10 @@ fn render(f: &mut ratatui::Frame, app: &mut App) {
         chunks[1],
         theme,
         app.focused.as_ref(),
-        app.store.as_ref(),
+        app.navigator.as_ref().map(|n| &n.store),
     );
 
-    // Body: loading splash or placeholder main view.
+    // Body: loading splash or column navigator.
     match app.mode {
         AppMode::Loading => {
             crate::tui::widgets::loading::render(
@@ -230,19 +255,29 @@ fn render(f: &mut ratatui::Frame, app: &mut App) {
             );
         }
         AppMode::Normal => {
-            let text = if let Some(store) = &app.store {
-                format!(
-                    "Loaded {} nodes from {}",
-                    store.node_count().unwrap_or(0),
-                    app.file.display()
-                )
+            if let Some(nav) = app.navigator.as_mut() {
+                nav.render(f, chunks[2], theme);
             } else {
-                "No data loaded.".to_string()
-            };
-            f.render_widget(
-                Paragraph::new(Line::from(text)).block(Block::default()),
-                chunks[2],
-            );
+                let text = format!("Loaded {}", app.file.display());
+                f.render_widget(
+                    Paragraph::new(Line::from(text)).block(Block::default()),
+                    chunks[2],
+                );
+            }
+            if app.focused.is_none() {
+                if let Some(nav) = app.navigator.as_ref() {
+                    app.focused = nav.focused().cloned();
+                }
+            }
+            if app.focused.is_none() {
+                let text = format!("Loaded {}", app.file.display());
+                f.render_widget(
+                    Paragraph::new(Line::from(text)).block(Block::default()),
+                    chunks[2],
+                );
+            }
+            // Suppress the duplicate text-rendering path below.
+            let _ = app.focused.is_some();
         }
         AppMode::Exiting => {}
     }
