@@ -1,75 +1,89 @@
-<!DOCTYPE html><html lang="en" data-astro-cid-sckkx6r4> <head><!-- Google tag (gtag.js) --><script async src="https://www.googletagmanager.com/gtag/js?id=G-L3F72TB67V"></script><script>
-            window.dataLayer = window.dataLayer || [];
-            function gtag() {
-                dataLayer.push(arguments);
-            }
-            gtag("js", new Date());
-            gtag("config", "G-L3F72TB67V");
-        </script><meta charset="UTF-8"><meta name="viewport" content="width=device-width"><link rel="icon" href="/favicon.ico" sizes="any"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="apple-touch-icon" href="/favicon-256x256.png"><link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png"><link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png"><meta name="generator" content="Astro v5.16.6"><meta name="description" content="Explore large JSON and YAML files in the terminal. Twig is a fast, privacy-first TUI built for infra and backend engineers working with real production data."><title>Twig - Terminal JSON & YAML Explorer</title><!-- SEO & Open Graph --><link rel="canonical" href="https://twig.wtf/"><meta name="keywords" content="json viewer, yaml viewer, terminal data explorer, tui, sqlite, large file viewer, developer tools, json explorer, yaml explorer, kubernetes log viewer, api response viewer"><meta property="og:type" content="website"><meta property="og:url" content="https://twig.wtf/"><meta property="og:title" content="Twig - Terminal JSON &#38; YAML Explorer"><meta property="og:description" content="The modern terminal viewer for JSON &#38; YAML. Inspect, navigate, and search with IDE-like fluidity."><meta property="og:image" content="https://twig.wtf/asset/logo.png"><meta property="twitter:card" content="summary_large_image"><meta property="twitter:title" content="Twig - Terminal JSON &#38; YAML Explorer"><meta property="twitter:description" content="The modern terminal viewer for JSON &#38; YAML. Inspect, navigate, and search with IDE-like fluidity."><meta property="twitter:image" content="https://twig.wtf/asset/logo.png"><!-- Structured Data (JSON-LD) --><script type="application/ld+json">
+<!DOCTYPE html><html lang="en" data-astro-cid-sckkx6r4> <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="theme-color" content="#11111b"><link rel="icon" href="/favicon.ico" sizes="any"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="apple-touch-icon" href="/favicon-256x256.png"><link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png"><link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png"><meta name="generator" content="Astro v5.16.6"><title>Twig — Terminal JSON &amp; YAML Explorer</title><meta name="description" content="Explore large JSON and YAML files in the terminal. Twig is a fast, privacy-first TUI built for infra and backend engineers working with real production data."><!-- SEO --><link rel="canonical" href="https://twig.wtf/"><meta name="keywords" content="json viewer, yaml viewer, terminal data explorer, tui, sqlite, large file viewer, developer tools, json explorer, yaml explorer, kubernetes log viewer, api response viewer"><meta property="og:type" content="website"><meta property="og:url" content="https://twig.wtf/"><meta property="og:title" content="Twig — Terminal JSON &#38; YAML Explorer"><meta property="og:description" content="The modern terminal viewer for JSON &#38; YAML. Inspect, navigate, and search with IDE-like fluidity."><meta property="og:image" content="https://twig.wtf/asset/logo.png"><meta property="twitter:card" content="summary_large_image"><meta property="twitter:title" content="Twig — Terminal JSON &#38; YAML Explorer"><meta property="twitter:description" content="The modern terminal viewer for JSON &#38; YAML. Inspect, navigate, and search with IDE-like fluidity."><meta property="twitter:image" content="https://twig.wtf/asset/logo.png"><!-- Structured Data --><script type="application/ld+json">
             {
                 "@context": "https://schema.org",
                 "@type": "SoftwareApplication",
                 "name": "Twig",
                 "operatingSystem": "macOS, Linux, Windows",
                 "applicationCategory": "DeveloperApplication",
-                "offers": {
-                    "@type": "Offer",
-                    "price": "0",
-                    "priceCurrency": "USD"
-                },
+                "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
                 "description": "A high-performance terminal JSON & YAML viewer. Inspect, navigate, and search massive files interactively.",
                 "url": "https://twig.wtf",
                 "image": "https://twig.wtf/asset/logo.png",
-                "author": {
-                    "@type": "Person",
-                    "name": "Shubham Kumar",
-                    "url": "https://workdone0.dev"
-                }
+                "author": { "@type": "Person", "name": "Shubham Kumar", "url": "https://workdone0.dev" }
             }
-        </script><script>
-            // Minimal theme loader
-            const theme = (() => {
-                if (
-                    typeof localStorage !== "undefined" &&
-                    localStorage.getItem("theme")
-                ) {
-                    return localStorage.getItem("theme");
-                }
-                return window.matchMedia("(prefers-color-scheme: light)")
-                    .matches
-                    ? "light"
-                    : "dark";
+        </script><!-- Theme loader: respects stored preference, falls back to system --><script>
+            (function () {
+                var stored = null;
+                try { stored = localStorage.getItem("theme"); } catch (_) {}
+                var theme =
+                    stored ||
+                    (window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark");
+                document.documentElement.setAttribute("data-theme", theme);
             })();
-            document.documentElement.setAttribute("data-theme", theme);
-        </script><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"><link rel="stylesheet" href="/_astro/guide.fzGk-NT0.css">
-<link rel="stylesheet" href="/_astro/index.Dhe2Oyv3.css"></head> <body data-astro-cid-sckkx6r4> <div class="container" data-astro-cid-sckkx6r4> <header data-astro-cid-sckkx6r4> <div class="logo" data-astro-cid-sckkx6r4> <a href="/" data-astro-cid-sckkx6r4> <img src="https://raw.githubusercontent.com/workdone0/twig/master/asset/logo.png" alt="Twig" height="42" data-astro-cid-sckkx6r4> </a> </div> <nav data-astro-cid-sckkx6r4> <a href="/guide" class="nav-link" data-astro-cid-sckkx6r4>Guide</a> <a href="https://github.com/workdone0/twig" class="nav-link" data-astro-cid-sckkx6r4>GitHub</a> <button id="theme-toggle" class="theme-btn" aria-label="Toggle Theme" data-astro-cid-sckkx6r4> <span class="icon sun" data-astro-cid-sckkx6r4>Light</span> <span class="icon moon" data-astro-cid-sckkx6r4>Dark</span> </button> </nav> </header>  <main data-astro-cid-j7pv25f6> <section class="hero" data-astro-cid-j7pv25f6> <h1 class="hero-header" data-astro-cid-j7pv25f6>
-A terminal-first<br data-astro-cid-j7pv25f6> <span class="highlight" data-astro-cid-j7pv25f6>JSON & YAML</span> explorer
+        </script><!-- Google tag (gtag.js) --><script async src="https://www.googletagmanager.com/gtag/js?id=G-L3F72TB67V"></script><script>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() { dataLayer.push(arguments); }
+            gtag("js", new Date());
+            gtag("config", "G-L3F72TB67V");
+        </script><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"><link rel="stylesheet" href="/_astro/guide.gyA0_9Xp.css">
+<link rel="stylesheet" href="/_astro/index.DW8XolgY.css"></head> <body data-astro-cid-sckkx6r4> <header class="site-header" data-astro-cid-sckkx6r4> <div class="container header-inner" data-astro-cid-sckkx6r4> <a href="/" class="brand" aria-label="Twig home" data-astro-cid-sckkx6r4> <img src="https://raw.githubusercontent.com/workdone0/twig/master/asset/logo.png" alt="" width="36" height="36" data-astro-cid-sckkx6r4> <span class="brand-text" data-astro-cid-sckkx6r4>Twig</span> </a> <button class="nav-toggle" id="nav-toggle" aria-label="Toggle menu" aria-expanded="false" aria-controls="primary-nav" data-astro-cid-sckkx6r4> <span class="bar" data-astro-cid-sckkx6r4></span> <span class="bar" data-astro-cid-sckkx6r4></span> <span class="bar" data-astro-cid-sckkx6r4></span> </button> <nav class="primary-nav" id="primary-nav" aria-label="Primary" data-astro-cid-sckkx6r4> <a href="/guide" class="nav-link " data-nav data-astro-cid-sckkx6r4>Guide</a> <a href="https://github.com/workdone0/twig" class="nav-link" data-nav rel="noopener" data-astro-cid-sckkx6r4>GitHub</a> <a href="https://github.com/workdone0/twig/releases/latest" class="nav-link" data-nav rel="noopener" data-astro-cid-sckkx6r4>Releases</a> <button id="theme-toggle" class="theme-btn" aria-label="Toggle color theme" data-astro-cid-sckkx6r4> <svg class="icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" data-astro-cid-sckkx6r4> <circle cx="12" cy="12" r="4" data-astro-cid-sckkx6r4></circle> <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" data-astro-cid-sckkx6r4></path> </svg> <svg class="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" data-astro-cid-sckkx6r4> <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" data-astro-cid-sckkx6r4></path> </svg> </button> </nav> </div> </header> <main class="site-main" data-astro-cid-sckkx6r4>  <section class="hero" data-astro-cid-j7pv25f6> <p class="eyebrow" data-astro-cid-j7pv25f6>v3.0.0 · Rust rewrite</p> <h1 class="hero-title" data-astro-cid-j7pv25f6>
+A terminal-first<br data-astro-cid-j7pv25f6> <span class="accent" data-astro-cid-j7pv25f6>JSON &amp; YAML</span> explorer
 </h1> <p class="tagline" data-astro-cid-j7pv25f6>
 Understand complex data locally — fast, private, and
-                SSH-friendly.
-</p> <div class="install-block primary" data-astro-cid-j7pv25f6> <span class="cmd" data-astro-cid-j7pv25f6>$ curl -fsSL https://twig.wtf/install.sh | sh</span> <button class="copy-btn" id="hero-copy-btn" data-astro-cid-j7pv25f6>Copy</button> </div> <div class="hero-links" data-astro-cid-j7pv25f6> <a href="https://github.com/workdone0/twig" class="secondary-link" data-astro-cid-j7pv25f6>View on GitHub</a> </div> </section> <section class="demo" data-astro-cid-j7pv25f6> <div class="terminal-frame" data-astro-cid-j7pv25f6> <div class="frame-header" data-astro-cid-j7pv25f6> <span class="dot" data-astro-cid-j7pv25f6></span><span class="dot" data-astro-cid-j7pv25f6></span><span class="dot" data-astro-cid-j7pv25f6></span> <span class="title" data-astro-cid-j7pv25f6>usr — twig — 120x40</span> </div> <!-- Using raw GitHub URL to ensure it loads without local assets --> <img src="https://raw.githubusercontent.com/workdone0/twig/master/asset/demo.gif" alt="Twig Demo - JSON and YAML Viewer" data-astro-cid-j7pv25f6> </div> </section> <!-- SECTION: About Twig (The Narrative) --> <section class="about-section" data-astro-cid-j7pv25f6> <div class="about-container" data-astro-cid-j7pv25f6> <h2 data-astro-cid-j7pv25f6>The missing link in your terminal.</h2> <p data-astro-cid-j7pv25f6> <code data-astro-cid-j7pv25f6>cat</code> floods your terminal. <code data-astro-cid-j7pv25f6>jq</code> is powerful,
-                    but not built for reading.
-</p> <p class="highlight-text" data-astro-cid-j7pv25f6>
-Twig brings structure to your terminal. A zero-config,
-                    interactive explorer for <strong data-astro-cid-j7pv25f6>understanding</strong> JSON and
-                    YAML at a glance.
-</p> </div> </section> <!-- SECTION: Feature Grid (Inspired by Reference) --> <section class="grid-section" data-astro-cid-j7pv25f6> <div class="features-grid" data-astro-cid-j7pv25f6> <!-- Card 1: JSON & YAML --> <div class="grid-card" data-astro-cid-j7pv25f6> <div class="icon-box" data-astro-cid-j7pv25f6>📂</div> <h3 data-astro-cid-j7pv25f6>Multi-Format Native</h3> <p data-astro-cid-j7pv25f6>
-First-class support for both JSON and YAML. Context
-                        switch instantly.
-</p> </div> <!-- Card 2: Deep Search --> <div class="grid-card" data-astro-cid-j7pv25f6> <div class="icon-box" data-astro-cid-j7pv25f6>🔎</div> <h3 data-astro-cid-j7pv25f6>Deep Search</h3> <p data-astro-cid-j7pv25f6>
-Fuzzy search across keys and values. Type <code data-astro-cid-j7pv25f6>/</code> to
-                        jump deep.
-</p> </div> <!-- Card 3: Fluid Nav --> <div class="grid-card" data-astro-cid-j7pv25f6> <div class="icon-box" data-astro-cid-j7pv25f6>🧭</div> <h3 data-astro-cid-j7pv25f6>Fluid Navigation</h3> <p data-astro-cid-j7pv25f6>
-Move through deep trees with Arrow Keys. Breadcrumbs
-                        keep you oriented.
-</p> </div> <!-- Card 4: Secure (Consolidated) --> <div class="grid-card" data-astro-cid-j7pv25f6> <div class="icon-box" data-astro-cid-j7pv25f6>🔒</div> <h3 data-astro-cid-j7pv25f6>Secure by Design</h3> <p data-astro-cid-j7pv25f6>
-100% Local & Read-Only. Safely explore production
-                        secrets.
-</p> </div> <!-- Card 5: Instant Load --> <div class="grid-card" data-astro-cid-j7pv25f6> <div class="icon-box" data-astro-cid-j7pv25f6>⚡️</div> <h3 data-astro-cid-j7pv25f6>Built for Speed</h3> <p data-astro-cid-j7pv25f6>
-Streaming ingestion and SQLite FTS5 indexing. A 50 MB
-                        JSON loads in ~16 ms — about 3 GB/s.
-</p> </div> <!-- Card 6: Rust rewrite --> <div class="grid-card" data-astro-cid-j7pv25f6> <div class="icon-box" data-astro-cid-j7pv25f6>🦀</div> <h3 data-astro-cid-j7pv25f6>Rust, Single Binary</h3> <p data-astro-cid-j7pv25f6>
-~4 MB static binary, zero runtime dependencies.
-                        Drop it on any Linux, macOS, or Windows machine.
-</p> </div> </div> </section> <!-- SECTION: Final Install --> <section class="final-cta" data-astro-cid-j7pv25f6> <h2 data-astro-cid-j7pv25f6>Ready to explore?</h2> <div class="install-block large" data-astro-cid-j7pv25f6> <span class="cmd" data-astro-cid-j7pv25f6>$ curl -fsSL https://twig.wtf/install.sh | sh</span> <button class="copy-btn" id="footer-copy-btn" data-astro-cid-j7pv25f6>Copy</button> </div> </section> </main>  </div> <footer data-astro-cid-sckkx6r4> <div class="footer-container" data-astro-cid-sckkx6r4> <div class="footer-content" data-astro-cid-sckkx6r4> <div class="col brand" data-astro-cid-sckkx6r4> <a href="/" class="footer-logo" data-astro-cid-sckkx6r4> <img src="https://raw.githubusercontent.com/workdone0/twig/master/asset/logo.png" alt="Twig" height="32" data-astro-cid-sckkx6r4> </a> <p data-astro-cid-sckkx6r4>The modern terminal UI for JSON & YAML</p> <p class="copyright" data-astro-cid-sckkx6r4>
-© 2026 Shubham Kumar. MIT Licensed.<br data-astro-cid-sckkx6r4> <span style="opacity: 0.8; font-size: 0.85em;" data-astro-cid-sckkx6r4>Built with <a href="https://python.org" target="_blank" style="color: inherit; text-decoration: underline;" data-astro-cid-sckkx6r4>Python</a> & <a href="https://textual.textualize.io" target="_blank" style="color: inherit; text-decoration: underline;" data-astro-cid-sckkx6r4>Textual</a></span> </p> </div> <div class="col links" data-astro-cid-sckkx6r4> <strong data-astro-cid-sckkx6r4>Resources</strong> <a href="/guide" data-astro-cid-sckkx6r4>Documentation</a> <a href="https://pypi.org/project/twg/" target="_blank" data-astro-cid-sckkx6r4>PyPI Package</a> <a href="https://github.com/workdone0/twig" target="_blank" data-astro-cid-sckkx6r4>Source Code</a> </div> <div class="col links" data-astro-cid-sckkx6r4> <strong data-astro-cid-sckkx6r4>Project</strong> <a href="https://github.com/workdone0/twig/issues" target="_blank" data-astro-cid-sckkx6r4>Report an Issue</a> <a href="https://buymeacoffee.com/workdone0" target="_blank" data-astro-cid-sckkx6r4>Support Development</a> <a href="https://workdone0.dev" target="_blank" data-astro-cid-sckkx6r4>Author</a> </div> </div> </div> </footer> <script type="module">const e=document.getElementById("theme-toggle");e?.addEventListener("click",()=>{const t=document.documentElement.getAttribute("data-theme")==="light"?"dark":"light";document.documentElement.setAttribute("data-theme",t),localStorage.setItem("theme",t)});</script> </body> </html>  <script type="module">function c(e,s){const t=document.getElementById(e);t?.addEventListener("click",async()=>{await navigator.clipboard.writeText(s);const o=t.textContent;t.textContent="Copied!",t.classList.add("copied"),setTimeout(()=>{o&&(t.textContent=o),t.classList.remove("copied")},2e3)})}c("hero-copy-btn","curl -fsSL https://twig.wtf/install.sh | sh");c("footer-copy-btn","curl -fsSL https://twig.wtf/install.sh | sh");const i=new IntersectionObserver(e=>{e.forEach(s=>{s.isIntersecting&&s.target.classList.add("visible")})},{threshold:.1});document.querySelectorAll(".grid-card").forEach(e=>{i.observe(e)});const n=document.querySelector(".features-grid"),l=document.querySelectorAll(".grid-card");n&&n.addEventListener("mousemove",e=>{l.forEach(s=>{const t=s.getBoundingClientRect(),o=e.clientX-t.left,r=e.clientY-t.top;s.style.setProperty("--mouse-x",`${o}px`),s.style.setProperty("--mouse-y",`${r}px`)})});</script> 
+            SSH-friendly.
+</p> <div class="install" data-astro-cid-j7pv25f6> <div class="install-row" data-astro-cid-j7pv25f6> <code class="install-cmd" data-astro-cid-j7pv25f6><span class="prompt" data-astro-cid-j7pv25f6>$</span> curl -fsSL
+                    https://twig.wtf/install.sh | sh</code> <button class="copy-btn" id="hero-copy" aria-label="Copy install command" data-astro-cid-j7pv25f6>
+Copy
+</button> </div> <p class="install-hint" data-astro-cid-j7pv25f6>
+Single static binary · Linux · macOS · Windows · MIT
+</p> </div> <div class="hero-cta" data-astro-cid-j7pv25f6> <a href="https://github.com/workdone0/twig" class="btn btn-primary" rel="noopener" data-astro-cid-j7pv25f6>View on GitHub</a> <a href="/guide" class="btn btn-secondary" data-astro-cid-j7pv25f6>Read the docs</a> </div> </section> <section class="demo" data-astro-cid-j7pv25f6> <div class="terminal" role="img" aria-label="Twig TUI demo" data-astro-cid-j7pv25f6> <div class="terminal-bar" data-astro-cid-j7pv25f6> <span class="dot red" data-astro-cid-j7pv25f6></span> <span class="dot yellow" data-astro-cid-j7pv25f6></span> <span class="dot green" data-astro-cid-j7pv25f6></span> <span class="terminal-title" data-astro-cid-j7pv25f6>twig — cloud_infrastructure.json</span> </div> <img src="https://raw.githubusercontent.com/workdone0/twig/master/asset/demo.gif" alt="Twig TUI demonstrating Miller-column navigation of a JSON file" loading="lazy" width="1200" height="400" data-astro-cid-j7pv25f6> </div> <p class="demo-caption" data-astro-cid-j7pv25f6>
+Miller-column navigation · smart inspector · keyboard-driven
+</p> </section> <section class="features" data-astro-cid-j7pv25f6> <div class="features-grid" data-astro-cid-j7pv25f6> <article class="feature" data-astro-cid-j7pv25f6> <div class="feature-icon" aria-hidden="true" data-astro-cid-j7pv25f6>📂</div> <h3 data-astro-cid-j7pv25f6>Multi-format native</h3> <p data-astro-cid-j7pv25f6>
+JSON and YAML with the same UI. Format is
+                    auto-detected from the file extension.
+</p> </article> <article class="feature" data-astro-cid-j7pv25f6> <div class="feature-icon" aria-hidden="true" data-astro-cid-j7pv25f6>⚡</div> <h3 data-astro-cid-j7pv25f6>Streaming ingestion</h3> <p data-astro-cid-j7pv25f6>
+Constant memory regardless of file size. A 50 MB
+                    JSON loads in ~16 ms — about 3 GB/s.
+</p> </article> <article class="feature" data-astro-cid-j7pv25f6> <div class="feature-icon" aria-hidden="true" data-astro-cid-j7pv25f6>🔍</div> <h3 data-astro-cid-j7pv25f6>Deep search</h3> <p data-astro-cid-j7pv25f6>
+Substring search across keys and values. Press
+<kbd data-astro-cid-j7pv25f6>/</kbd>, jump matches with <kbd data-astro-cid-j7pv25f6>n</kbd> /
+<kbd data-astro-cid-j7pv25f6>N</kbd>.
+</p> </article> <article class="feature" data-astro-cid-j7pv25f6> <div class="feature-icon" aria-hidden="true" data-astro-cid-j7pv25f6>🧭</div> <h3 data-astro-cid-j7pv25f6>Miller columns</h3> <p data-astro-cid-j7pv25f6>
+Traverse deep trees with the keyboard. Breadcrumbs
+                    keep you oriented, the inspector shows you what
+                    matters.
+</p> </article> <article class="feature" data-astro-cid-j7pv25f6> <div class="feature-icon" aria-hidden="true" data-astro-cid-j7pv25f6>🔒</div> <h3 data-astro-cid-j7pv25f6>Secure by design</h3> <p data-astro-cid-j7pv25f6>
+100% local and read-only. No network calls, no
+                    telemetry. Safe for production secrets.
+</p> </article> <article class="feature" data-astro-cid-j7pv25f6> <div class="feature-icon" aria-hidden="true" data-astro-cid-j7pv25f6>🦀</div> <h3 data-astro-cid-j7pv25f6>Single Rust binary</h3> <p data-astro-cid-j7pv25f6>
+~4 MB statically linked. Drop it on any Linux,
+                    macOS, or Windows machine and it runs.
+</p> </article> </div> </section> <section class="quickstart" data-astro-cid-j7pv25f6> <h2 data-astro-cid-j7pv25f6>Up and running in three commands</h2> <ol class="quickstart-list" data-astro-cid-j7pv25f6> <li data-astro-cid-j7pv25f6> <span class="step" data-astro-cid-j7pv25f6>1</span> <div data-astro-cid-j7pv25f6> <p class="step-title" data-astro-cid-j7pv25f6>Install</p> <pre data-astro-cid-j7pv25f6><code data-astro-cid-j7pv25f6>curl -fsSL https://twig.wtf/install.sh | sh</code></pre> </div> </li> <li data-astro-cid-j7pv25f6> <span class="step" data-astro-cid-j7pv25f6>2</span> <div data-astro-cid-j7pv25f6> <p class="step-title" data-astro-cid-j7pv25f6>Open a file</p> <pre data-astro-cid-j7pv25f6><code data-astro-cid-j7pv25f6>twig data.json</code></pre> </div> </li> <li data-astro-cid-j7pv25f6> <span class="step" data-astro-cid-j7pv25f6>3</span> <div data-astro-cid-j7pv25f6> <p class="step-title" data-astro-cid-j7pv25f6>Navigate with the keyboard</p> <pre data-astro-cid-j7pv25f6><code data-astro-cid-j7pv25f6>↑ ↓ ← →    navigate
+/          search
+:          jump to path
+c          copy path
+q          quit</code></pre> </div> </li> </ol> </section> <section class="why" data-astro-cid-j7pv25f6> <h2 data-astro-cid-j7pv25f6>Built for the terminal</h2> <div class="why-grid" data-astro-cid-j7pv25f6> <div data-astro-cid-j7pv25f6> <h3 data-astro-cid-j7pv25f6>Compared to <code data-astro-cid-j7pv25f6>jq</code></h3> <p data-astro-cid-j7pv25f6> <code data-astro-cid-j7pv25f6>jq</code> is the right tool for
+<em data-astro-cid-j7pv25f6>transforming</em> JSON. Twig is the right tool
+                    for <em data-astro-cid-j7pv25f6>exploring</em> it — no syntax to learn, no
+                    expressions to write, just point and look.
+</p> </div> <div data-astro-cid-j7pv25f6> <h3 data-astro-cid-j7pv25f6>Compared to web viewers</h3> <p data-astro-cid-j7pv25f6>
+Pasting production data into a browser is a security
+                    risk. Twig runs entirely on your machine — works
+                    over SSH, on air-gapped boxes, on shared servers.
+</p> </div> <div data-astro-cid-j7pv25f6> <h3 data-astro-cid-j7pv25f6>Compared to IDE plugins</h3> <p data-astro-cid-j7pv25f6>
+IDE JSON tools are heavy and GUI-only. Twig is a
+                    single ~4 MB binary that runs anywhere a terminal
+                    does — including inside your editor's integrated
+                    terminal.
+</p> </div> </div> </section> <section class="final-cta" data-astro-cid-j7pv25f6> <h2 data-astro-cid-j7pv25f6>Ready to explore?</h2> <div class="install" data-astro-cid-j7pv25f6> <div class="install-row" data-astro-cid-j7pv25f6> <code class="install-cmd" data-astro-cid-j7pv25f6><span class="prompt" data-astro-cid-j7pv25f6>$</span> curl -fsSL
+                    https://twig.wtf/install.sh | sh</code> <button class="copy-btn" id="footer-copy" aria-label="Copy install command" data-astro-cid-j7pv25f6>
+Copy
+</button> </div> </div> <p class="install-hint" data-astro-cid-j7pv25f6>
+No Python, no runtime, no dependencies. Just one binary.
+</p> </section>  </main> <footer class="site-footer" data-astro-cid-sckkx6r4> <div class="container" data-astro-cid-sckkx6r4> <div class="footer-grid" data-astro-cid-sckkx6r4> <div class="footer-brand" data-astro-cid-sckkx6r4> <a href="/" class="brand" data-astro-cid-sckkx6r4> <img src="https://raw.githubusercontent.com/workdone0/twig/master/asset/logo.png" alt="" width="32" height="32" data-astro-cid-sckkx6r4> <span class="brand-text" data-astro-cid-sckkx6r4>Twig</span> </a> <p data-astro-cid-sckkx6r4>The modern terminal UI for JSON &amp; YAML.</p> </div> <div class="footer-col" data-astro-cid-sckkx6r4> <strong data-astro-cid-sckkx6r4>Project</strong> <a href="/guide" data-astro-cid-sckkx6r4>Documentation</a> <a href="https://github.com/workdone0/twig/releases/latest" rel="noopener" data-astro-cid-sckkx6r4>Latest release</a> <a href="https://github.com/workdone0/twig" rel="noopener" data-astro-cid-sckkx6r4>Source code</a> <a href="https://github.com/workdone0/twig/tree/legacy-python" rel="noopener" data-astro-cid-sckkx6r4>Legacy Python</a> </div> <div class="footer-col" data-astro-cid-sckkx6r4> <strong data-astro-cid-sckkx6r4>Resources</strong> <a href="https://crates.io/crates/twig" rel="noopener" data-astro-cid-sckkx6r4>crates.io</a> <a href="https://github.com/workdone0/twig/blob/master/install.sh" rel="noopener" data-astro-cid-sckkx6r4>install.sh</a> <a href="https://github.com/workdone0/twig/issues" rel="noopener" data-astro-cid-sckkx6r4>Report an issue</a> <a href="https://buymeacoffee.com/workdone0" rel="noopener" data-astro-cid-sckkx6r4>Support development</a> </div> </div> <div class="footer-bottom" data-astro-cid-sckkx6r4> <p data-astro-cid-sckkx6r4>
+© 2026 Shubham Kumar · MIT Licensed
+</p> <p class="built-with" data-astro-cid-sckkx6r4>
+Built with
+<a href="https://www.rust-lang.org" rel="noopener" data-astro-cid-sckkx6r4>Rust</a>
++
+<a href="https://github.com/ratatui/ratatui" rel="noopener" data-astro-cid-sckkx6r4>ratatui</a> </p> </div> </div> </footer> <script type="module">const t=document.getElementById("nav-toggle"),n=document.getElementById("primary-nav");function c(){n?.classList.remove("open"),t?.setAttribute("aria-expanded","false")}t?.addEventListener("click",()=>{const e=n?.classList.toggle("open");t.setAttribute("aria-expanded",e?"true":"false")});n?.querySelectorAll("[data-nav]").forEach(e=>e.addEventListener("click",c));const o=document.getElementById("theme-toggle");o?.addEventListener("click",()=>{const a=document.documentElement.getAttribute("data-theme")==="light"?"dark":"light";document.documentElement.setAttribute("data-theme",a);try{localStorage.setItem("theme",a)}catch{}});</script> </body> </html>  <script type="module">function n(c,o){const t=document.getElementById(c);t&&t.addEventListener("click",async()=>{try{await navigator.clipboard.writeText(o)}catch{const e=document.createElement("textarea");e.value=o,document.body.appendChild(e),e.select(),document.execCommand("copy"),e.remove()}const s=t.textContent;t.textContent="Copied!",t.classList.add("copied"),setTimeout(()=>{t.textContent=s,t.classList.remove("copied")},1500)})}n("hero-copy","curl -fsSL https://twig.wtf/install.sh | sh");n("footer-copy","curl -fsSL https://twig.wtf/install.sh | sh");</script> 
