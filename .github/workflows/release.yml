@@ -181,6 +181,10 @@ jobs:
           # Need full history so `git describe` against the tag ref
           # works for the softprops action's tag_name resolution.
           fetch-depth: 0
+          # fetch-depth: 0 alone does NOT fetch tags. We need an
+          # explicit tag fetch so the tag-existence check below has
+          # something to look at.
+          fetch-tags: true
 
       - name: Resolve target tag
         id: tag
@@ -202,7 +206,13 @@ jobs:
           echo "target tag: $TAG"
 
       - name: Verify tag exists locally
-        run: git fetch --tags && git rev-parse "refs/tags/${{ steps.tag.outputs.tag }}"^{}
+        run: |
+          # Use the short form (v3.0.0, not refs/tags/v3.0.0^{})
+          # because git rev-parse doesn't accept the ^{} dereferencing
+          # suffix on a full refs/tags/... path -- it errors with
+          # 'ambiguous argument'.
+          git fetch --tags
+          git rev-parse --verify "${{ steps.tag.outputs.tag }}" >/dev/null
 
       - name: Download all artifacts
         uses: actions/download-artifact@v8
