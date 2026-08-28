@@ -84,8 +84,27 @@ jobs:
       - name: Install cross toolchain (Ubuntu only)
         if: matrix.os == 'ubuntu-latest' && matrix.cross_deps != ''
         run: |
+          set -eux
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends ${{ matrix.cross_deps }}
+          # Verify the cross-strip landed somewhere we can find.
+          # We've seen installs succeed but `command -v` not find the
+          # binary in PATH on fresh shells, so check both PATH and the
+          # multiarch /usr/<triple>/bin path explicitly.
+          TRIPLE_STRIP="${{ matrix.target }}-strip"
+          echo "PATH=$PATH"
+          if command -v "$TRIPLE_STRIP" >/dev/null 2>&1; then
+            echo "cross strip at: $(command -v "$TRIPLE_STRIP")"
+          elif [[ -x "/usr/bin/$TRIPLE_STRIP" ]]; then
+            echo "cross strip at: /usr/bin/$TRIPLE_STRIP (not on PATH)"
+          elif [[ -x "/usr/${{ matrix.target }}/bin/strip" ]]; then
+            echo "cross strip at: /usr/${{ matrix.target }}/bin/strip (not on PATH)"
+          else
+            echo "::error::cross strip $TRIPLE_STRIP not found after install"
+            ls /usr/bin/ | grep -E "^aarch64" || true
+            ls /usr/aarch64-linux-gnu/bin/ 2>/dev/null || true
+            exit 1
+          fi
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
@@ -118,21 +137,32 @@ jobs:
       # For cross-compiled targets (currently aarch64-linux on an
       # ubuntu-latest runner) the host `strip` is the wrong arch and
       # refuses to read the binary; we use the cross strip from
-      # binutils-<triple>-linux-gnu (or fall back to system strip).
+      # binutils-<triple>-linux-gnu or the multiarch path. Falls back
+      # to llvm-strip (multi-arch) and finally system strip.
       - name: Strip binary (Unix only)
         if: matrix.os != 'windows-latest'
         shell: bash
         run: |
+          set -e
           BINARY="target/${{ matrix.target }}/release/${{ matrix.binary }}"
           TRIPLE_STRIP="${{ matrix.target }}-strip"
           if command -v "$TRIPLE_STRIP" >/dev/null 2>&1; then
             echo "Using cross strip: $TRIPLE_STRIP"
             "$TRIPLE_STRIP" "$BINARY"
+          elif [[ -x "/usr/bin/$TRIPLE_STRIP" ]]; then
+            echo "Using /usr/bin/$TRIPLE_STRIP (not on PATH)"
+            "/usr/bin/$TRIPLE_STRIP" "$BINARY"
+          elif [[ -x "/usr/${{ matrix.target }}/bin/strip" ]]; then
+            echo "Using /usr/${{ matrix.target }}/bin/strip"
+            "/usr/${{ matrix.target }}/bin/strip" "$BINARY"
+          elif command -v llvm-strip >/dev/null 2>&1; then
+            echo "Using llvm-strip (multi-arch)"
+            llvm-strip "$BINARY"
           elif command -v strip >/dev/null 2>&1; then
-            echo "Using system strip"
-            strip "$BINARY"
+            echo "::warning::Using system strip; if it fails the binary is the wrong arch"
+            strip "$BINARY" || echo "::warning::strip failed, binary left unstripped"
           else
-            echo "No strip available; leaving binary as-is"
+            echo "::warning::no strip available; binary left unstripped"
           fi
 
       # Package as a tarball containing a file named `twig` (or `twig.exe`)
