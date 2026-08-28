@@ -49,10 +49,14 @@ jobs:
             binary: twig
             ext: ''
             os: ubuntu-latest
-            # binutils-aarch64-linux-gnu provides aarch64-linux-gnu-strip,
-            # which we need in the strip step. The host `strip` on
-            # ubuntu-latest is x86_64 and refuses to read aarch64 ELF.
-            cross_deps: gcc-aarch64-linux-gnu libc6-dev-arm64-cross binutils-aarch64-linux-gnu
+            # gcc-aarch64-linux-gnu + libc6-dev-arm64-cross give us
+            # the cross compiler and C library headers so cc-rs can
+            # build rusqlite's bundled SQLite for aarch64. We don't
+            # pull binutils-aarch64-linux-gnu because its strip
+            # binary isn't reliably on PATH after install; we strip
+            # via the llvm-tools rustup component instead, which is
+            # multi-arch and works for any target.
+            cross_deps: gcc-aarch64-linux-gnu libc6-dev-arm64-cross
           - target: x86_64-apple-darwin
             archive: twig-x86_64-apple-darwin
             binary: twig
@@ -80,29 +84,23 @@ jobs:
 
       # Install cross-compile toolchain (Ubuntu only; needed for
       # aarch64-unknown-linux-gnu). Empty for native builds and for
-      # macOS / Windows runners.
+      # macOS / Windows runners. Stripping is handled by llvm-strip
+      # from the llvm-tools rustup component, so we don't need
+      # binutils-<triple>-linux-gnu here (its strip binary isn't
+      # reliably on PATH after install on recent ubuntu runners).
       - name: Install cross toolchain (Ubuntu only)
         if: matrix.os == 'ubuntu-latest' && matrix.cross_deps != ''
         run: |
           set -eux
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends ${{ matrix.cross_deps }}
-          # Verify the cross-strip landed somewhere we can find.
-          # We've seen installs succeed but `command -v` not find the
-          # binary in PATH on fresh shells, so check both PATH and the
-          # multiarch /usr/<triple>/bin path explicitly.
-          TRIPLE_STRIP="${{ matrix.target }}-strip"
-          echo "PATH=$PATH"
-          if command -v "$TRIPLE_STRIP" >/dev/null 2>&1; then
-            echo "cross strip at: $(command -v "$TRIPLE_STRIP")"
-          elif [[ -x "/usr/bin/$TRIPLE_STRIP" ]]; then
-            echo "cross strip at: /usr/bin/$TRIPLE_STRIP (not on PATH)"
-          elif [[ -x "/usr/${{ matrix.target }}/bin/strip" ]]; then
-            echo "cross strip at: /usr/${{ matrix.target }}/bin/strip (not on PATH)"
-          else
-            echo "::error::cross strip $TRIPLE_STRIP not found after install"
+          # Verify the cross compiler is on PATH so cargo and cc-rs
+          # can find it for the build (rustcc and cc-rs both probe
+          # <triple>-gcc / <triple>-cc first).
+          if ! command -v "${{ matrix.target }}-gcc" >/dev/null 2>&1; then
+            echo "::error::cross gcc ${{ matrix.target }}-gcc not found after install"
+            echo "::error::PATH=$PATH"
             ls /usr/bin/ | grep -E "^aarch64" || true
-            ls /usr/aarch64-linux-gnu/bin/ 2>/dev/null || true
             exit 1
           fi
 
@@ -110,6 +108,12 @@ jobs:
         uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.target }}
+          # llvm-tools gives us llvm-strip, which understands any
+          # architecture and is the reliable cross-arch stripper.
+          # Without this, the explicit strip step on aarch64 falls
+          # back to the host x86_64 strip, which refuses to read
+          # aarch64 ELF.
+          components: llvm-tools
 
       - name: Cache cargo
         uses: actions/cache@v5
@@ -134,11 +138,12 @@ jobs:
         run: cargo build --release --locked --target ${{ matrix.target }}
 
       # `strip` is a Unix binary; macOS has it too, Windows does not.
-      # For cross-compiled targets (currently aarch64-linux on an
-      # ubuntu-latest runner) the host `strip` is the wrong arch and
-      # refuses to read the binary; we use the cross strip from
-      # binutils-<triple>-linux-gnu or the multiarch path. Falls back
-      # to llvm-strip (multi-arch) and finally system strip.
+      # For cross-compiled targets the host `strip` is the wrong
+      # arch. llvm-strip from the llvm-tools rustup component is
+      # multi-arch and reliable; we prefer it. Then cross-strip
+      # from /usr/bin/<triple>-strip (some Ubuntu installs drop
+      # the binary outside PATH). Then system strip as a last
+      # resort with a warning if it fails.
       - name: Strip binary (Unix only)
         if: matrix.os != 'windows-latest'
         shell: bash
@@ -146,18 +151,15 @@ jobs:
           set -e
           BINARY="target/${{ matrix.target }}/release/${{ matrix.binary }}"
           TRIPLE_STRIP="${{ matrix.target }}-strip"
-          if command -v "$TRIPLE_STRIP" >/dev/null 2>&1; then
+          if command -v llvm-strip >/dev/null 2>&1; then
+            echo "Using llvm-strip (multi-arch)"
+            llvm-strip "$BINARY"
+          elif command -v "$TRIPLE_STRIP" >/dev/null 2>&1; then
             echo "Using cross strip: $TRIPLE_STRIP"
             "$TRIPLE_STRIP" "$BINARY"
           elif [[ -x "/usr/bin/$TRIPLE_STRIP" ]]; then
-            echo "Using /usr/bin/$TRIPLE_STRIP (not on PATH)"
+            echo "Using /usr/bin/$TRIPLE_STRIP"
             "/usr/bin/$TRIPLE_STRIP" "$BINARY"
-          elif [[ -x "/usr/${{ matrix.target }}/bin/strip" ]]; then
-            echo "Using /usr/${{ matrix.target }}/bin/strip"
-            "/usr/${{ matrix.target }}/bin/strip" "$BINARY"
-          elif command -v llvm-strip >/dev/null 2>&1; then
-            echo "Using llvm-strip (multi-arch)"
-            llvm-strip "$BINARY"
           elif command -v strip >/dev/null 2>&1; then
             echo "::warning::Using system strip; if it fails the binary is the wrong arch"
             strip "$BINARY" || echo "::warning::strip failed, binary left unstripped"
