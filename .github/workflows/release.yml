@@ -205,14 +205,26 @@ jobs:
           echo "tag=$TAG" >> "$GITHUB_OUTPUT"
           echo "target tag: $TAG"
 
-      - name: Verify tag exists locally
+      - name: Verify tag exists on origin
+        # Note: we deliberately do NOT verify the tag is present in
+        # the local checkout. actions/checkout with fetch-depth: 0
+        # and fetch-tags: true is unreliable for tags not directly
+        # on the current branch tip on some checkout versions --
+        # we'd hit 'Needed a single revision' on `git rev-parse`
+        # even though the tag clearly exists on origin (since
+        # softprops will resolve and publish it just fine).
+        # Querying origin directly via ls-remote is the reliable
+        # check: if the tag is there, softprops will work; if not,
+        # we fail fast with a clear error before any artifacts
+        # are uploaded.
+        env:
+          TAG: ${{ steps.tag.outputs.tag }}
         run: |
-          # Use the short form (v3.0.0, not refs/tags/v3.0.0^{})
-          # because git rev-parse doesn't accept the ^{} dereferencing
-          # suffix on a full refs/tags/... path -- it errors with
-          # 'ambiguous argument'.
-          git fetch --tags
-          git rev-parse --verify "${{ steps.tag.outputs.tag }}" >/dev/null
+          if ! git ls-remote --tags origin "refs/tags/${TAG}" | grep -q .; then
+            echo "::error::tag ${TAG} does not exist on origin"
+            exit 1
+          fi
+          echo "tag ${TAG} confirmed on origin"
 
       - name: Download all artifacts
         uses: actions/download-artifact@v8
