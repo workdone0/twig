@@ -35,46 +35,48 @@ jobs:
           # detect_target(). On Linux: <arch>-unknown-linux-gnu.
           # On macOS: <arch>-apple-darwin. On Windows: pc-windows-msvc.
           # Each target runs on the runner OS it needs natively:
-          #   - Linux targets -> ubuntu-latest (aarch64 needs gcc-aarch64-linux-gnu)
+          #   - Linux targets -> ubuntu-latest
           #   - macOS targets -> macos-14 (Apple Silicon; SDK ships both arches)
           #   - Windows target -> windows-latest (MSVC is not portable)
+          #
+          # `build_method` is either `cargo` (native; use the host's
+          # cargo + toolchain) or `cross` (cargo-cross; pulls a
+          # Docker image with the right cross toolchain for the
+          # target). We use cross for aarch64-unknown-linux-gnu
+          # because hand-installing gcc-aarch64-linux-gnu and
+          # binutils-aarch64-linux-gnu on ubuntu-latest proved
+          # unreliable (apt-get reports success but the cross
+          # binaries don't end up on PATH in fresh shells).
           - target: x86_64-unknown-linux-gnu
             archive: twig-x86_64-unknown-linux-gnu
             binary: twig
             ext: ''
             os: ubuntu-latest
-            cross_deps: ''
+            build_method: cargo
           - target: aarch64-unknown-linux-gnu
             archive: twig-aarch64-unknown-linux-gnu
             binary: twig
             ext: ''
             os: ubuntu-latest
-            # gcc-aarch64-linux-gnu + libc6-dev-arm64-cross give us
-            # the cross compiler and C library headers so cc-rs can
-            # build rusqlite's bundled SQLite for aarch64. We don't
-            # pull binutils-aarch64-linux-gnu because its strip
-            # binary isn't reliably on PATH after install; we strip
-            # via the llvm-tools rustup component instead, which is
-            # multi-arch and works for any target.
-            cross_deps: gcc-aarch64-linux-gnu libc6-dev-arm64-cross
+            build_method: cross
           - target: x86_64-apple-darwin
             archive: twig-x86_64-apple-darwin
             binary: twig
             ext: ''
             os: macos-14
-            cross_deps: ''
+            build_method: cargo
           - target: aarch64-apple-darwin
             archive: twig-aarch64-apple-darwin
             binary: twig
             ext: ''
             os: macos-14
-            cross_deps: ''
+            build_method: cargo
           - target: x86_64-pc-windows-msvc
             archive: twig-x86_64-pc-windows-msvc
             binary: twig.exe
             ext: '.exe'
             os: windows-latest
-            cross_deps: ''
+            build_method: cargo
 
     runs-on: ${{ matrix.os }}
 
@@ -82,38 +84,19 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
 
-      # Install cross-compile toolchain (Ubuntu only; needed for
-      # aarch64-unknown-linux-gnu). Empty for native builds and for
-      # macOS / Windows runners. Stripping is handled by llvm-strip
-      # from the llvm-tools rustup component, so we don't need
-      # binutils-<triple>-linux-gnu here (its strip binary isn't
-      # reliably on PATH after install on recent ubuntu runners).
-      - name: Install cross toolchain (Ubuntu only)
-        if: matrix.os == 'ubuntu-latest' && matrix.cross_deps != ''
-        run: |
-          set -eux
-          sudo apt-get update
-          sudo apt-get install -y --no-install-recommends ${{ matrix.cross_deps }}
-          # Verify the cross compiler is on PATH so cargo and cc-rs
-          # can find it for the build (rustcc and cc-rs both probe
-          # <triple>-gcc / <triple>-cc first).
-          if ! command -v "${{ matrix.target }}-gcc" >/dev/null 2>&1; then
-            echo "::error::cross gcc ${{ matrix.target }}-gcc not found after install"
-            echo "::error::PATH=$PATH"
-            ls /usr/bin/ | grep -E "^aarch64" || true
-            exit 1
-          fi
-
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.target }}
           # llvm-tools gives us llvm-strip, which understands any
           # architecture and is the reliable cross-arch stripper.
-          # Without this, the explicit strip step on aarch64 falls
-          # back to the host x86_64 strip, which refuses to read
-          # aarch64 ELF.
           components: llvm-tools
+
+      - name: Install cargo-cross
+        if: matrix.build_method == 'cross'
+        uses: taiki-e/install-action@v2
+        with:
+          tool: cross
 
       - name: Cache cargo
         uses: actions/cache@v5
@@ -124,26 +107,29 @@ jobs:
             target
           key: release-${{ matrix.target }}-${{ hashFiles('Cargo.lock') }}
 
-      - name: Build
+      - name: Build (cross)
+        if: matrix.build_method == 'cross'
+        run: cross build --release --locked --target ${{ matrix.target }}
+
+      - name: Build (native)
+        if: matrix.build_method == 'cargo'
         env:
-          # The .cargo/config.toml in the repo points the cargo-level
-          # linker at aarch64-linux-gnu-gcc, but cc-rs (used by
-          # rusqlite-sys's build script to compile bundled SQLite from
-          # C) reads its compiler from these target-prefixed env vars.
-          # Without them, the bundled SQLite build defaults to the host
-          # `cc` and fails to produce aarch64 ELF objects.
+          # cc-rs (used by rusqlite-sys's build script to compile
+          # bundled SQLite from C) reads its compiler from these
+          # target-prefixed env vars. We only set them for
+          # aarch64, but `cross` already handles the cross-compile
+          # env, so this step only runs for native builds where
+          # they're harmless if unset.
           CC_aarch64_unknown_linux_gnu: aarch64-linux-gnu-gcc
           CXX_aarch64_unknown_linux_gnu: aarch64-linux-gnu-g++
           AR_aarch64_unknown_linux_gnu: aarch64-linux-gnu-ar
         run: cargo build --release --locked --target ${{ matrix.target }}
 
       # `strip` is a Unix binary; macOS has it too, Windows does not.
-      # For cross-compiled targets the host `strip` is the wrong
-      # arch. llvm-strip from the llvm-tools rustup component is
-      # multi-arch and reliable; we prefer it. Then cross-strip
-      # from /usr/bin/<triple>-strip (some Ubuntu installs drop
-      # the binary outside PATH). Then system strip as a last
-      # resort with a warning if it fails.
+      # llvm-strip from the llvm-tools rustup component is multi-arch
+      # and reliable; we prefer it. Falls back to the host strip
+      # with a non-fatal warning (so a wrong-arch strip on a
+      # partially-set-up runner doesn't crash the build).
       - name: Strip binary (Unix only)
         if: matrix.os != 'windows-latest'
         shell: bash
@@ -157,9 +143,6 @@ jobs:
           elif command -v "$TRIPLE_STRIP" >/dev/null 2>&1; then
             echo "Using cross strip: $TRIPLE_STRIP"
             "$TRIPLE_STRIP" "$BINARY"
-          elif [[ -x "/usr/bin/$TRIPLE_STRIP" ]]; then
-            echo "Using /usr/bin/$TRIPLE_STRIP"
-            "/usr/bin/$TRIPLE_STRIP" "$BINARY"
           elif command -v strip >/dev/null 2>&1; then
             echo "::warning::Using system strip; if it fails the binary is the wrong arch"
             strip "$BINARY" || echo "::warning::strip failed, binary left unstripped"
