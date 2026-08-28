@@ -561,36 +561,53 @@ curl -fsSL https://twig.wtf/install.sh | sh # install new</code></pre>
     .lead {
         font-size: 1.05rem;
         color: var(--text-secondary);
-        line-height: 1.65;
+        /* Inherit line-height from body (1.65) — don't override. */
         max-width: 640px;
+        margin-bottom: 1.5rem;
     }
 
     section {
-        margin-bottom: 3.5rem;
+        margin-bottom: 3rem;
         scroll-margin-top: 80px;
     }
 
     section h2 {
         font-size: 1.5rem;
-        margin-bottom: 1.25rem;
-        padding-bottom: 0.5rem;
+        /* Zero padding-bottom + 1px border + 15px margin-bottom =
+           16px text-to-text gap to the next element — same as
+           paragraph-to-paragraph, so the rhythm is uniform. The
+           border line sits right under the heading text. */
+        margin-bottom: 0.9375rem;
+        padding-bottom: 0;
         border-bottom: 1px solid var(--border-color);
     }
 
     section h3 {
         font-size: 1rem;
-        margin-top: 2rem;
-        margin-bottom: 0.75rem;
+        /* No margin-top: the preceding element's margin-bottom
+           already provides the gap, so h3 sits at the natural
+           baseline after a paragraph instead of pushing itself
+           down 2rem. Eliminates the alternating 2rem/1.75rem
+           rhythm between heading and paragraph pairs. */
+        margin-top: 1.5rem;
+        margin-bottom: 0.5rem;
         font-family: var(--font-mono);
         color: var(--text-primary);
+    }
+
+    section h3:first-child {
+        /* When an h3 is the very first thing in a section, sit it
+           right under the h2 border without the 1.5rem top. */
+        margin-top: 1rem;
     }
 
     p {
         margin-bottom: 1rem;
     }
 
-    ul {
-        padding-left: 1.25rem;
+    ul,
+    ol {
+        margin: 1rem 0;
     }
 
     /* Tables */
@@ -600,6 +617,10 @@ curl -fsSL https://twig.wtf/install.sh | sh # install new</code></pre>
         overflow-x: auto;
         -webkit-overflow-scrolling: touch;
         max-width: 100%;
+        /* 1.5rem vertical margin, matching <pre>, so a table
+           between two paragraphs has the same spacing as a code
+           block between two paragraphs. */
+        margin: 1.5rem 0;
     }
 
     table {
@@ -611,7 +632,9 @@ curl -fsSL https://twig.wtf/install.sh | sh # install new</code></pre>
 
     th,
     td {
-        padding: 0.75rem 1rem;
+        /* 0.625rem ≈ a 1rem line / 1.6 = 0.625, so cell padding
+           sits on the same baseline grid as paragraph line-height. */
+        padding: 0.625rem 1rem;
         text-align: left;
         border-bottom: 1px solid var(--border-color);
     }
@@ -632,26 +655,14 @@ curl -fsSL https://twig.wtf/install.sh | sh # install new</code></pre>
     td code {
         font-family: var(--font-mono);
         font-size: 0.85em;
-        background: var(--bg-secondary);
-        border: 1px solid var(--border-color);
         color: var(--text-primary);
-        padding: 0.1em 0.35em;
-        border-radius: 4px;
     }
 
-    /* Inline code */
-    p code,
-    li code,
-    h2 code,
-    h3 code {
-        font-family: var(--font-mono);
-        font-size: 0.875em;
-        background: var(--bg-secondary);
-        border: 1px solid var(--border-color);
-        color: var(--accent-color);
-        padding: 0.1em 0.35em;
-        border-radius: 4px;
-        word-break: break-word;
+    /* Block code — its own rhythm unit. 1.5rem vertical margin
+       so two pre blocks back-to-back and a pre → paragraph both
+       read with the same spacing. */
+    pre {
+        margin: 1.5rem 0;
     }
 
     pre code {
@@ -662,13 +673,27 @@ curl -fsSL https://twig.wtf/install.sh | sh # install new</code></pre>
         word-break: normal;
     }
 
-    pre {
-        background: var(--bg-surface);
-        padding: 1rem;
-        border-radius: 8px;
-        border: 1px solid var(--border-color);
-        overflow-x: auto;
-        font-size: 0.85rem;
+    /* Inline code: the global.css rules already give the right
+       treatment (no border, no vertical padding, soft accent
+       background). Don't override them with border/padding
+       rules here — that was the bug. */
+
+    /* Docs-page header rhythm */
+    .docs-header h1 {
+        /* Looser than the global h1 (1.15) but tighter than
+           body (1.65). 1.25 keeps the multi-line header readable
+           without compressing it against the lead below. */
+        line-height: 1.25;
+        margin-bottom: 0.75rem;
+    }
+
+    .lead {
+        /* Inherit line-height from body so it matches the rest of
+           the content (was 1.65, now inherits 1.65 from body — no
+           override needed). Set an explicit bottom margin so the
+           gap between the docs header and the first section is
+           consistent with section-to-section spacing. */
+        margin-bottom: 1.5rem;
     }
 
     .docs-footer {

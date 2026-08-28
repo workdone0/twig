@@ -68,7 +68,10 @@ body {
   color: var(--text-primary);
   font-family: var(--font-body);
   font-size: var(--fs-body);
-  line-height: 1.6;
+  /* Single source of truth for vertical rhythm — every text element
+     inherits this so paragraphs, lists, and inline code all have
+     matching line boxes. */
+  line-height: 1.65;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   transition: background-color 0.2s, color 0.2s;
@@ -117,7 +120,7 @@ h3 {
 p {
   color: var(--text-secondary);
   font-size: var(--fs-body);
-  line-height: 1.7;
+  /* Inherits line-height: 1.65 from body — don't override. */
   margin-bottom: 1rem;
 }
 
@@ -142,34 +145,51 @@ a:hover {
 
 ul,
 ol {
-  margin-bottom: 1rem;
+  margin: 1rem 0;
   padding-left: 1.25rem;
 }
 
 li {
   color: var(--text-secondary);
-  margin-bottom: 0.5rem;
+  /* 0.25rem × N items + 1rem ul margin = same end-spacing as a
+     paragraph (1rem), so list → paragraph reads with the same
+     rhythm as paragraph → paragraph. */
+  margin-bottom: 0.25rem;
 }
 
-/* Code */
+li:last-child {
+  margin-bottom: 0;
+}
+
+/* Inline code — kept visually distinct via a soft background tint,
+   with no border and no vertical padding so it doesn't extend the
+   line box of the surrounding paragraph. Without this, a line
+   containing `<code>twig</code>` rendered taller than the lines
+   above and below it, creating perceptible "shelves" wherever a
+   code reference appeared inline. */
 code {
   font-family: var(--font-mono);
   font-size: 0.875em;
-  background: var(--bg-secondary);
-  padding: 0.15em 0.4em;
-  border-radius: 4px;
-  border: 1px solid var(--border-color);
+  background: color-mix(in oklab, var(--accent-color) 12%, transparent);
+  padding: 0 0.3em;
+  border-radius: 3px;
   color: var(--text-primary);
+  line-height: inherit;
   word-break: break-word;
 }
 
+/* Block code — its own rhythm unit. 1.5rem vertical margin so two
+   pre blocks back-to-back and a pre → paragraph both read with
+   the same spacing. */
 pre {
   background: var(--bg-surface);
   padding: 1rem;
   border-radius: 8px;
   border: 1px solid var(--border-color);
+  margin: 1.5rem 0;
   overflow-x: auto;
-  font-size: var(--fs-small);
+  font-size: 0.85rem;
+  line-height: 1.55;
   -webkit-overflow-scrolling: touch;
 }
 
@@ -178,6 +198,7 @@ pre code {
   border: none;
   padding: 0;
   font-size: inherit;
+  line-height: inherit;
   color: inherit;
 }
 
