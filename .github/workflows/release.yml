@@ -230,6 +230,12 @@ jobs:
         uses: actions/download-artifact@v8
         with:
           path: artifacts
+          # Default is merge-multiple: false, which extracts each
+          # artifact into its own subdirectory (e.g.
+          # artifacts/twig-x86_64-unknown-linux-gnu/...). We want
+          # all tarballs flat in artifacts/ so the sha256sum loop
+          # below can glob them directly.
+          merge-multiple: true
 
       - name: Generate sha256sum files
         run: |
