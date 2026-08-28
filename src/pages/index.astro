@@ -2,315 +2,404 @@
 import Layout from "../layouts/Layout.astro";
 ---
 
-<Layout title="Twig - Terminal JSON & YAML Explorer">
-    <main>
-        <section class="hero">
-            <h1 class="hero-header">
-                A terminal-first<br />
-                <span class="highlight">JSON & YAML</span> explorer
-            </h1>
-            <p class="tagline">
-                Understand complex data locally — fast, private, and
-                SSH-friendly.
-            </p>
+<Layout title="Twig — Terminal JSON & YAML Explorer">
+    <section class="hero">
+        <p class="eyebrow">v3.0.0 · Rust rewrite</p>
+        <h1 class="hero-title">
+            A terminal-first<br />
+            <span class="accent">JSON &amp; YAML</span> explorer
+        </h1>
+        <p class="tagline">
+            Understand complex data locally — fast, private, and
+            SSH-friendly.
+        </p>
 
-            <div class="install-block primary">
-                <span class="cmd">$ curl -fsSL https://twig.wtf/install.sh | sh</span>
-                <button class="copy-btn" id="hero-copy-btn">Copy</button>
-            </div>
-
-            <div class="hero-links">
-                <a
-                    href="https://github.com/workdone0/twig"
-                    class="secondary-link">View on GitHub</a
+        <div class="install">
+            <div class="install-row">
+                <code class="install-cmd"
+                    ><span class="prompt">$</span> curl -fsSL
+                    https://twig.wtf/install.sh | sh</code
                 >
+                <button class="copy-btn" id="hero-copy" aria-label="Copy install command">
+                    Copy
+                </button>
             </div>
-        </section>
+            <p class="install-hint">
+                Single static binary · Linux · macOS · Windows · MIT
+            </p>
+        </div>
 
-        <section class="demo">
-            <div class="terminal-frame">
-                <div class="frame-header">
-                    <span class="dot"></span><span class="dot"></span><span
-                        class="dot"></span>
-                    <span class="title">usr — twig — 120x40</span>
-                </div>
-                <!-- Using raw GitHub URL to ensure it loads without local assets -->
-                <img
-                    src="https://raw.githubusercontent.com/workdone0/twig/master/asset/demo.gif"
-                    alt="Twig Demo - JSON and YAML Viewer"
-                />
+        <div class="hero-cta">
+            <a
+                href="https://github.com/workdone0/twig"
+                class="btn btn-primary"
+                rel="noopener"
+                >View on GitHub</a
+            >
+            <a href="/guide" class="btn btn-secondary">Read the docs</a>
+        </div>
+    </section>
+
+    <section class="demo">
+        <div class="terminal" role="img" aria-label="Twig TUI demo">
+            <div class="terminal-bar">
+                <span class="dot red"></span>
+                <span class="dot yellow"></span>
+                <span class="dot green"></span>
+                <span class="terminal-title">twig — cloud_infrastructure.json</span>
             </div>
-        </section>
+            <img
+                src="https://raw.githubusercontent.com/workdone0/twig/master/asset/demo.gif"
+                alt="Twig TUI demonstrating Miller-column navigation of a JSON file"
+                loading="lazy"
+                width="1200"
+                height="400"
+            />
+        </div>
+        <p class="demo-caption">
+            Miller-column navigation · smart inspector · keyboard-driven
+        </p>
+    </section>
 
-        <!-- SECTION: About Twig (The Narrative) -->
-        <section class="about-section">
-            <div class="about-container">
-                <h2>The missing link in your terminal.</h2>
+    <section class="features">
+        <div class="features-grid">
+            <article class="feature">
+                <div class="feature-icon" aria-hidden="true">📂</div>
+                <h3>Multi-format native</h3>
                 <p>
-                    <code>cat</code> floods your terminal. <code>jq</code> is powerful,
-                    but not built for reading.
+                    JSON and YAML with the same UI. Format is
+                    auto-detected from the file extension.
                 </p>
-                <p class="highlight-text">
-                    Twig brings structure to your terminal. A zero-config,
-                    interactive explorer for <strong>understanding</strong> JSON and
-                    YAML at a glance.
+            </article>
+
+            <article class="feature">
+                <div class="feature-icon" aria-hidden="true">⚡</div>
+                <h3>Streaming ingestion</h3>
+                <p>
+                    Constant memory regardless of file size. A 50 MB
+                    JSON loads in ~16 ms — about 3 GB/s.
+                </p>
+            </article>
+
+            <article class="feature">
+                <div class="feature-icon" aria-hidden="true">🔍</div>
+                <h3>Deep search</h3>
+                <p>
+                    Substring search across keys and values. Press
+                    <kbd>/</kbd>, jump matches with <kbd>n</kbd> /
+                    <kbd>N</kbd>.
+                </p>
+            </article>
+
+            <article class="feature">
+                <div class="feature-icon" aria-hidden="true">🧭</div>
+                <h3>Miller columns</h3>
+                <p>
+                    Traverse deep trees with the keyboard. Breadcrumbs
+                    keep you oriented, the inspector shows you what
+                    matters.
+                </p>
+            </article>
+
+            <article class="feature">
+                <div class="feature-icon" aria-hidden="true">🔒</div>
+                <h3>Secure by design</h3>
+                <p>
+                    100% local and read-only. No network calls, no
+                    telemetry. Safe for production secrets.
+                </p>
+            </article>
+
+            <article class="feature">
+                <div class="feature-icon" aria-hidden="true">🦀</div>
+                <h3>Single Rust binary</h3>
+                <p>
+                    ~4 MB statically linked. Drop it on any Linux,
+                    macOS, or Windows machine and it runs.
+                </p>
+            </article>
+        </div>
+    </section>
+
+    <section class="quickstart">
+        <h2>Up and running in three commands</h2>
+        <ol class="quickstart-list">
+            <li>
+                <span class="step">1</span>
+                <div>
+                    <p class="step-title">Install</p>
+                    <pre><code>curl -fsSL https://twig.wtf/install.sh | sh</code></pre>
+                </div>
+            </li>
+            <li>
+                <span class="step">2</span>
+                <div>
+                    <p class="step-title">Open a file</p>
+                    <pre><code>twig data.json</code></pre>
+                </div>
+            </li>
+            <li>
+                <span class="step">3</span>
+                <div>
+                    <p class="step-title">Navigate with the keyboard</p>
+                    <pre><code>↑ ↓ ← →    navigate
+/          search
+:          jump to path
+c          copy path
+q          quit</code></pre>
+                </div>
+            </li>
+        </ol>
+    </section>
+
+    <section class="why">
+        <h2>Built for the terminal</h2>
+        <div class="why-grid">
+            <div>
+                <h3>Compared to <code>jq</code></h3>
+                <p>
+                    <code>jq</code> is the right tool for
+                    <em>transforming</em> JSON. Twig is the right tool
+                    for <em>exploring</em> it — no syntax to learn, no
+                    expressions to write, just point and look.
                 </p>
             </div>
-        </section>
-
-        <!-- SECTION: Feature Grid (Inspired by Reference) -->
-        <section class="grid-section">
-            <div class="features-grid">
-                <!-- Card 1: JSON & YAML -->
-                <div class="grid-card">
-                    <div class="icon-box">📂</div>
-                    <h3>Multi-Format Native</h3>
-                    <p>
-                        First-class support for both JSON and YAML. Context
-                        switch instantly.
-                    </p>
-                </div>
-
-                <!-- Card 2: Deep Search -->
-                <div class="grid-card">
-                    <div class="icon-box">🔎</div>
-                    <h3>Deep Search</h3>
-                    <p>
-                        Fuzzy search across keys and values. Type <code>/</code> to
-                        jump deep.
-                    </p>
-                </div>
-
-                <!-- Card 3: Fluid Nav -->
-                <div class="grid-card">
-                    <div class="icon-box">🧭</div>
-                    <h3>Fluid Navigation</h3>
-                    <p>
-                        Move through deep trees with Arrow Keys. Breadcrumbs
-                        keep you oriented.
-                    </p>
-                </div>
-
-                <!-- Card 4: Secure (Consolidated) -->
-                <div class="grid-card">
-                    <div class="icon-box">🔒</div>
-                    <h3>Secure by Design</h3>
-                    <p>
-                        100% Local & Read-Only. Safely explore production
-                        secrets.
-                    </p>
-                </div>
-
-                <!-- Card 5: Instant Load -->
-                <div class="grid-card">
-                    <div class="icon-box">⚡️</div>
-                    <h3>Built for Speed</h3>
-                    <p>
-                        Streaming ingestion and SQLite FTS5 indexing. A 50 MB
-                        JSON loads in ~16 ms — about 3 GB/s.
-                    </p>
-                </div>
-
-                <!-- Card 6: Rust rewrite -->
-                <div class="grid-card">
-                    <div class="icon-box">🦀</div>
-                    <h3>Rust, Single Binary</h3>
-                    <p>
-                        ~4 MB static binary, zero runtime dependencies.
-                        Drop it on any Linux, macOS, or Windows machine.
-                    </p>
-                </div>
+            <div>
+                <h3>Compared to web viewers</h3>
+                <p>
+                    Pasting production data into a browser is a security
+                    risk. Twig runs entirely on your machine — works
+                    over SSH, on air-gapped boxes, on shared servers.
+                </p>
             </div>
-        </section>
-
-        <!-- SECTION: Final Install -->
-        <section class="final-cta">
-            <h2>Ready to explore?</h2>
-            <div class="install-block large">
-                <span class="cmd">$ curl -fsSL https://twig.wtf/install.sh | sh</span>
-                <button class="copy-btn" id="footer-copy-btn">Copy</button>
+            <div>
+                <h3>Compared to IDE plugins</h3>
+                <p>
+                    IDE JSON tools are heavy and GUI-only. Twig is a
+                    single ~4 MB binary that runs anywhere a terminal
+                    does — including inside your editor's integrated
+                    terminal.
+                </p>
             </div>
-        </section>
-    </main>
+        </div>
+    </section>
+
+    <section class="final-cta">
+        <h2>Ready to explore?</h2>
+        <div class="install">
+            <div class="install-row">
+                <code class="install-cmd"
+                    ><span class="prompt">$</span> curl -fsSL
+                    https://twig.wtf/install.sh | sh</code
+                >
+                <button class="copy-btn" id="footer-copy" aria-label="Copy install command">
+                    Copy
+                </button>
+            </div>
+        </div>
+        <p class="install-hint">
+            No Python, no runtime, no dependencies. Just one binary.
+        </p>
+    </section>
 </Layout>
 
 <script>
-    // Copy Logic
-    function setupCopy(btnId: string, text: string) {
-        const btn = document.getElementById(btnId);
-        btn?.addEventListener("click", async () => {
-            await navigator.clipboard.writeText(text);
-            const original = btn.textContent;
+    function setupCopy(id, text) {
+        const btn = document.getElementById(id);
+        if (!btn) return;
+        btn.addEventListener("click", async () => {
+            try {
+                await navigator.clipboard.writeText(text);
+            } catch (_) {
+                // Fallback for non-clipboard-API environments
+                const ta = document.createElement("textarea");
+                ta.value = text;
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand("copy");
+                ta.remove();
+            }
+            const orig = btn.textContent;
             btn.textContent = "Copied!";
             btn.classList.add("copied");
             setTimeout(() => {
-                if (original) btn.textContent = original;
+                btn.textContent = orig;
                 btn.classList.remove("copied");
-            }, 2000);
+            }, 1500);
         });
     }
-
-    setupCopy("hero-copy-btn", "curl -fsSL https://twig.wtf/install.sh | sh");
-    setupCopy("footer-copy-btn", "curl -fsSL https://twig.wtf/install.sh | sh");
-
-    // Scroll Animation Observer
-    const observer = new IntersectionObserver(
-        (entries) => {
-            entries.forEach((entry) => {
-                if (entry.isIntersecting) {
-                    entry.target.classList.add("visible");
-                }
-            });
-        },
-        { threshold: 0.1 },
+    setupCopy(
+        "hero-copy",
+        "curl -fsSL https://twig.wtf/install.sh | sh",
     );
-
-    document.querySelectorAll(".grid-card").forEach((card) => {
-        observer.observe(card);
-    });
-
-    // Spotlight Effect
-    const grid = document.querySelector(".features-grid") as HTMLElement;
-    const cards = document.querySelectorAll(
-        ".grid-card",
-    ) as NodeListOf<HTMLElement>;
-
-    if (grid) {
-        grid.addEventListener("mousemove", (e) => {
-            cards.forEach((card) => {
-                const rect = card.getBoundingClientRect();
-                const x = e.clientX - rect.left;
-                const y = e.clientY - rect.top;
-                card.style.setProperty("--mouse-x", `${x}px`);
-                card.style.setProperty("--mouse-y", `${y}px`);
-            });
-        });
-    }
+    setupCopy(
+        "footer-copy",
+        "curl -fsSL https://twig.wtf/install.sh | sh",
+    );
 </script>
 
 <style>
-    /* GLOBAL SPACING */
-    section {
-        margin-bottom: 8rem; /* Increased spacing */
-        padding: 0 1rem;
-    }
-
-    /* HERO STYLES (Preserved) */
+    /* Hero */
     .hero {
         text-align: center;
-        padding: 6rem 0 3rem;
+        padding: 3rem 0 2.5rem;
         max-width: 800px;
-        margin: 0 auto 5rem;
+        margin: 0 auto;
     }
-    .hero-header {
-        font-size: 3rem;
+
+    .eyebrow {
+        display: inline-block;
+        font-family: var(--font-mono);
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--accent-color);
+        background: var(--accent-glow);
+        padding: 0.25rem 0.75rem;
+        border-radius: 999px;
+        border: 1px solid color-mix(in oklab, var(--accent-color) 30%, transparent);
         margin-bottom: 1.5rem;
-        line-height: 1.1;
-        font-weight: 700;
-        letter-spacing: -0.03em;
     }
-    .highlight {
+
+    .hero-title {
+        font-size: var(--fs-hero);
+        font-weight: 700;
+        line-height: 1.05;
+        letter-spacing: -0.04em;
+        margin-bottom: 1rem;
+    }
+
+    .accent {
         color: var(--accent-color);
         position: relative;
         display: inline-block;
     }
-    .highlight::after {
+
+    .accent::after {
         content: "";
         position: absolute;
         bottom: 4px;
         left: 0;
         width: 100%;
-        height: 15%;
+        height: 18%;
         background: var(--accent-color);
-        opacity: 0.15;
+        opacity: 0.18;
         z-index: -1;
         border-radius: 4px;
-        pointer-events: none;
-    }
-    @media (min-width: 768px) {
-        .hero-header {
-            font-size: 4.5rem;
-        }
-    }
-    .tagline {
-        font-size: 1.2rem;
-        color: var(--text-secondary);
-        max-width: 580px;
-        margin: 0 auto 2.5rem;
-        line-height: 1.6;
-    }
-    .hero-links {
-        margin-top: 2rem;
-    }
-    .secondary-link {
-        color: var(--text-secondary);
-        font-size: 0.9rem;
-        text-decoration: none;
-        transition: color 0.2s;
-    }
-    .secondary-link:hover {
-        color: var(--text-primary);
     }
 
-    /* INSTALL BLOCK */
-    .install-block {
-        display: inline-flex;
+    .tagline {
+        font-size: 1.05rem;
+        color: var(--text-secondary);
+        max-width: 520px;
+        margin: 0 auto 2rem;
+        line-height: 1.55;
+    }
+
+    @media (min-width: 768px) {
+        .tagline {
+            font-size: 1.2rem;
+        }
+    }
+
+    /* Install command block */
+    .install {
+        margin: 0 auto 2rem;
+        max-width: 100%;
+    }
+
+    .install-row {
+        display: flex;
         align-items: center;
+        gap: 0.5rem;
         background: var(--bg-surface);
         border: 1px solid var(--border-color);
-        padding: 0.75rem 1.25rem;
-        border-radius: 99px; /* Pill shape */
-        gap: 1rem;
+        padding: 0.625rem 0.75rem 0.625rem 1rem;
+        border-radius: 12px;
         font-family: var(--font-mono);
-        font-size: 0.95rem;
-        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
-        transition:
-            transform 0.2s,
-            box-shadow 0.2s;
+        font-size: 0.85rem;
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.18);
+        max-width: 580px;
+        margin: 0 auto;
     }
-    .install-block:hover {
-        transform: translateY(-1px);
-        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.3);
-        border-color: var(--border-focus);
+
+    @media (min-width: 768px) {
+        .install-row {
+            padding: 0.75rem 1rem 0.75rem 1.25rem;
+            font-size: 0.95rem;
+        }
     }
-    .install-block.large {
-        padding: 1rem 2rem;
-        font-size: 1.1rem;
-    }
-    .cmd {
+
+    .install-cmd {
+        flex: 1;
+        font-family: inherit;
+        background: transparent;
+        border: 0;
+        padding: 0;
+        font-size: inherit;
         color: var(--text-primary);
-        font-weight: 500;
+        text-align: left;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        word-break: normal;
     }
+
+    .install-cmd .prompt {
+        color: var(--accent-color);
+        margin-right: 0.5rem;
+        user-select: none;
+    }
+
     .copy-btn {
         background: var(--bg-secondary);
         border: 1px solid var(--border-color);
         color: var(--text-secondary);
         cursor: pointer;
-        padding: 4px 10px;
+        padding: 0.35rem 0.75rem;
         font-size: 0.75rem;
-        border-radius: 12px;
-        transition: all 0.2s;
+        border-radius: 6px;
+        transition: all 0.15s;
         text-transform: uppercase;
         letter-spacing: 0.05em;
         font-weight: 600;
+        font-family: var(--font-body);
+        flex-shrink: 0;
     }
+
     .copy-btn:hover {
         color: var(--text-primary);
         background: var(--bg-primary);
     }
+
     .copy-btn.copied {
         background: var(--accent-color);
-        color: var(--bg-surface);
+        color: var(--bg-primary);
         border-color: var(--accent-color);
     }
 
-    /* DEMO */
+    .install-hint {
+        margin-top: 0.75rem;
+        font-family: var(--font-mono);
+        font-size: 0.75rem;
+        color: var(--text-muted);
+    }
+
+    .hero-cta {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        justify-content: center;
+        margin-top: 1rem;
+    }
+
+    /* Demo */
     .demo {
-        margin: 0 auto 8rem;
-        max-width: 1000px;
+        max-width: 960px;
+        margin: 0 auto var(--space-section);
         position: relative;
     }
-    /* Glow behind demo */
+
     .demo::after {
         content: "";
         position: absolute;
@@ -320,143 +409,104 @@ import Layout from "../layouts/Layout.astro";
         width: 80%;
         height: 80%;
         background: var(--accent-color);
-        opacity: 0.05;
-        filter: blur(100px);
+        opacity: 0.04;
+        filter: blur(120px);
         z-index: -1;
     }
-    .terminal-frame {
+
+    .terminal {
         border: 1px solid var(--border-color);
         border-radius: 12px;
         overflow: hidden;
         background: #1e1e2e;
-        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        box-shadow: 0 20px 50px -15px rgba(0, 0, 0, 0.45);
     }
-    .frame-header {
+
+    .terminal-bar {
         background: #181825;
-        padding: 12px 16px;
+        padding: 0.625rem 0.875rem;
         display: flex;
         align-items: center;
-        gap: 8px;
+        gap: 0.4rem;
         border-bottom: 1px solid #313244;
     }
-    .title {
-        margin-left: auto;
-        color: #a6adc8;
-        font-family: var(--font-mono);
-        font-size: 0.8rem;
-        opacity: 0.6;
-    }
+
     .dot {
         width: 10px;
         height: 10px;
         border-radius: 50%;
+        flex-shrink: 0;
     }
     .dot.red {
-        background: #ed8796;
+        background: #f38ba8;
     }
     .dot.yellow {
-        background: #eed49f;
+        background: #f9e2af;
     }
     .dot.green {
-        background: #a6da95;
+        background: #a6e3a1;
     }
-    img {
+
+    .terminal-title {
+        margin-left: auto;
+        color: #a6adc8;
+        font-family: var(--font-mono);
+        font-size: 0.75rem;
+        opacity: 0.7;
+    }
+
+    .terminal img {
         display: block;
         width: 100%;
+        height: auto;
     }
 
-    /* FEATURE GRID NEW */
-    .grid-section {
-        max-width: 1100px;
-        margin: 0 auto 8rem;
-        padding: 0 1rem;
+    .demo-caption {
+        margin-top: 1rem;
+        font-size: var(--fs-small);
+        color: var(--text-muted);
+        text-align: center;
     }
+
+    /* Features grid */
+    .features {
+        max-width: var(--max-width);
+        margin: 0 auto;
+    }
+
     .features-grid {
         display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 1.5rem;
+        grid-template-columns: 1fr;
+        gap: 1rem;
     }
-    @media (max-width: 900px) {
+
+    @media (min-width: 640px) {
         .features-grid {
             grid-template-columns: repeat(2, 1fr);
-        }
-    }
-    @media (max-width: 600px) {
-        .features-grid {
-            grid-template-columns: 1fr;
+            gap: 1.25rem;
         }
     }
 
-    .grid-card {
+    @media (min-width: 960px) {
+        .features-grid {
+            grid-template-columns: repeat(3, 1fr);
+        }
+    }
+
+    .feature {
         background: var(--bg-surface);
         border: 1px solid var(--border-color);
         border-radius: 12px;
-        padding: 2rem;
-        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-        display: flex;
-        flex-direction: column;
-        align-items: flex-start;
-        opacity: 0;
-        transform: translateY(20px);
-        position: relative; /* For spotlight */
-        overflow: hidden; /* For spotlight */
-    }
-    .grid-card::before {
-        content: "";
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background: radial-gradient(
-            800px circle at var(--mouse-x) var(--mouse-y),
-            rgba(255, 255, 255, 0.04),
-            transparent 40%
-        );
-        z-index: 1;
-        opacity: 0;
-        transition: opacity 0.5s;
-        pointer-events: none;
-    }
-    .features-grid:hover .grid-card::before {
-        opacity: 1;
-    }
-    .grid-card > * {
-        position: relative;
-        z-index: 2;
+        padding: 1.5rem;
+        transition: border-color 0.2s, transform 0.2s;
     }
 
-    .grid-card.visible {
-        opacity: 1;
-        transform: translateY(0);
-    }
-    /* Stagger delays */
-    .grid-card:nth-child(1) {
-        transition-delay: 0ms;
-    }
-    .grid-card:nth-child(2) {
-        transition-delay: 50ms;
-    }
-    .grid-card:nth-child(3) {
-        transition-delay: 100ms;
-    }
-    .grid-card:nth-child(4) {
-        transition-delay: 150ms;
-    }
-    .grid-card:nth-child(5) {
-        transition-delay: 200ms;
-    }
-    .grid-card:nth-child(6) {
-        transition-delay: 250ms;
-    }
-
-    .grid-card:hover {
+    .feature:hover {
         border-color: var(--border-focus);
-        transform: translateY(-5px);
-        box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.5);
+        transform: translateY(-2px);
     }
 
-    .icon-box {
+    .feature-icon {
         width: 40px;
         height: 40px;
         background: var(--bg-secondary);
@@ -465,124 +515,139 @@ import Layout from "../layouts/Layout.astro";
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 1.25rem;
-        margin-bottom: 1.5rem;
+        font-size: 1.15rem;
+        margin-bottom: 1rem;
     }
 
-    .grid-card h3 {
-        font-size: 1.1rem;
-        font-weight: 600;
-        margin: 0 0 0.75rem 0;
-        color: var(--text-primary);
+    .feature h3 {
+        margin-bottom: 0.5rem;
     }
 
-    .grid-card p {
-        font-size: 0.95rem;
-        color: var(--text-secondary);
-        line-height: 1.6;
+    .feature p {
+        font-size: var(--fs-small);
         margin: 0;
     }
-    .grid-card code {
-        background: var(--bg-primary);
-        padding: 2px 6px;
-        border-radius: 4px;
-        font-size: 0.85em;
+
+    .feature kbd {
+        font-family: var(--font-mono);
+        font-size: 0.75rem;
+        background: var(--bg-secondary);
         border: 1px solid var(--border-color);
+        border-bottom-width: 2px;
+        border-radius: 4px;
+        padding: 0 0.3rem;
+        color: var(--text-primary);
     }
 
-    /* FINAL CTA */
-    .final-cta {
-        text-align: center;
-        margin-bottom: 6rem;
-    }
-    .final-cta h2 {
-        margin-bottom: 2rem;
-        font-size: 2rem;
-        letter-spacing: -0.02em;
-    }
-
-    /* RESPONSIVE */
-    @media (max-width: 768px) {
-        .typing-header {
-            font-size: 1.8rem;
-        }
-        .hero {
-            padding-top: 2rem;
-        }
-        .why-grid {
-            /* This rule is now unused but kept for fidelity to original */
-            grid-template-columns: 1fr;
-            gap: 2rem;
-        }
-        .feature-grid {
-            /* This rule is now unused but kept for fidelity to original */
-            grid-template-columns: 1fr;
-        }
-        .install-block {
-            width: 100%;
-            justify-content: space-between;
-        }
-    }
-    /* ABOUT SECTION SIMPLIFIED */
-    .about-section {
-        margin-bottom: 8rem;
-        padding: 0 1rem;
-        text-align: center;
-    }
-    .about-container {
-        max-width: 700px;
+    /* Quickstart */
+    .quickstart {
+        max-width: 760px;
         margin: 0 auto;
     }
-    .about-section h2 {
-        font-size: 3rem;
-        font-weight: 700;
-        margin-bottom: 2.5rem;
-        letter-spacing: -0.03em;
-        line-height: 1.1;
 
-        /* Green Gradient Feature */
-        background: linear-gradient(
-            to right,
-            var(--accent-color),
-            var(--text-primary)
-        );
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
+    .quickstart h2 {
+        text-align: center;
+        margin-bottom: 2rem;
     }
-    .about-section p {
-        font-size: 1.25rem;
-        line-height: 1.7;
-        color: var(--text-secondary);
-        margin-bottom: 1.5rem;
+
+    .quickstart-list {
+        list-style: none;
+        padding: 0;
+        display: flex;
+        flex-direction: column;
+        gap: 1.25rem;
     }
-    .about-section .highlight-text {
-        font-size: 1.35rem;
-        color: var(--text-primary);
-        font-weight: 500;
-        margin-top: 2rem;
-    }
-    .about-section code {
+
+    .quickstart-list li {
+        display: flex;
+        gap: 1rem;
+        align-items: flex-start;
         background: var(--bg-surface);
         border: 1px solid var(--border-color);
-        padding: 2px 6px;
-        border-radius: 4px;
-        font-size: 0.9em;
-        color: var(--text-primary);
-        font-family: var(--font-mono);
-    }
-    .about-section strong {
-        color: var(--accent-color);
-        font-weight: 600;
+        border-radius: 12px;
+        padding: 1.25rem;
+        margin: 0;
     }
 
-    @media (max-width: 768px) {
-        .about-section h2 {
-            font-size: 2rem;
-            margin-bottom: 2rem;
+    .step {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        border-radius: 8px;
+        background: var(--accent-glow);
+        border: 1px solid color-mix(in oklab, var(--accent-color) 40%, transparent);
+        color: var(--accent-color);
+        font-family: var(--font-mono);
+        font-weight: 600;
+        flex-shrink: 0;
+    }
+
+    .step-title {
+        font-weight: 600;
+        color: var(--text-primary);
+        margin-bottom: 0.5rem;
+    }
+
+    .quickstart-list pre {
+        margin: 0;
+        background: var(--bg-primary);
+        font-size: 0.85rem;
+    }
+
+    /* Why */
+    .why {
+        max-width: var(--max-width);
+        margin: 0 auto;
+    }
+
+    .why h2 {
+        text-align: center;
+        margin-bottom: 2rem;
+    }
+
+    .why-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 1.25rem;
+    }
+
+    @media (min-width: 768px) {
+        .why-grid {
+            grid-template-columns: repeat(3, 1fr);
         }
-        .about-section p {
-            font-size: 1.1rem;
-            line-height: 1.6;
-        }
+    }
+
+    .why-grid > div {
+        background: var(--bg-surface);
+        border: 1px solid var(--border-color);
+        border-radius: 12px;
+        padding: 1.5rem;
+    }
+
+    .why-grid h3 {
+        font-size: 1rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .why-grid p {
+        font-size: var(--fs-small);
+        margin: 0;
+    }
+
+    .why-grid code {
+        font-size: 0.85em;
+    }
+
+    /* Final CTA */
+    .final-cta {
+        text-align: center;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .final-cta h2 {
+        margin-bottom: 1.5rem;
     }
 </style>

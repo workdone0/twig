@@ -10,49 +10,32 @@ const {
     title,
     description = "The modern terminal viewer for JSON & YAML. Inspect, navigate, and search with IDE-like fluidity.",
 } = Astro.props;
+
+const path = Astro.url.pathname;
+const isGuide = path.startsWith("/guide");
 ---
 
 <!doctype html>
 <html lang="en">
     <head>
-        <!-- Google tag (gtag.js) -->
-        <script
-            async
-            src="https://www.googletagmanager.com/gtag/js?id=G-L3F72TB67V"
-        ></script>
-        <script is:inline>
-            window.dataLayer = window.dataLayer || [];
-            function gtag() {
-                dataLayer.push(arguments);
-            }
-            gtag("js", new Date());
-            gtag("config", "G-L3F72TB67V");
-        </script>
         <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width" />
+        <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+        <meta name="theme-color" content="#11111b" />
+
         <link rel="icon" href="/favicon.ico" sizes="any" />
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         <link rel="apple-touch-icon" href="/favicon-256x256.png" />
-        <link
-            rel="icon"
-            type="image/png"
-            sizes="32x32"
-            href="/favicon-32x32.png"
-        />
-        <link
-            rel="icon"
-            type="image/png"
-            sizes="48x48"
-            href="/favicon-48x48.png"
-        />
+        <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+        <link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png" />
+
         <meta name="generator" content={Astro.generator} />
+        <title>{title}</title>
         <meta
             name="description"
             content="Explore large JSON and YAML files in the terminal. Twig is a fast, privacy-first TUI built for infra and backend engineers working with real production data."
         />
-        <title>Twig - Terminal JSON & YAML Explorer</title>
 
-        <!-- SEO & Open Graph -->
+        <!-- SEO -->
         <link rel="canonical" href={new URL(Astro.url.pathname, Astro.site)} />
         <meta
             name="keywords"
@@ -63,20 +46,13 @@ const {
         <meta property="og:url" content={Astro.url} />
         <meta property="og:title" content={title} />
         <meta property="og:description" content={description} />
-        <meta
-            property="og:image"
-            content={new URL("asset/logo.png", Astro.site)}
-        />
-
+        <meta property="og:image" content={new URL("asset/logo.png", Astro.site)} />
         <meta property="twitter:card" content="summary_large_image" />
         <meta property="twitter:title" content={title} />
         <meta property="twitter:description" content={description} />
-        <meta
-            property="twitter:image"
-            content={new URL("asset/logo.png", Astro.site)}
-        />
+        <meta property="twitter:image" content={new URL("asset/logo.png", Astro.site)} />
 
-        <!-- Structured Data (JSON-LD) -->
+        <!-- Structured Data -->
         <script type="application/ld+json" is:inline>
             {
                 "@context": "https://schema.org",
@@ -84,296 +60,458 @@ const {
                 "name": "Twig",
                 "operatingSystem": "macOS, Linux, Windows",
                 "applicationCategory": "DeveloperApplication",
-                "offers": {
-                    "@type": "Offer",
-                    "price": "0",
-                    "priceCurrency": "USD"
-                },
+                "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
                 "description": "A high-performance terminal JSON & YAML viewer. Inspect, navigate, and search massive files interactively.",
                 "url": "https://twig.wtf",
                 "image": "https://twig.wtf/asset/logo.png",
-                "author": {
-                    "@type": "Person",
-                    "name": "Shubham Kumar",
-                    "url": "https://workdone0.dev"
-                }
+                "author": { "@type": "Person", "name": "Shubham Kumar", "url": "https://workdone0.dev" }
             }
         </script>
 
+        <!-- Theme loader: respects stored preference, falls back to system -->
         <script is:inline>
-            // Minimal theme loader
-            const theme = (() => {
-                if (
-                    typeof localStorage !== "undefined" &&
-                    localStorage.getItem("theme")
-                ) {
-                    return localStorage.getItem("theme");
-                }
-                return window.matchMedia("(prefers-color-scheme: light)")
-                    .matches
-                    ? "light"
-                    : "dark";
+            (function () {
+                var stored = null;
+                try { stored = localStorage.getItem("theme"); } catch (_) {}
+                var theme =
+                    stored ||
+                    (window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark");
+                document.documentElement.setAttribute("data-theme", theme);
             })();
-            document.documentElement.setAttribute("data-theme", theme);
+        </script>
+
+        <!-- Google tag (gtag.js) -->
+        <script async src="https://www.googletagmanager.com/gtag/js?id=G-L3F72TB67V"></script>
+        <script is:inline>
+            window.dataLayer = window.dataLayer || [];
+            function gtag() { dataLayer.push(arguments); }
+            gtag("js", new Date());
+            gtag("config", "G-L3F72TB67V");
         </script>
 
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
         <link
-            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap"
+            href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
             rel="stylesheet"
         />
     </head>
+
     <body>
-        <div class="container">
-            <header>
-                <div class="logo">
-                    <a href={import.meta.env.BASE_URL}>
-                        <img
-                            src="https://raw.githubusercontent.com/workdone0/twig/master/asset/logo.png"
-                            alt="Twig"
-                            height="42"
-                        />
-                    </a>
-                </div>
-                <nav>
+        <header class="site-header">
+            <div class="container header-inner">
+                <a href="/" class="brand" aria-label="Twig home">
+                    <img
+                        src="https://raw.githubusercontent.com/workdone0/twig/master/asset/logo.png"
+                        alt=""
+                        width="36"
+                        height="36"
+                    />
+                    <span class="brand-text">Twig</span>
+                </a>
+
+                <button
+                    class="nav-toggle"
+                    id="nav-toggle"
+                    aria-label="Toggle menu"
+                    aria-expanded="false"
+                    aria-controls="primary-nav"
+                >
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                </button>
+
+                <nav class="primary-nav" id="primary-nav" aria-label="Primary">
                     <a
-                        href={import.meta.env.BASE_URL === "/"
-                            ? "/guide"
-                            : `${import.meta.env.BASE_URL}/guide`}
-                        class="nav-link">Guide</a
+                        href="/guide"
+                        class={`nav-link ${isGuide ? "active" : ""}`}
+                        data-nav>Guide</a
                     >
-                    <a href="https://github.com/workdone0/twig" class="nav-link"
-                        >GitHub</a
+                    <a
+                        href="https://github.com/workdone0/twig"
+                        class="nav-link"
+                        data-nav
+                        rel="noopener">GitHub</a
+                    >
+                    <a
+                        href="https://github.com/workdone0/twig/releases/latest"
+                        class="nav-link"
+                        data-nav
+                        rel="noopener">Releases</a
                     >
                     <button
                         id="theme-toggle"
                         class="theme-btn"
-                        aria-label="Toggle Theme"
+                        aria-label="Toggle color theme"
                     >
-                        <span class="icon sun">Light</span>
-                        <span class="icon moon">Dark</span>
+                        <svg class="icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <circle cx="12" cy="12" r="4" />
+                            <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" />
+                        </svg>
+                        <svg class="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" />
+                        </svg>
                     </button>
                 </nav>
-            </header>
+            </div>
+        </header>
 
+        <main class="site-main">
             <slot />
-        </div>
+        </main>
 
-        <footer>
-            <div class="footer-container">
-                <div class="footer-content">
-                    <div class="col brand">
-                        <a href="/" class="footer-logo">
+        <footer class="site-footer">
+            <div class="container">
+                <div class="footer-grid">
+                    <div class="footer-brand">
+                        <a href="/" class="brand">
                             <img
                                 src="https://raw.githubusercontent.com/workdone0/twig/master/asset/logo.png"
-                                alt="Twig"
+                                alt=""
+                                width="32"
                                 height="32"
                             />
+                            <span class="brand-text">Twig</span>
                         </a>
-                        <p>The modern terminal UI for JSON & YAML</p>
-                        <p class="copyright">
-                            © {new Date().getFullYear()} Shubham Kumar. MIT Licensed.<br
-                            />
-                            <span style="opacity: 0.8; font-size: 0.85em;"
-                                >Built with <a
-                                    href="https://python.org"
-                                    target="_blank"
-                                    style="color: inherit; text-decoration: underline;"
-                                    >Python</a
-                                > & <a
-                                    href="https://textual.textualize.io"
-                                    target="_blank"
-                                    style="color: inherit; text-decoration: underline;"
-                                    >Textual</a
-                                ></span
-                            >
-                        </p>
+                        <p>The modern terminal UI for JSON &amp; YAML.</p>
                     </div>
 
-                    <div class="col links">
-                        <strong>Resources</strong>
+                    <div class="footer-col">
+                        <strong>Project</strong>
                         <a href="/guide">Documentation</a>
-                        <a href="https://pypi.org/project/twg/" target="_blank"
-                            >PyPI Package</a
+                        <a
+                            href="https://github.com/workdone0/twig/releases/latest"
+                            rel="noopener">Latest release</a
+                        >
+                        <a href="https://github.com/workdone0/twig" rel="noopener"
+                            >Source code</a
                         >
                         <a
-                            href="https://github.com/workdone0/twig"
-                            target="_blank">Source Code</a
+                            href="https://github.com/workdone0/twig/tree/legacy-python"
+                            rel="noopener">Legacy Python</a
                         >
                     </div>
 
-                    <div class="col links">
-                        <strong>Project</strong>
+                    <div class="footer-col">
+                        <strong>Resources</strong>
+                        <a href="https://crates.io/crates/twig" rel="noopener">crates.io</a>
+                        <a
+                            href="https://github.com/workdone0/twig/blob/master/install.sh"
+                            rel="noopener">install.sh</a
+                        >
                         <a
                             href="https://github.com/workdone0/twig/issues"
-                            target="_blank">Report an Issue</a
+                            rel="noopener">Report an issue</a
                         >
-                        <a
-                            href="https://buymeacoffee.com/workdone0"
-                            target="_blank">Support Development</a
-                        >
-                        <a href="https://workdone0.dev" target="_blank"
-                            >Author</a
+                        <a href="https://buymeacoffee.com/workdone0" rel="noopener"
+                            >Support development</a
                         >
                     </div>
+                </div>
+
+                <div class="footer-bottom">
+                    <p>
+                        © {new Date().getFullYear()} Shubham Kumar · MIT Licensed
+                    </p>
+                    <p class="built-with">
+                        Built with
+                        <a href="https://www.rust-lang.org" rel="noopener">Rust</a>
+                        +
+                        <a href="https://github.com/ratatui/ratatui" rel="noopener"
+                            >ratatui</a
+                        >
+                    </p>
                 </div>
             </div>
         </footer>
 
         <script>
-            const toggle = document.getElementById("theme-toggle");
+            // Mobile nav toggle
+            const toggle = document.getElementById("nav-toggle");
+            const nav = document.getElementById("primary-nav");
+            function closeNav() {
+                nav?.classList.remove("open");
+                toggle?.setAttribute("aria-expanded", "false");
+            }
             toggle?.addEventListener("click", () => {
-                const current =
-                    document.documentElement.getAttribute("data-theme");
-                const next = current === "light" ? "dark" : "light";
+                const open = nav?.classList.toggle("open");
+                toggle.setAttribute("aria-expanded", open ? "true" : "false");
+            });
+            nav?.querySelectorAll("[data-nav]").forEach((el) =>
+                el.addEventListener("click", closeNav),
+            );
+
+            // Theme toggle
+            const themeBtn = document.getElementById("theme-toggle");
+            themeBtn?.addEventListener("click", () => {
+                const cur = document.documentElement.getAttribute("data-theme");
+                const next = cur === "light" ? "dark" : "light";
                 document.documentElement.setAttribute("data-theme", next);
-                localStorage.setItem("theme", next);
+                try { localStorage.setItem("theme", next); } catch (_) {}
             });
         </script>
     </body>
 </html>
 
 <style>
-    header {
-        height: 100px;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
+    /* Site header */
+    .site-header {
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        background: color-mix(in oklab, var(--bg-primary) 80%, transparent);
         border-bottom: 1px solid var(--border-color);
-        margin-bottom: 4rem;
     }
 
-    nav {
+    .header-inner {
         display: flex;
-        gap: 2rem;
         align-items: center;
-    }
-
-    .nav-link {
-        font-family: var(--font-mono);
-        font-size: 0.9rem;
-        color: var(--text-secondary);
-    }
-    .nav-link:hover {
-        color: var(--text-primary);
-    }
-
-    .theme-btn {
-        background: none;
-        border: none;
-        cursor: pointer;
-        padding: 0;
-        font-family: var(--font-mono);
-        font-size: 0.9rem;
-        color: var(--text-secondary);
-    }
-    .theme-btn:hover {
-        color: var(--text-primary);
-    }
-
-    html[data-theme="light"] .sun {
-        display: none;
-    }
-    html[data-theme="dark"] .moon {
-        display: none;
-    }
-
-    /* Footer */
-    footer {
-        border-top: 1px solid var(--border-color);
-        margin-top: 8rem;
-        padding: 4rem 0;
-        background: var(--bg-secondary); /* Full width tint */
-    }
-    .footer-container {
-        max-width: var(--max-width);
-        margin: 0 auto;
-        padding: 0 2rem;
-    }
-    .footer-content {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 4rem;
         justify-content: space-between;
-    }
-    .col {
-        display: flex;
-        flex-direction: column;
-        gap: 0.75rem;
-    }
-    .col.brand {
-        flex: 2;
-        min-width: 250px;
-    }
-    .col.links {
-        flex: 1;
-        min-width: 150px;
+        gap: 1rem;
+        height: 64px;
     }
 
-    .col strong {
+    .brand {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
         color: var(--text-primary);
-        font-family: var(--font-mono);
-        margin-bottom: 0.5rem;
+        font-weight: 600;
+        letter-spacing: -0.02em;
+    }
+
+    .brand-text {
+        font-size: 1.05rem;
+    }
+
+    .brand:hover {
+        opacity: 1;
+    }
+
+    .nav-toggle {
+        display: inline-flex;
+        flex-direction: column;
+        justify-content: center;
+        gap: 5px;
+        width: 40px;
+        height: 40px;
+        padding: 8px;
+        background: transparent;
+        border: 1px solid var(--border-color);
+        border-radius: 8px;
+        cursor: pointer;
+        color: var(--text-primary);
+    }
+
+    .nav-toggle .bar {
         display: block;
+        height: 2px;
+        width: 100%;
+        background: currentColor;
+        border-radius: 2px;
+        transition: transform 0.2s, opacity 0.2s;
     }
 
-    .col p {
-        margin: 0;
-        font-size: 0.9rem;
-        line-height: 1.6;
+    .nav-toggle[aria-expanded="true"] .bar:nth-child(1) {
+        transform: translateY(7px) rotate(45deg);
     }
-    .copyright {
-        opacity: 0.5;
-        font-size: 0.8rem !important;
-        margin-top: 1rem !important;
+    .nav-toggle[aria-expanded="true"] .bar:nth-child(2) {
+        opacity: 0;
+    }
+    .nav-toggle[aria-expanded="true"] .bar:nth-child(3) {
+        transform: translateY(-7px) rotate(-45deg);
     }
 
-    .col a {
-        color: var(--text-secondary);
-        font-size: 0.9rem;
-        text-decoration: none;
-        transition: color 0.2s;
+    .primary-nav {
+        display: none;
+        position: absolute;
+        top: 64px;
+        right: 0;
+        left: 0;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0;
+        padding: 0.5rem 1.25rem 1rem;
+        background: var(--bg-primary);
+        border-bottom: 1px solid var(--border-color);
     }
-    .col a:hover {
+
+    .primary-nav.open {
+        display: flex;
+    }
+
+    .primary-nav .nav-link,
+    .primary-nav .theme-btn {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 0.75rem 0.5rem;
+        font-family: var(--font-body);
+        font-size: 1rem;
+        color: var(--text-primary);
+        background: transparent;
+        border: 0;
+        border-bottom: 1px solid var(--border-color);
+        border-radius: 0;
+        text-align: left;
+        cursor: pointer;
+    }
+
+    .primary-nav .nav-link:last-of-type,
+    .primary-nav .theme-btn {
+        border-bottom: 0;
+    }
+
+    .primary-nav .nav-link.active {
         color: var(--accent-color);
     }
 
-    @media (max-width: 768px) {
-        header {
-            flex-direction: column;
-            height: auto;
-            gap: 1.5rem;
-            padding: 2rem 0;
-            margin-bottom: 3rem;
-        }
-        nav {
-            gap: 1.5rem;
-            justify-content: center;
+    .theme-btn {
+        color: var(--text-secondary);
+    }
+
+    .icon-sun,
+    .icon-moon {
+        flex-shrink: 0;
+    }
+
+    html[data-theme="light"] .icon-sun {
+        display: none;
+    }
+    html[data-theme="dark"] .icon-moon {
+        display: none;
+    }
+
+    /* Desktop nav (>= 768px) */
+    @media (min-width: 768px) {
+        .nav-toggle {
+            display: none;
         }
 
-        .footer-content {
+        .primary-nav {
             display: flex;
-            flex-direction: column;
+            position: static;
+            flex-direction: row;
+            align-items: center;
+            gap: 1.5rem;
+            padding: 0;
+            background: transparent;
+            border-bottom: 0;
+        }
+
+        .primary-nav .nav-link {
+            padding: 0;
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            border-bottom: 0;
+        }
+
+        .primary-nav .nav-link:hover,
+        .primary-nav .nav-link.active {
+            color: var(--text-primary);
+            opacity: 1;
+        }
+
+        .primary-nav .theme-btn {
+            padding: 0.5rem;
+            border-radius: 6px;
+            border: 1px solid var(--border-color);
+            border-bottom: 1px solid var(--border-color);
+        }
+    }
+
+    /* Main + footer */
+    .site-main {
+        min-height: calc(100vh - 64px - 240px);
+    }
+
+    .site-footer {
+        border-top: 1px solid var(--border-color);
+        padding: 3rem 0 2rem;
+        margin-top: 4rem;
+        background: var(--bg-secondary);
+    }
+
+    .footer-grid {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 2.5rem;
+        margin-bottom: 2rem;
+    }
+
+    @media (min-width: 768px) {
+        .footer-grid {
+            grid-template-columns: 2fr 1fr 1fr;
             gap: 3rem;
-            text-align: center;
+        }
+    }
+
+    .footer-brand p {
+        margin-top: 0.75rem;
+        font-size: var(--fs-small);
+        color: var(--text-secondary);
+    }
+
+    .footer-col {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+
+    .footer-col strong {
+        font-family: var(--font-mono);
+        font-size: 0.75rem;
+        text-transform: uppercase;
+        letter-spacing: 0.06em;
+        color: var(--text-primary);
+        margin-bottom: 0.5rem;
+    }
+
+    .footer-col a {
+        color: var(--text-secondary);
+        font-size: var(--fs-small);
+    }
+
+    .footer-col a:hover {
+        color: var(--accent-color);
+        opacity: 1;
+    }
+
+    .footer-bottom {
+        border-top: 1px solid var(--border-color);
+        padding-top: 1.5rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+        font-size: var(--fs-small);
+        color: var(--text-muted);
+    }
+
+    @media (min-width: 768px) {
+        .footer-bottom {
+            flex-direction: row;
+            justify-content: space-between;
             align-items: center;
         }
+    }
 
-        /* Reset widths and align center */
-        .col.brand,
-        .col.links,
-        .col {
-            width: 100%;
-            min-width: 0;
-            align-items: center;
-            grid-column: auto; /* Reset grid */
-            margin-bottom: 0;
-        }
+    .footer-bottom p {
+        margin: 0;
+        font-size: inherit;
+        color: inherit;
+    }
 
-        .container,
-        .footer-container {
-            padding: 0 1.5rem;
-        }
+    .built-with a {
+        color: var(--text-secondary);
+        text-decoration: underline;
+        text-decoration-color: var(--border-color);
+    }
+
+    .built-with a:hover {
+        color: var(--accent-color);
+        text-decoration-color: var(--accent-color);
     }
 </style>
