@@ -66,5 +66,25 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git tag -a "v${VERSION}" -m "Release v${VERSION}"
+          # NOTE: tag pushes done with GITHUB_TOKEN do NOT fire
+          # `push: tags:` events for downstream workflows (a
+          # documented GitHub Actions security limitation). That's
+          # why the next step explicitly dispatches the Release
+          # workflow via workflow_dispatch instead of relying on
+          # the tag push to trigger it.
           git push origin "v${VERSION}"
           echo "pushed tag v${VERSION}"
+
+      - name: Dispatch Release workflow
+        if: steps.check.outputs.exists == 'false'
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          # workflow_dispatch is in the small set of events that
+          # DO fire when triggered by GITHUB_TOKEN, so this is what
+          # actually kicks off the cross-compile + publish job for
+          # the tag we just pushed.
+          gh workflow run release.yml \
+            --ref "v${VERSION}" \
+            -f tag="v${VERSION}"
+          echo "dispatched Release workflow for v${VERSION}"

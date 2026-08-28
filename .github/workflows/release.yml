@@ -1,9 +1,25 @@
 name: Release
 
 on:
+  # Tag-push trigger does not fire when the tag was created by another
+  # workflow using GITHUB_TOKEN (a documented GitHub Actions security
+  # limitation). The auto-release workflow handles dispatching via
+  # `gh workflow run release.yml` after creating the tag; this trigger
+  # is kept for manually-pushed tags (e.g. maintainer running
+  # `git push origin vX.Y.Z` from a local clone with a PAT).
   push:
     tags:
       - 'v*'
+  # Manual dispatch — used by auto-release.yml after it creates the
+  # tag, and by maintainers who want to re-build binaries for an
+  # existing tag without bumping Cargo.toml. Pass `tag` (e.g. v3.0.0)
+  # as input; defaults to the current commit's tag if on a tag ref.
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to attach binaries to (e.g. v3.0.0). Leave blank to use the tag of the current commit if any.'
+        required: false
+        default: ''
 
 permissions:
   contents: write
@@ -90,22 +106,55 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Need full history so `git describe` against the tag ref
+          # works for the softprops action's tag_name resolution.
+          fetch-depth: 0
+
+      - name: Resolve target tag
+        id: tag
+        run: |
+          INPUT_TAG="${{ inputs.tag }}"
+          if [[ -n "$INPUT_TAG" ]]; then
+            # Normalize: "3.0.0" -> "v3.0.0"
+            case "$INPUT_TAG" in
+              v*) TAG="$INPUT_TAG" ;;
+              *)  TAG="v$INPUT_TAG" ;;
+            esac
+          elif [[ "${GITHUB_REF_TYPE}" == "tag" ]]; then
+            TAG="${GITHUB_REF_NAME}"
+          else
+            echo "::error::no tag specified and current ref is not a tag"
+            exit 1
+          fi
+          echo "tag=$TAG" >> "$GITHUB_OUTPUT"
+          echo "target tag: $TAG"
+
+      - name: Verify tag exists locally
+        run: git fetch --tags && git rev-parse "refs/tags/${{ steps.tag.outputs.tag }}"^{}
+
       - name: Download all artifacts
         uses: actions/download-artifact@v4
         with:
           path: artifacts
-      - name: Rename binaries inside tarballs for the release page
+
+      - name: Generate sha256sum files
         run: |
           cd artifacts
-          # Generate sha256sum-compatible checksum files. The format
-          # must be "<hash>  <filename>" (two spaces) for sha256sum -c
-          # to verify in-place.
+          # Format must be "<hash>  <filename>" (two spaces) for
+          # sha256sum -c to verify in place. install.sh uses these.
           for f in *.tar.gz; do
             sha256sum "$f" > "$f.sha256"
           done
           ls -la
-      - name: Create release
+
+      - name: Create / update release
         uses: softprops/action-gh-release@v2
         with:
+          tag_name: ${{ steps.tag.outputs.tag }}
+          # When the tag was just created by auto-release.yml, the
+          # release may not exist yet (softprops will create it).
+          # If it does exist (re-run), softprops updates it.
           files: artifacts/**/*
           generate_release_notes: true
+          fail_on_unmatched_files: true
