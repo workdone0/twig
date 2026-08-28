@@ -49,7 +49,10 @@ jobs:
             binary: twig
             ext: ''
             os: ubuntu-latest
-            cross_deps: gcc-aarch64-linux-gnu libc6-dev-arm64-cross
+            # binutils-aarch64-linux-gnu provides aarch64-linux-gnu-strip,
+            # which we need in the strip step. The host `strip` on
+            # ubuntu-latest is x86_64 and refuses to read aarch64 ELF.
+            cross_deps: gcc-aarch64-linux-gnu libc6-dev-arm64-cross binutils-aarch64-linux-gnu
           - target: x86_64-apple-darwin
             archive: twig-x86_64-apple-darwin
             binary: twig
@@ -112,12 +115,24 @@ jobs:
         run: cargo build --release --locked --target ${{ matrix.target }}
 
       # `strip` is a Unix binary; macOS has it too, Windows does not.
+      # For cross-compiled targets (currently aarch64-linux on an
+      # ubuntu-latest runner) the host `strip` is the wrong arch and
+      # refuses to read the binary; we use the cross strip from
+      # binutils-<triple>-linux-gnu (or fall back to system strip).
       - name: Strip binary (Unix only)
         if: matrix.os != 'windows-latest'
         shell: bash
         run: |
-          if command -v strip >/dev/null 2>&1; then
-            strip "target/${{ matrix.target }}/release/${{ matrix.binary }}"
+          BINARY="target/${{ matrix.target }}/release/${{ matrix.binary }}"
+          TRIPLE_STRIP="${{ matrix.target }}-strip"
+          if command -v "$TRIPLE_STRIP" >/dev/null 2>&1; then
+            echo "Using cross strip: $TRIPLE_STRIP"
+            "$TRIPLE_STRIP" "$BINARY"
+          elif command -v strip >/dev/null 2>&1; then
+            echo "Using system strip"
+            strip "$BINARY"
+          else
+            echo "No strip available; leaving binary as-is"
           fi
 
       # Package as a tarball containing a file named `twig` (or `twig.exe`)
