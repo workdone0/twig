@@ -1,0 +1,17 @@
+# Cross-compile configuration for release builds.
+#
+# When cargo builds for `aarch64-unknown-linux-gnu` from a host that
+# has `gcc-aarch64-linux-gnu` (Debian/Ubuntu) or the equivalent
+# cross-toolchain installed, it needs to know which linker to use.
+# Setting it here means both local cross-builds and CI work without
+# each having to set CARGO_TARGET_*_LINKER env vars by hand.
+#
+# Used by .github/workflows/release.yml for the Linux aarch64
+# matrix entry; the apt-get install in that workflow puts
+# `aarch64-linux-gnu-gcc` on PATH, which is what this points at.
+#
+# Only Linux aarch64 needs it; x86_64 Linux, macOS, and Windows
+# targets find their toolchain natively.
+
+[target.aarch64-unknown-linux-gnu]
+linker = "aarch64-linux-gnu-gcc"

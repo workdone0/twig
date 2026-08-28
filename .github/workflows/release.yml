@@ -99,6 +99,16 @@ jobs:
           key: release-${{ matrix.target }}-${{ hashFiles('Cargo.lock') }}
 
       - name: Build
+        env:
+          # The .cargo/config.toml in the repo points the cargo-level
+          # linker at aarch64-linux-gnu-gcc, but cc-rs (used by
+          # rusqlite-sys's build script to compile bundled SQLite from
+          # C) reads its compiler from these target-prefixed env vars.
+          # Without them, the bundled SQLite build defaults to the host
+          # `cc` and fails to produce aarch64 ELF objects.
+          CC_aarch64_unknown_linux_gnu: aarch64-linux-gnu-gcc
+          CXX_aarch64_unknown_linux_gnu: aarch64-linux-gnu-g++
+          AR_aarch64_unknown_linux_gnu: aarch64-linux-gnu-ar
         run: cargo build --release --locked --target ${{ matrix.target }}
 
       # `strip` is a Unix binary; macOS has it too, Windows does not.
@@ -124,7 +134,7 @@ jobs:
           ls -la release-artifacts/
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v5
+        uses: actions/upload-artifact@v7
         with:
           name: ${{ matrix.archive }}
           path: release-artifacts/${{ matrix.archive }}.tar.gz
@@ -165,7 +175,7 @@ jobs:
         run: git fetch --tags && git rev-parse "refs/tags/${{ steps.tag.outputs.tag }}"^{}
 
       - name: Download all artifacts
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v8
         with:
           path: artifacts
 
