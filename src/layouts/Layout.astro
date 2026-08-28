@@ -158,7 +158,9 @@ const isGuide = path.startsWith("/guide");
         </header>
 
         <main class="site-main">
-            <slot />
+            <div class="container">
+                <slot />
+            </div>
         </main>
 
         <footer class="site-footer">
