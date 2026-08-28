@@ -27,9 +27,10 @@ import Layout from "../layouts/Layout.astro";
                     <h1>Documentation</h1>
                     <p class="lead">
                         Twig is a high-performance, terminal-based data explorer
-                        for <strong>JSON</strong> and <strong>YAML</strong>. It
-                        bridges the gap between simple text viewers (like less)
-                        and full-blown IDEs.
+                        for <strong>JSON</strong> and <strong>YAML</strong>.
+                        Since v3.0.0 it's a single ~4 MB static binary written
+                        in Rust — drop it on any Linux, macOS, or Windows
+                        machine and it runs. No Python, no runtime.
                     </p>
                     <p>
                         Designed for developers who work with large datasets,
@@ -45,34 +46,71 @@ import Layout from "../layouts/Layout.astro";
                 <section id="installation">
                     <h2>Installation</h2>
                     <p>
-                        The modern, fast, and reliable way to install Twig is
-                        using <strong>uv</strong>.
+                        The recommended way to install Twig is the one-line
+                        installer — it downloads the matching prebuilt binary
+                        from the latest GitHub release, verifies its SHA-256
+                        checksum, and installs it to <code>~/.local/bin</code>
+                        (or <code>/usr/local/bin</code> when writable).
                     </p>
 
-                    <h3>Using uv (Recommended)</h3>
+                    <h3>One-line installer (recommended)</h3>
                     <div class="code-block">
-                        <pre><code># 1. Install uv (if needed)
-curl -LsSf https://astral.sh/uv/install.sh | sh
-
-# 2. Install Twig
-uv tool install twg</code></pre>
+                        <pre><code>curl -fsSL https://twig.wtf/install.sh | sh</code></pre>
                     </div>
 
-                    <h3>Other Methods</h3>
-                    <h4>Using pipx</h4>
+                    <h4>Useful flags</h4>
                     <div class="code-block">
-                        <pre><code>pipx install twg</code></pre>
+                        <pre><code># Pin a specific release
+curl -fsSL https://twig.wtf/install.sh | sh -s -- --version v3.0.0
+
+# Install to a custom directory
+curl -fsSL https://twig.wtf/install.sh | sh -s -- --to /usr/local/bin
+
+# Build from source instead of downloading
+curl -fsSL https://twig.wtf/install.sh | sh -s -- --method build
+
+# Skip the confirmation prompt
+curl -fsSL https://twig.wtf/install.sh | sh -s -- --yes</code></pre>
                     </div>
 
-                    <h4>Using pip</h4>
+                    <h3>Other methods</h3>
+                    <h4>Cargo</h4>
+                    <div class="code-block">
+                        <pre><code>cargo install twig</code></pre>
+                    </div>
+
+                    <h4>cargo-binstall</h4>
+                    <div class="code-block">
+                        <pre><code>cargo binstall twig</code></pre>
+                    </div>
+
+                    <h4>Manual download</h4>
                     <p>
-                        <small
-                            >Recommended only inside a virtual environment.</small
-                        >
+                        Prebuilt <code>.tar.gz</code> archives with matching
+                        <code>*.sha256</code> checksum files are available on
+                        the
+                        <a href="https://github.com/workdone0/twig/releases/latest">Releases page</a>
+                        for Linux (x86_64, aarch64), macOS (Intel, Apple
+                        Silicon), and Windows (x86_64).
                     </p>
+
+                    <h4>Build from source</h4>
+                    <p>Requires Rust 1.75 or later.</p>
                     <div class="code-block">
-                        <pre><code>pip install twg</code></pre>
+                        <pre><code>git clone https://github.com/workdone0/twig.git
+cd twig
+cargo build --release
+./target/release/twig --help</code></pre>
                     </div>
+
+                    <h4>Legacy Python version (≤ v2.1.4)</h4>
+                    <p>
+                        Older releases shipped to PyPI as
+                        <code>twg</code>. That implementation is preserved on
+                        the <a href="https://github.com/workdone0/twig/tree/legacy-python"><code>legacy-python</code></a>
+                        branch for reference. New development happens on
+                        <code>master</code>.
+                    </p>
                 </section>
             </div>
 
@@ -81,18 +119,32 @@ uv tool install twg</code></pre>
                     <h2>Core Workflow</h2>
                     <p>
                         Pass a data file to Twig. It automatically detects the
-                        format (JSON or YAML), indexes it, and launches the TUI.
+                        format (JSON or YAML), indexes it via streaming
+                        ingestion, and launches the TUI.
                     </p>
                     <div class="code-block">
-                        <pre><code>twg data.json  # or twg config.yaml</code></pre>
+                        <pre><code>twig data.json     # or twig config.yaml</code></pre>
                     </div>
+
+                    <h3>Repair malformed JSON</h3>
                     <p>
-                        <strong>Fix broken JSON:</strong> Automatically repair common
-                        errors (trailing commas, unquoted keys) or sanitize NaN/Infinity
-                        values.
+                        Automatically repair common errors (trailing commas,
+                        unquoted keys, single quotes, NaN / Infinity) and
+                        write a clean round-trippable copy.
                     </p>
                     <div class="code-block">
-                        <pre><code>twg --fix bad.json -o clean.json</code></pre>
+                        <pre><code>twig --fix bad.json -o clean.json</code></pre>
+                    </div>
+
+                    <h3>Benchmark streaming ingestion</h3>
+                    <p>
+                        Non-interactive mode that exercises the same
+                        streaming pipeline the TUI uses and prints size,
+                        node count, elapsed time, and throughput. Useful in
+                        CI and ad-hoc perf checks.
+                    </p>
+                    <div class="code-block">
+                        <pre><code>twig --check huge.json</code></pre>
                     </div>
                 </section>
             </div>
@@ -100,27 +152,39 @@ uv tool install twg</code></pre>
             <div class="fade-in-up" style="animation-delay: 0.3s;">
                 <section id="cli-reference">
                     <h2>CLI Reference</h2>
-                    <p>
-                        The <code>twg</code> command supports several flags for automation.
-                    </p>
+                    <div class="code-block">
+                        <pre><code>twig [OPTIONS] &lt;FILE&gt;</code></pre>
+                    </div>
 
                     <h3><code>--fix</code></h3>
-                    <p>Attempts to automatically repair malformed JSON.</p>
+                    <p>Attempt to repair malformed JSON and write a clean copy.</p>
                     <div class="code-block">
-                        <pre><code>twg --fix broken.json</code></pre>
+                        <pre><code>twig --fix broken.json -o clean.json</code></pre>
                     </div>
 
                     <h3><code>--print</code> / <code>-p</code></h3>
-                    <p>
-                        Pretty-prints the JSON/YAML file to stdout with syntax
-                        highlighting.
-                    </p>
+                    <p>Pretty-print the file to stdout with syntax highlighting.</p>
                     <div class="code-block">
-                        <pre><code>twg -p large.json</code></pre>
+                        <pre><code>twig -p large.json</code></pre>
                     </div>
 
-                    <h3><code>--version</code> / <code>-v</code></h3>
-                    <p>Display the current installed version.</p>
+                    <h3><code>--check</code></h3>
+                    <p>Load the file and print size, node count, and throughput stats. Non-TUI.</p>
+                    <div class="code-block">
+                        <pre><code>twig --check huge.json</code></pre>
+                    </div>
+
+                    <h3><code>--output</code> / <code>-o</code></h3>
+                    <p>Write to a file instead of stdout (with <code>--print</code> or <code>--fix</code>).</p>
+
+                    <h3><code>--indent</code> / <code>-i</code></h3>
+                    <p>Indent width for pretty-printed or fixed output. Default: 2.</p>
+
+                    <h3><code>--rebuild-db</code></h3>
+                    <p>Drop the on-disk SQLite cache before loading.</p>
+
+                    <h3><code>--version</code></h3>
+                    <p>Print version and exit.</p>
                 </section>
             </div>
 
@@ -141,7 +205,7 @@ uv tool install twg</code></pre>
                             <tbody>
                                 <tr>
                                     <td><strong>General</strong></td>
-                                    <td>Help / Cheatsheet</td>
+                                    <td>Help / cheatsheet</td>
                                     <td><code>?</code></td>
                                 </tr>
                                 <tr>
@@ -150,58 +214,59 @@ uv tool install twg</code></pre>
                                     <td><code>q</code></td>
                                 </tr>
                                 <tr>
+                                    <td></td>
+                                    <td>Toggle theme</td>
+                                    <td><code>t</code></td>
+                                </tr>
+                                <tr>
                                     <td><strong>Navigation</strong></td>
-                                    <td>Move Selection</td>
+                                    <td>Move selection</td>
                                     <td><code>Arrow Keys</code></td>
                                 </tr>
                                 <tr>
                                     <td></td>
-                                    <td>Expand / Enter</td>
-                                    <td
-                                        ><code>Right</code> / <code>Enter</code
-                                        ></td
-                                    >
+                                    <td>Drill in / expand</td>
+                                    <td><code>→</code> / <code>Enter</code> / <code>l</code></td>
                                 </tr>
                                 <tr>
                                     <td></td>
-                                    <td>Collapse / Back</td>
-                                    <td><code>Left</code> / <code>Esc</code></td
-                                    >
+                                    <td>Step back / collapse</td>
+                                    <td><code>←</code> / <code>Esc</code> / <code>h</code></td>
+                                </tr>
+                                <tr>
+                                    <td></td>
+                                    <td>Jump to top / bottom</td>
+                                    <td><code>g</code> / <code>G</code></td>
+                                </tr>
+                                <tr>
+                                    <td></td>
+                                    <td>Smart jump (path)</td>
+                                    <td><code>:</code></td>
                                 </tr>
                                 <tr>
                                     <td><strong>Search</strong></td>
-                                    <td>Global Search</td>
+                                    <td>Global search</td>
                                     <td><code>/</code></td>
                                 </tr>
                                 <tr>
                                     <td></td>
-                                    <td>Next Match</td>
+                                    <td>Next match</td>
                                     <td><code>n</code></td>
                                 </tr>
                                 <tr>
                                     <td></td>
-                                    <td>Previous Match</td>
+                                    <td>Previous match</td>
                                     <td><code>N</code></td>
                                 </tr>
                                 <tr>
                                     <td><strong>Actions</strong></td>
-                                    <td>Smart Jump (Path)</td>
-                                    <td><code>:</code></td>
-                                </tr>
-                                <tr>
-                                    <td></td>
-                                    <td>Copy Path</td>
+                                    <td>Copy path</td>
                                     <td><code>c</code></td>
                                 </tr>
                                 <tr>
                                     <td></td>
-                                    <td>Copy Value (Source)</td>
+                                    <td>Copy source slice</td>
                                     <td><code>y</code></td>
-                                </tr>
-                                <tr>
-                                    <td></td>
-                                    <td>Toggle Theme</td>
-                                    <td><code>t</code></td>
                                 </tr>
                             </tbody>
                         </table>
@@ -218,14 +283,22 @@ uv tool install twg</code></pre>
                     </p>
                     <ul>
                         <li>
-                            <strong>Theme</strong>: Twig supports multiple
-                            themes and saves your preference automatically.
-                            Cycles themes with the <code>t</code> key.
+                            <strong>Theme</strong>: <strong>Catppuccin Mocha</strong>
+                            (default) and <strong>Solarized Dark</strong> ship
+                            in the box. Cycles themes with the
+                            <code>t</code> key.
                         </li>
                         <li>
-                            <strong>Cache</strong>: Stored in <code
-                                >~/.twig/</code
-                            >. Safe to delete at any time.
+                            <strong>Config</strong>: stored at
+                            <code>~/.config/twig/config.json</code> (or the
+                            platform equivalent). Shared with the legacy
+                            Python implementation, so theme preference carries
+                            over when upgrading.
+                        </li>
+                        <li>
+                            <strong>Cache</strong>: a SQLite file with an FTS5
+                            virtual table, stored under the platform's cache
+                            directory. Safe to delete at any time.
                         </li>
                     </ul>
                 </section>
@@ -234,19 +307,29 @@ uv tool install twg</code></pre>
             <div class="fade-in-up" style="animation-delay: 0.6s;">
                 <section id="troubleshooting">
                     <h2>Troubleshooting</h2>
-                    <h3>"Database Locked" Error</h3>
+
+                    <h3>Loader errors</h3>
                     <p>
-                        If Twig crashes or is killed forcefully, the SQLite lock
-                        file might remain. Run with <code
-                            style="white-space: nowrap;">--rebuild-db</code
-                        > to reset.
+                        If Twig can't parse a file, it shows the error in-app
+                        (press any key to exit) and prints a colored message
+                        with a <code>--fix</code> hint to stderr with exit
+                        code 1, so CI pipelines fail fast.
                     </p>
 
-                    <h3>Invalid JSON</h3>
+                    <h3>"Database is locked" error</h3>
                     <p>
-                        If Twig refuses to open a file, run <code
-                            >twg --fix file.json</code
-                        > to see detailed error reports and attempt an automatic repair.
+                        If Twig crashes or is killed forcefully, the SQLite
+                        lock might remain. Run with <code>--rebuild-db</code>
+                        to reset.
+                    </p>
+
+                    <h3>Clipboard not working</h3>
+                    <p>
+                        On Linux headless servers without a clipboard
+                        daemon, the copy actions (<code>c</code>, <code>y</code>)
+                        fall back to writing the payload to a temporary file
+                        and printing its path. The TUI shows a hint when this
+                        fallback fires.
                     </p>
                 </section>
             </div>

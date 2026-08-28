@@ -15,7 +15,7 @@ import Layout from "../layouts/Layout.astro";
             </p>
 
             <div class="install-block primary">
-                <span class="cmd">$ uv tool install twg</span>
+                <span class="cmd">$ curl -fsSL https://twig.wtf/install.sh | sh</span>
                 <button class="copy-btn" id="hero-copy-btn">Copy</button>
             </div>
 
@@ -106,18 +106,18 @@ import Layout from "../layouts/Layout.astro";
                     <div class="icon-box">⚡️</div>
                     <h3>Built for Speed</h3>
                     <p>
-                        Instant load for files &lt;10MB. SQLite-backend for
-                        larger datasets.
+                        Streaming ingestion and SQLite FTS5 indexing. A 50 MB
+                        JSON loads in ~16 ms — about 3 GB/s.
                     </p>
                 </div>
 
-                <!-- Card 6: Python (New) -->
+                <!-- Card 6: Rust rewrite -->
                 <div class="grid-card">
-                    <div class="icon-box">🐍</div>
-                    <h3>Python & Textual</h3>
+                    <div class="icon-box">🦀</div>
+                    <h3>Rust, Single Binary</h3>
                     <p>
-                        Built on the modern Textual framework for a rich,
-                        native-like TUI experience.
+                        ~4 MB static binary, zero runtime dependencies.
+                        Drop it on any Linux, macOS, or Windows machine.
                     </p>
                 </div>
             </div>
@@ -127,7 +127,7 @@ import Layout from "../layouts/Layout.astro";
         <section class="final-cta">
             <h2>Ready to explore?</h2>
             <div class="install-block large">
-                <span class="cmd">$ uv tool install twg</span>
+                <span class="cmd">$ curl -fsSL https://twig.wtf/install.sh | sh</span>
                 <button class="copy-btn" id="footer-copy-btn">Copy</button>
             </div>
         </section>
@@ -150,8 +150,8 @@ import Layout from "../layouts/Layout.astro";
         });
     }
 
-    setupCopy("hero-copy-btn", "uv tool install twg");
-    setupCopy("footer-copy-btn", "uv tool install twg");
+    setupCopy("hero-copy-btn", "curl -fsSL https://twig.wtf/install.sh | sh");
+    setupCopy("footer-copy-btn", "curl -fsSL https://twig.wtf/install.sh | sh");
 
     // Scroll Animation Observer
     const observer = new IntersectionObserver(
