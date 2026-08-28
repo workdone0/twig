@@ -80,31 +80,10 @@ cargo build --release
 ./target/release/twig --help</code></pre> <h3 data-astro-cid-5tcejxga>Legacy Python (≤ v2.1.4)</h3> <p data-astro-cid-5tcejxga>
 Older releases shipped to PyPI as <code data-astro-cid-5tcejxga>twg</code>. That
                     implementation is preserved on the
-<a href="https://github.com/workdone0/twig/tree/legacy-python" rel="noopener><code>legacy-python</code></a
-                    > branch for reference. New development happens on
-                    <code>master</code>. To migrate:
-                </p>
-                <pre><code>uv tool uninstall twg                       # remove old
-curl -fsSL https://twig.wtf/install.sh | sh # install new</code></pre>
-            </section>
-
-            <section id=" quickstart" data-astro-cid-5tcejxga></a></p><h2 data-astro-cid-5tcejxga><a href="https://github.com/workdone0/twig/tree/legacy-python" rel="noopener><code>legacy-python</code></a
-                    > branch for reference. New development happens on
-                    <code>master</code>. To migrate:
-                </p>
-                <pre><code>uv tool uninstall twg                       # remove old
-curl -fsSL https://twig.wtf/install.sh | sh # install new</code></pre>
-            </section>
-
-            <section id=" quickstart" data-astro-cid-5tcejxga>Quickstart</a></h2><a href="https://github.com/workdone0/twig/tree/legacy-python" rel="noopener><code>legacy-python</code></a
-                    > branch for reference. New development happens on
-                    <code>master</code>. To migrate:
-                </p>
-                <pre><code>uv tool uninstall twg                       # remove old
-curl -fsSL https://twig.wtf/install.sh | sh # install new</code></pre>
-            </section>
-
-            <section id=" quickstart" data-astro-cid-5tcejxga> <h3 data-astro-cid-5tcejxga>Open a file</h3> <p data-astro-cid-5tcejxga>
+<a href="https://github.com/workdone0/twig/tree/legacy-python" rel="noopener" data-astro-cid-5tcejxga><code data-astro-cid-5tcejxga>legacy-python</code></a> branch for reference. New development happens on
+<code data-astro-cid-5tcejxga>master</code>. To migrate:
+</p> <pre data-astro-cid-5tcejxga><code data-astro-cid-5tcejxga>uv tool uninstall twg                       # remove old
+curl -fsSL https://twig.wtf/install.sh | sh # install new</code></pre> </section> <section id="quickstart" data-astro-cid-5tcejxga> <h2 data-astro-cid-5tcejxga>Quickstart</h2> <h3 data-astro-cid-5tcejxga>Open a file</h3> <p data-astro-cid-5tcejxga>
 Pass a JSON or YAML file as the argument. Format is
                     auto-detected from the extension.
 </p> <pre data-astro-cid-5tcejxga><code data-astro-cid-5tcejxga>twig data.json     # or twig config.yaml</code></pre> <h3 data-astro-cid-5tcejxga>Repair malformed JSON</h3> <p data-astro-cid-5tcejxga> <code data-astro-cid-5tcejxga>--fix</code> attempts to repair common
@@ -118,15 +97,7 @@ Non-TUI mode that emits a colored, indented copy of
                     streaming pipeline the TUI uses and prints size, node
                     count, elapsed time, and throughput. Non-TUI. Useful
                     in CI and ad-hoc perf checks.
-</p> <pre data-astro-cid-5tcejxga><code data-astro-cid-5tcejxga>twig --check huge.json</code></pre> </a></section><a href="https://github.com/workdone0/twig/tree/legacy-python" rel="noopener><code>legacy-python</code></a
-                    > branch for reference. New development happens on
-                    <code>master</code>. To migrate:
-                </p>
-                <pre><code>uv tool uninstall twg                       # remove old
-curl -fsSL https://twig.wtf/install.sh | sh # install new</code></pre>
-            </section>
-
-            <section id=" quickstart" data-astro-cid-5tcejxga> <section id="keybindings" data-astro-cid-5tcejxga> <h2 data-astro-cid-5tcejxga>Keyboard shortcuts</h2> <p data-astro-cid-5tcejxga>Twig is designed for keyboard-centric workflows.</p> <div class="table-wrapper" data-astro-cid-5tcejxga> <table data-astro-cid-5tcejxga> <thead data-astro-cid-5tcejxga> <tr data-astro-cid-5tcejxga> <th data-astro-cid-5tcejxga>Context</th> <th data-astro-cid-5tcejxga>Action</th> <th data-astro-cid-5tcejxga>Key</th> </tr> </thead> <tbody data-astro-cid-5tcejxga> <tr data-astro-cid-5tcejxga> <td data-astro-cid-5tcejxga><strong data-astro-cid-5tcejxga>General</strong></td> <td data-astro-cid-5tcejxga>Help / cheatsheet</td> <td data-astro-cid-5tcejxga><code data-astro-cid-5tcejxga>?</code></td> </tr> <tr data-astro-cid-5tcejxga> <td data-astro-cid-5tcejxga></td> <td data-astro-cid-5tcejxga>Quit</td> <td data-astro-cid-5tcejxga><code data-astro-cid-5tcejxga>q</code></td> </tr> <tr data-astro-cid-5tcejxga> <td data-astro-cid-5tcejxga></td> <td data-astro-cid-5tcejxga>Toggle theme</td> <td data-astro-cid-5tcejxga><code data-astro-cid-5tcejxga>t</code></td> </tr> <tr data-astro-cid-5tcejxga> <td data-astro-cid-5tcejxga><strong data-astro-cid-5tcejxga>Navigation</strong></td> <td data-astro-cid-5tcejxga>Move selection</td> <td data-astro-cid-5tcejxga><code data-astro-cid-5tcejxga>↑ ↓ ← →</code></td> </tr> <tr data-astro-cid-5tcejxga> <td data-astro-cid-5tcejxga></td> <td data-astro-cid-5tcejxga>Drill in / expand</td> <td data-astro-cid-5tcejxga><code data-astro-cid-5tcejxga>→</code> / <code data-astro-cid-5tcejxga>Enter</code> / <code data-astro-cid-5tcejxga>l</code></td> </tr> <tr data-astro-cid-5tcejxga> <td data-astro-cid-5tcejxga></td> <td data-astro-cid-5tcejxga>Step back / collapse</td> <td data-astro-cid-5tcejxga><code data-astro-cid-5tcejxga>←</code> / <code data-astro-cid-5tcejxga>Esc</code> / <code data-astro-cid-5tcejxga>h</code></td> </tr> <tr data-astro-cid-5tcejxga> <td data-astro-cid-5tcejxga></td> <td data-astro-cid-5tcejxga>Jump to top / bottom</td> <td data-astro-cid-5tcejxga><code data-astro-cid-5tcejxga>g</code> / <code data-astro-cid-5tcejxga>G</code></td> </tr> <tr data-astro-cid-5tcejxga> <td data-astro-cid-5tcejxga></td> <td data-astro-cid-5tcejxga>Smart jump to path</td> <td data-astro-cid-5tcejxga><code data-astro-cid-5tcejxga>:</code></td> </tr> <tr data-astro-cid-5tcejxga> <td data-astro-cid-5tcejxga><strong data-astro-cid-5tcejxga>Search</strong></td> <td data-astro-cid-5tcejxga>Global search</td> <td data-astro-cid-5tcejxga><code data-astro-cid-5tcejxga>/</code></td> </tr> <tr data-astro-cid-5tcejxga> <td data-astro-cid-5tcejxga></td> <td data-astro-cid-5tcejxga>Next match</td> <td data-astro-cid-5tcejxga><code data-astro-cid-5tcejxga>n</code></td> </tr> <tr data-astro-cid-5tcejxga> <td data-astro-cid-5tcejxga></td> <td data-astro-cid-5tcejxga>Previous match</td> <td data-astro-cid-5tcejxga><code data-astro-cid-5tcejxga>N</code></td> </tr> <tr data-astro-cid-5tcejxga> <td data-astro-cid-5tcejxga><strong data-astro-cid-5tcejxga>Actions</strong></td> <td data-astro-cid-5tcejxga>Copy path</td> <td data-astro-cid-5tcejxga><code data-astro-cid-5tcejxga>c</code></td> </tr> <tr data-astro-cid-5tcejxga> <td data-astro-cid-5tcejxga></td> <td data-astro-cid-5tcejxga>Copy source slice</td> <td data-astro-cid-5tcejxga><code data-astro-cid-5tcejxga>y</code></td> </tr> </tbody> </table> </div> </section> <section id="cli" data-astro-cid-5tcejxga> <h2 data-astro-cid-5tcejxga>CLI reference</h2> <pre data-astro-cid-5tcejxga><code data-astro-cid-5tcejxga>twig [OPTIONS] &lt;FILE&gt;</code></pre> <h3 data-astro-cid-5tcejxga>Arguments</h3> <ul data-astro-cid-5tcejxga> <li data-astro-cid-5tcejxga> <code data-astro-cid-5tcejxga>&lt;FILE&gt;</code> — path to a JSON or YAML file
+</p> <pre data-astro-cid-5tcejxga><code data-astro-cid-5tcejxga>twig --check huge.json</code></pre> </section> <section id="keybindings" data-astro-cid-5tcejxga> <h2 data-astro-cid-5tcejxga>Keyboard shortcuts</h2> <p data-astro-cid-5tcejxga>Twig is designed for keyboard-centric workflows.</p> <div class="table-wrapper" data-astro-cid-5tcejxga> <table data-astro-cid-5tcejxga> <thead data-astro-cid-5tcejxga> <tr data-astro-cid-5tcejxga> <th data-astro-cid-5tcejxga>Context</th> <th data-astro-cid-5tcejxga>Action</th> <th data-astro-cid-5tcejxga>Key</th> </tr> </thead> <tbody data-astro-cid-5tcejxga> <tr data-astro-cid-5tcejxga> <td data-astro-cid-5tcejxga><strong data-astro-cid-5tcejxga>General</strong></td> <td data-astro-cid-5tcejxga>Help / cheatsheet</td> <td data-astro-cid-5tcejxga><code data-astro-cid-5tcejxga>?</code></td> </tr> <tr data-astro-cid-5tcejxga> <td data-astro-cid-5tcejxga></td> <td data-astro-cid-5tcejxga>Quit</td> <td data-astro-cid-5tcejxga><code data-astro-cid-5tcejxga>q</code></td> </tr> <tr data-astro-cid-5tcejxga> <td data-astro-cid-5tcejxga></td> <td data-astro-cid-5tcejxga>Toggle theme</td> <td data-astro-cid-5tcejxga><code data-astro-cid-5tcejxga>t</code></td> </tr> <tr data-astro-cid-5tcejxga> <td data-astro-cid-5tcejxga><strong data-astro-cid-5tcejxga>Navigation</strong></td> <td data-astro-cid-5tcejxga>Move selection</td> <td data-astro-cid-5tcejxga><code data-astro-cid-5tcejxga>↑ ↓ ← →</code></td> </tr> <tr data-astro-cid-5tcejxga> <td data-astro-cid-5tcejxga></td> <td data-astro-cid-5tcejxga>Drill in / expand</td> <td data-astro-cid-5tcejxga><code data-astro-cid-5tcejxga>→</code> / <code data-astro-cid-5tcejxga>Enter</code> / <code data-astro-cid-5tcejxga>l</code></td> </tr> <tr data-astro-cid-5tcejxga> <td data-astro-cid-5tcejxga></td> <td data-astro-cid-5tcejxga>Step back / collapse</td> <td data-astro-cid-5tcejxga><code data-astro-cid-5tcejxga>←</code> / <code data-astro-cid-5tcejxga>Esc</code> / <code data-astro-cid-5tcejxga>h</code></td> </tr> <tr data-astro-cid-5tcejxga> <td data-astro-cid-5tcejxga></td> <td data-astro-cid-5tcejxga>Jump to top / bottom</td> <td data-astro-cid-5tcejxga><code data-astro-cid-5tcejxga>g</code> / <code data-astro-cid-5tcejxga>G</code></td> </tr> <tr data-astro-cid-5tcejxga> <td data-astro-cid-5tcejxga></td> <td data-astro-cid-5tcejxga>Smart jump to path</td> <td data-astro-cid-5tcejxga><code data-astro-cid-5tcejxga>:</code></td> </tr> <tr data-astro-cid-5tcejxga> <td data-astro-cid-5tcejxga><strong data-astro-cid-5tcejxga>Search</strong></td> <td data-astro-cid-5tcejxga>Global search</td> <td data-astro-cid-5tcejxga><code data-astro-cid-5tcejxga>/</code></td> </tr> <tr data-astro-cid-5tcejxga> <td data-astro-cid-5tcejxga></td> <td data-astro-cid-5tcejxga>Next match</td> <td data-astro-cid-5tcejxga><code data-astro-cid-5tcejxga>n</code></td> </tr> <tr data-astro-cid-5tcejxga> <td data-astro-cid-5tcejxga></td> <td data-astro-cid-5tcejxga>Previous match</td> <td data-astro-cid-5tcejxga><code data-astro-cid-5tcejxga>N</code></td> </tr> <tr data-astro-cid-5tcejxga> <td data-astro-cid-5tcejxga><strong data-astro-cid-5tcejxga>Actions</strong></td> <td data-astro-cid-5tcejxga>Copy path</td> <td data-astro-cid-5tcejxga><code data-astro-cid-5tcejxga>c</code></td> </tr> <tr data-astro-cid-5tcejxga> <td data-astro-cid-5tcejxga></td> <td data-astro-cid-5tcejxga>Copy source slice</td> <td data-astro-cid-5tcejxga><code data-astro-cid-5tcejxga>y</code></td> </tr> </tbody> </table> </div> </section> <section id="cli" data-astro-cid-5tcejxga> <h2 data-astro-cid-5tcejxga>CLI reference</h2> <pre data-astro-cid-5tcejxga><code data-astro-cid-5tcejxga>twig [OPTIONS] &lt;FILE&gt;</code></pre> <h3 data-astro-cid-5tcejxga>Arguments</h3> <ul data-astro-cid-5tcejxga> <li data-astro-cid-5tcejxga> <code data-astro-cid-5tcejxga>&lt;FILE&gt;</code> — path to a JSON or YAML file
 </li> </ul> <h3 data-astro-cid-5tcejxga>Options</h3> <ul data-astro-cid-5tcejxga> <li data-astro-cid-5tcejxga> <code data-astro-cid-5tcejxga>-p</code>, <code data-astro-cid-5tcejxga>--print</code> — print
                         pretty-printed output to stdout (non-TUI)
 </li> <li data-astro-cid-5tcejxga> <code data-astro-cid-5tcejxga>-o</code>, <code data-astro-cid-5tcejxga>--output &lt;FILE&gt;</code> —
@@ -157,15 +128,7 @@ Twig is zero-config by default. It persists your
                         FTS5 virtual table, stored under the platform's
                         cache directory. Safe to delete at any time;
                         rebuilt on the next launch.
-</li> </ul> </section> </a><section id="troubleshooting" data-astro-cid-5tcejxga><a href="https://github.com/workdone0/twig/tree/legacy-python" rel="noopener><code>legacy-python</code></a
-                    > branch for reference. New development happens on
-                    <code>master</code>. To migrate:
-                </p>
-                <pre><code>uv tool uninstall twg                       # remove old
-curl -fsSL https://twig.wtf/install.sh | sh # install new</code></pre>
-            </section>
-
-            <section id=" quickstart" data-astro-cid-5tcejxga> <h2 data-astro-cid-5tcejxga>Troubleshooting</h2> <h3 data-astro-cid-5tcejxga>Loader errors</h3> <p data-astro-cid-5tcejxga>
+</li> </ul> </section> <section id="troubleshooting" data-astro-cid-5tcejxga> <h2 data-astro-cid-5tcejxga>Troubleshooting</h2> <h3 data-astro-cid-5tcejxga>Loader errors</h3> <p data-astro-cid-5tcejxga>
 If Twig can't parse a file, it shows the error in-app
                     (press any key to exit) and prints a colored message
                     with a <code data-astro-cid-5tcejxga>--fix</code> hint to stderr with exit
@@ -186,16 +149,8 @@ The <code data-astro-cid-5tcejxga>Cargo.toml</code> in the repo points the
 <code data-astro-cid-5tcejxga>aarch64-unknown-linux-gnu</code> linker at
 <code data-astro-cid-5tcejxga>aarch64-linux-gnu-gcc</code>. To cross-compile
                     locally on Debian/Ubuntu, install the cross tools:
-</p> <pre data-astro-cid-5tcejxga><code data-astro-cid-5tcejxga>sudo apt-get install -y gcc-aarch64-linux-gnu libc6-dev-arm64-cross</code></pre> </a><p data-astro-cid-5tcejxga><a href="https://github.com/workdone0/twig/tree/legacy-python" rel="noopener><code>legacy-python</code></a
-                    > branch for reference. New development happens on
-                    <code>master</code>. To migrate:
-                </p>
-                <pre><code>uv tool uninstall twg                       # remove old
-curl -fsSL https://twig.wtf/install.sh | sh # install new</code></pre>
-            </section>
-
-            <section id=" quickstart" data-astro-cid-5tcejxga>
-The CI uses </a><a href="https://github.com/cross-rs/cross" rel="noopener" data-astro-cid-5tcejxga><code data-astro-cid-5tcejxga>cargo-cross</code></a>, which pulls a Docker image with the right
+</p> <pre data-astro-cid-5tcejxga><code data-astro-cid-5tcejxga>sudo apt-get install -y gcc-aarch64-linux-gnu libc6-dev-arm64-cross</code></pre> <p data-astro-cid-5tcejxga>
+The CI uses <a href="https://github.com/cross-rs/cross" rel="noopener" data-astro-cid-5tcejxga><code data-astro-cid-5tcejxga>cargo-cross</code></a>, which pulls a Docker image with the right
                     toolchain preinstalled.
 </p> </section> <footer class="docs-footer" data-astro-cid-5tcejxga> <p data-astro-cid-5tcejxga>
 Found a bug or have a feature request?
