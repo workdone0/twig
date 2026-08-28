@@ -13,7 +13,7 @@ on:
   # Manual dispatch — used by auto-release.yml after it creates the
   # tag, and by maintainers who want to re-build binaries for an
   # existing tag without bumping Cargo.toml. Pass `tag` (e.g. v3.0.0)
-  # as input; defaults to the current commit's tag if on a tag ref.
+  # as input; defaults to the current commit's tag if any.
   workflow_dispatch:
     inputs:
       tag:
@@ -27,7 +27,6 @@ permissions:
 jobs:
   build:
     name: Build (${{ matrix.target }})
-    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
@@ -35,29 +34,55 @@ jobs:
           # Asset names MUST match what install.sh builds via
           # detect_target(). On Linux: <arch>-unknown-linux-gnu.
           # On macOS: <arch>-apple-darwin. On Windows: pc-windows-msvc.
+          # Each target runs on the runner OS it needs natively:
+          #   - Linux targets -> ubuntu-latest (aarch64 needs gcc-aarch64-linux-gnu)
+          #   - macOS targets -> macos-14 (Apple Silicon; SDK ships both arches)
+          #   - Windows target -> windows-latest (MSVC is not portable)
           - target: x86_64-unknown-linux-gnu
             archive: twig-x86_64-unknown-linux-gnu
             binary: twig
             ext: ''
+            os: ubuntu-latest
+            cross_deps: ''
           - target: aarch64-unknown-linux-gnu
             archive: twig-aarch64-unknown-linux-gnu
             binary: twig
             ext: ''
+            os: ubuntu-latest
+            cross_deps: gcc-aarch64-linux-gnu libc6-dev-arm64-cross
           - target: x86_64-apple-darwin
             archive: twig-x86_64-apple-darwin
             binary: twig
             ext: ''
+            os: macos-14
+            cross_deps: ''
           - target: aarch64-apple-darwin
             archive: twig-aarch64-apple-darwin
             binary: twig
             ext: ''
+            os: macos-14
+            cross_deps: ''
           - target: x86_64-pc-windows-msvc
             archive: twig-x86_64-pc-windows-msvc
             binary: twig.exe
             ext: '.exe'
+            os: windows-latest
+            cross_deps: ''
+
+    runs-on: ${{ matrix.os }}
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v5
+
+      # Install cross-compile toolchain (Ubuntu only; needed for
+      # aarch64-unknown-linux-gnu). Empty for native builds and for
+      # macOS / Windows runners.
+      - name: Install cross toolchain (Ubuntu only)
+        if: matrix.os == 'ubuntu-latest' && matrix.cross_deps != ''
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends ${{ matrix.cross_deps }}
 
       - name: Install Rust toolchain
         uses: dtolnay/rust-toolchain@stable
@@ -65,7 +90,7 @@ jobs:
           targets: ${{ matrix.target }}
 
       - name: Cache cargo
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: |
             ~/.cargo/registry
@@ -76,14 +101,19 @@ jobs:
       - name: Build
         run: cargo build --release --locked --target ${{ matrix.target }}
 
+      # `strip` is a Unix binary; macOS has it too, Windows does not.
       - name: Strip binary (Unix only)
-        if: matrix.target != 'x86_64-pc-windows-msvc'
+        if: matrix.os != 'windows-latest'
+        shell: bash
         run: |
-          strip "target/${{ matrix.target }}/release/${{ matrix.binary }}"
+          if command -v strip >/dev/null 2>&1; then
+            strip "target/${{ matrix.target }}/release/${{ matrix.binary }}"
+          fi
 
       # Package as a tarball containing a file named `twig` (or `twig.exe`)
       # so install.sh can extract the binary by predictable name.
       - name: Package tarball
+        shell: bash
         run: |
           mkdir -p release-artifacts/staging
           cp "target/${{ matrix.target }}/release/${{ matrix.binary }}" \
@@ -94,7 +124,7 @@ jobs:
           ls -la release-artifacts/
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: ${{ matrix.archive }}
           path: release-artifacts/${{ matrix.archive }}.tar.gz
@@ -105,7 +135,8 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v5
         with:
           # Need full history so `git describe` against the tag ref
           # works for the softprops action's tag_name resolution.
@@ -134,7 +165,7 @@ jobs:
         run: git fetch --tags && git rev-parse "refs/tags/${{ steps.tag.outputs.tag }}"^{}
 
       - name: Download all artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v5
         with:
           path: artifacts
 
