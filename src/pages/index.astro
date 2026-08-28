@@ -122,64 +122,123 @@ import Layout from "../layouts/Layout.astro";
     </section>
 
     <section class="quickstart">
-        <h2>Up and running in three commands</h2>
-        <ol class="quickstart-list">
-            <li>
-                <span class="step">1</span>
-                <div>
-                    <p class="step-title">Install</p>
-                    <pre><code>curl -fsSL https://twig.wtf/install.sh | sh</code></pre>
-                </div>
-            </li>
-            <li>
-                <span class="step">2</span>
-                <div>
-                    <p class="step-title">Open a file</p>
-                    <pre><code>twig data.json</code></pre>
-                </div>
-            </li>
-            <li>
-                <span class="step">3</span>
-                <div>
-                    <p class="step-title">Navigate with the keyboard</p>
-                    <pre><code>↑ ↓ ← →    navigate
+        <div class="quickstart-inner">
+            <header class="section-header">
+                <p class="eyebrow">Quickstart</p>
+                <h2>Up and running in three commands.</h2>
+                <p class="section-lead">
+                    Install Twig, open a file, and you're navigating with
+                    the keyboard in under a minute.
+                </p>
+            </header>
+
+            <ol class="steps">
+                <li class="step-card">
+                    <div class="step-marker">
+                        <span class="step-num">01</span>
+                    </div>
+                    <div class="step-body">
+                        <p class="step-eyebrow">Step 1</p>
+                        <h3 class="step-title">Install the binary</h3>
+                        <p class="step-desc">
+                            Downloads the prebuilt release for your
+                            platform, verifies its SHA-256, and drops
+                            <code>twig</code> into your path.
+                        </p>
+                        <pre><code>curl -fsSL https://twig.wtf/install.sh | sh</code></pre>
+                    </div>
+                </li>
+
+                <li class="step-card">
+                    <div class="step-marker">
+                        <span class="step-num">02</span>
+                    </div>
+                    <div class="step-body">
+                        <p class="step-eyebrow">Step 2</p>
+                        <h3 class="step-title">Open a file</h3>
+                        <p class="step-desc">
+                            Format auto-detected from the extension. No
+                            flags, no config — just point Twig at a
+                            file.
+                        </p>
+                        <pre><code>twig data.json</code></pre>
+                    </div>
+                </li>
+
+                <li class="step-card">
+                    <div class="step-marker">
+                        <span class="step-num">03</span>
+                    </div>
+                    <div class="step-body">
+                        <p class="step-eyebrow">Step 3</p>
+                        <h3 class="step-title">Navigate with the keyboard</h3>
+                        <p class="step-desc">
+                            The mouse never has to leave the desk.
+                            Everything Twig does is a keystroke away.
+                        </p>
+                        <pre><code>↑ ↓ ← →    move
 /          search
 :          jump to path
 c          copy path
 q          quit</code></pre>
-                </div>
-            </li>
-        </ol>
+                    </div>
+                </li>
+            </ol>
+        </div>
     </section>
 
     <section class="why">
-        <h2>Built for the terminal</h2>
-        <div class="why-grid">
-            <div>
-                <h3>Compared to <code>jq</code></h3>
-                <p>
-                    <code>jq</code> is the right tool for
-                    <em>transforming</em> JSON. Twig is the right tool
-                    for <em>exploring</em> it — no syntax to learn, no
-                    expressions to write, just point and look.
+        <div class="why-inner">
+            <header class="section-header">
+                <p class="eyebrow">Why Twig</p>
+                <h2>Built for the terminal.</h2>
+                <p class="section-lead">
+                    A focused tool for a specific job. Twig does one
+                    thing — interactive JSON and YAML exploration — and
+                    does it without making you learn a new DSL, paste
+                    production data into a browser, or install a heavy
+                    IDE plugin.
                 </p>
-            </div>
-            <div>
-                <h3>Compared to web viewers</h3>
-                <p>
-                    Pasting production data into a browser is a security
-                    risk. Twig runs entirely on your machine — works
-                    over SSH, on air-gapped boxes, on shared servers.
-                </p>
-            </div>
-            <div>
-                <h3>Compared to IDE plugins</h3>
-                <p>
-                    IDE JSON tools are heavy and GUI-only. Twig is a
-                    single ~4 MB binary that runs anywhere a terminal
-                    does — including inside your editor's integrated
-                    terminal.
-                </p>
+            </header>
+
+            <div class="why-grid">
+                <article class="why-card">
+                    <p class="why-label">Versus</p>
+                    <h3 class="why-tool">
+                        <code>jq</code>
+                    </h3>
+                    <p class="why-text">
+                        <code>jq</code> is the right tool for
+                        <em>transforming</em> JSON. Twig is the right tool
+                        for <em>exploring</em> it — no syntax to learn,
+                        no expressions to write, no pipeline to design.
+                        Just point and look.
+                    </p>
+                </article>
+
+                <article class="why-card">
+                    <p class="why-label">Versus</p>
+                    <h3 class="why-tool">Web viewers</h3>
+                    <p class="why-text">
+                        Pasting production data — API responses, K8s
+                        manifests, log exports — into a browser is a
+                        security risk. Twig runs entirely on your
+                        machine. Works over SSH, on air-gapped boxes,
+                        on shared servers.
+                    </p>
+                </article>
+
+                <article class="why-card">
+                    <p class="why-label">Versus</p>
+                    <h3 class="why-tool">IDE plugins</h3>
+                    <p class="why-text">
+                        IDE JSON tools are heavy and GUI-only. Twig is a
+                        single ~4 MB binary that runs anywhere a
+                        terminal does — including inside your editor's
+                        integrated terminal, over SSH, on a fresh
+                        container.
+                    </p>
+                </article>
             </div>
         </div>
     </section>
@@ -541,103 +600,219 @@ q          quit</code></pre>
 
     /* Quickstart */
     .quickstart {
-        max-width: 760px;
+        padding: 4rem 0;
+    }
+
+    .quickstart-inner {
+        max-width: 880px;
         margin: 0 auto;
     }
 
-    .quickstart h2 {
+    .section-header {
         text-align: center;
-        margin-bottom: 2rem;
+        max-width: 640px;
+        margin: 0 auto 3rem;
     }
 
-    .quickstart-list {
+    .section-header h2 {
+        font-size: clamp(1.75rem, 3vw + 0.75rem, 2.25rem);
+        margin-bottom: 0.75rem;
+    }
+
+    .section-lead {
+        font-size: 1.05rem;
+        color: var(--text-secondary);
+        line-height: 1.6;
+    }
+
+    .steps {
         list-style: none;
         padding: 0;
+        margin: 0;
         display: flex;
         flex-direction: column;
+        gap: 1.5rem;
+        position: relative;
+    }
+
+    /* Vertical timeline rail connecting the three steps */
+    .steps::before {
+        content: "";
+        position: absolute;
+        top: 28px;
+        bottom: 28px;
+        left: 27px;
+        width: 2px;
+        background: linear-gradient(
+            to bottom,
+            var(--border-color),
+            transparent 90%
+        );
+    }
+
+    .step-card {
+        display: grid;
+        grid-template-columns: 56px 1fr;
         gap: 1.25rem;
+        align-items: start;
+        position: relative;
     }
 
-    .quickstart-list li {
-        display: flex;
-        gap: 1rem;
-        align-items: flex-start;
-        background: var(--bg-surface);
-        border: 1px solid var(--border-color);
-        border-radius: 12px;
-        padding: 1.25rem;
-        margin: 0;
-    }
-
-    .step {
+    .step-marker {
+        width: 56px;
+        height: 56px;
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        width: 32px;
-        height: 32px;
-        border-radius: 8px;
-        background: var(--accent-glow);
-        border: 1px solid color-mix(in oklab, var(--accent-color) 40%, transparent);
-        color: var(--accent-color);
-        font-family: var(--font-mono);
-        font-weight: 600;
-        flex-shrink: 0;
+        border-radius: 16px;
+        background: var(--bg-surface);
+        border: 1px solid var(--border-color);
+        position: relative;
+        z-index: 1;
     }
 
-    .step-title {
+    .step-marker::before {
+        content: "";
+        position: absolute;
+        inset: 4px;
+        border-radius: 12px;
+        background: var(--accent-glow);
+        z-index: -1;
+    }
+
+    .step-num {
+        font-family: var(--font-mono);
+        font-size: 0.85rem;
         font-weight: 600;
-        color: var(--text-primary);
+        color: var(--accent-color);
+        letter-spacing: 0.05em;
+    }
+
+    .step-body {
+        padding-top: 0.5rem;
+        min-width: 0;
+    }
+
+    .step-eyebrow {
+        display: inline-block;
+        font-family: var(--font-mono);
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.08em;
+        color: var(--text-muted);
         margin-bottom: 0.5rem;
     }
 
-    .quickstart-list pre {
+    .step-card h3.step-title {
+        font-size: 1.25rem;
+        margin-bottom: 0.5rem;
+        color: var(--text-primary);
+    }
+
+    .step-desc {
+        color: var(--text-secondary);
+        font-size: 0.95rem;
+        line-height: 1.6;
+        margin-bottom: 1rem;
+        max-width: 56ch;
+    }
+
+    .step-card pre {
         margin: 0;
         background: var(--bg-primary);
+        border: 1px solid var(--border-color);
+        border-radius: 10px;
+        padding: 0.875rem 1rem;
         font-size: 0.85rem;
+        line-height: 1.6;
     }
 
     /* Why */
     .why {
-        max-width: var(--max-width);
-        margin: 0 auto;
+        padding: 4rem 0;
+        background: var(--bg-secondary);
+        border-top: 1px solid var(--border-color);
+        border-bottom: 1px solid var(--border-color);
     }
 
-    .why h2 {
-        text-align: center;
-        margin-bottom: 2rem;
+    .why-inner {
+        max-width: var(--max-width);
+        margin: 0 auto;
     }
 
     .why-grid {
         display: grid;
         grid-template-columns: 1fr;
-        gap: 1.25rem;
+        gap: 1.5rem;
     }
 
     @media (min-width: 768px) {
         .why-grid {
             grid-template-columns: repeat(3, 1fr);
+            gap: 1.75rem;
         }
     }
 
-    .why-grid > div {
+    .why-card {
         background: var(--bg-surface);
         border: 1px solid var(--border-color);
-        border-radius: 12px;
-        padding: 1.5rem;
+        border-radius: 14px;
+        padding: 2rem 1.75rem;
+        display: flex;
+        flex-direction: column;
+        gap: 0.875rem;
+        transition: border-color 0.2s, transform 0.2s;
     }
 
-    .why-grid h3 {
-        font-size: 1rem;
-        margin-bottom: 0.5rem;
+    .why-card:hover {
+        border-color: var(--border-focus);
+        transform: translateY(-2px);
     }
 
-    .why-grid p {
-        font-size: var(--fs-small);
+    .why-label {
+        font-family: var(--font-mono);
+        font-size: 0.7rem;
+        text-transform: uppercase;
+        letter-spacing: 0.1em;
+        color: var(--text-muted);
         margin: 0;
     }
 
-    .why-grid code {
-        font-size: 0.85em;
+    .why-card .why-tool {
+        font-size: 1.35rem;
+        margin: 0;
+        color: var(--text-primary);
+        font-weight: 600;
+    }
+
+    .why-card .why-tool code {
+        font-size: 1em;
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-color);
+        color: var(--accent-color);
+        padding: 0.1em 0.4em;
+        border-radius: 6px;
+    }
+
+    .why-text {
+        font-size: 0.95rem;
+        line-height: 1.65;
+        color: var(--text-secondary);
+        margin: 0;
+    }
+
+    .why-text code {
+        font-size: 0.875em;
+        background: var(--bg-secondary);
+        border: 1px solid var(--border-color);
+        color: var(--text-primary);
+        padding: 0.1em 0.35em;
+        border-radius: 4px;
+    }
+
+    .why-text em {
+        color: var(--accent-color);
+        font-style: italic;
     }
 
     /* Final CTA */
