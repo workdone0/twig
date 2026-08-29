@@ -4,7 +4,7 @@
 #
 # Usage:
 #   curl -fsSL https://twig.wtf/install.sh | sh
-#   curl -fsSL https://twig.wtf/install.sh | sh -s -- --version v0.4.0
+#   curl -fsSL https://twig.wtf/install.sh | sh -s -- --version v3.0.0
 #   curl -fsSL https://twig.wtf/install.sh | sh -s -- --to /usr/local/bin
 #   curl -fsSL https://twig.wtf/install.sh | sh -s -- --method fetch
 #
