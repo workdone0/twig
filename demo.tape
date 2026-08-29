@@ -1,90 +1,78 @@
 Output asset/demo.gif
 
-Set FontSize 16
+Set Shell bash
+Set FontSize 14
 Set Width 1600
 Set Height 1000
-Set Padding 20
-Set FontFamily "Menlo"
-Set TypingSpeed 100ms
+Set Padding 24
+Set FontFamily "JetBrains Mono"
+Set TypingSpeed 60ms
 Set WindowBar Colorful
+Set CursorBlink false
 
-# Intro
-Sleep 500ms
-
-# --- Scene 1: JSON Exploration ---
-Type "twg samples/cloud_infrastructure.json"
-Sleep 500ms
+# --- Scene 1: open the JSON sample, navigate Miller columns ---
+Type "twig samples/cloud_infrastructure.json"
 Enter
-Sleep 2s
+Sleep 2.5s
 
-# Navigate JSON
-Down 2
-Sleep 500ms
+# Drill down: cloud_provider -> regions
+Down
+Sleep 200ms
+Down
+Sleep 200ms
 Right
-Sleep 500ms
-Down
-Sleep 200ms
-Down
-Sleep 200ms
+Sleep 1.5s
+
+# Continue drilling: us-east-1
 Right
 Sleep 1s
 
-# Search JSON
+# Further drill into VPCs
+Down
+Sleep 200ms
+Right
+Sleep 1.5s
+
+# Search across keys and values
 Type "/"
-Sleep 500ms
-Type "subnets"
-Sleep 1s
+Sleep 400ms
+Type "subnet"
+Sleep 600ms
 Enter
 Sleep 2s
-
-# Expand context
-Right
-Sleep 1s
-Down
-Sleep 1s
 
 # Exit JSON
 Type "q"
-Sleep 1s
+Sleep 800ms
 
-# --- Scene 2: YAML Exploration ---
-Type "twg samples/k8s_manifest.yaml"
-Sleep 500ms
+# --- Scene 2: open a HAR file, show URL detection in inspector ---
+Type "clear"
 Enter
-Sleep 2s
+Sleep 200ms
+Type "twig samples/browser_navigation.har"
+Enter
+Sleep 2.5s
 
-# Navigate YAML
+# Drill into entries -> request
 Down
-Sleep 500ms
+Sleep 200ms
+Down
+Sleep 200ms
 Right
-Sleep 500ms
-Down 3
-Sleep 500ms
+Sleep 800ms
+Down
+Sleep 200ms
 Right
-Sleep 1s
-
-# Search YAML (Fuzzy)
-Type "/"
-Sleep 500ms
-Type "PullPolicy"
-Sleep 1s
-Enter
-Sleep 2s
-
-# Jump to path
-Type ":"
-Sleep 1s
-Type ".[1].spec.ports[0]"
-Sleep 1s
-Enter
-Sleep 2s
-
-# Theme Toggle
-Type "t"
+Sleep 800ms
+Down
+Sleep 200ms
+Right
 Sleep 1.5s
+
+# Cycle through themes for visual variety
 Type "t"
 Sleep 1s
 
-# Exit
+# Final frame
 Type "q"
-Sleep 100ms
+Sleep 400ms

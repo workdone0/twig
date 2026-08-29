@@ -139,7 +139,7 @@ twig --check huge.json
 
 - **📂 Multi-format native**: JSON and YAML with the same UI; format is auto-detected from file extension.
 - **👀 Read-only by design**: Safely explore production secrets without risk of accidental edits.
-- **� Deep search**: Substring search across keys and values, with `n` / `N` to jump between matches.
+- **🔍 Deep search**: Substring search across keys and values, with `n` / `N` to jump between matches.
 - **🧭 Miller-column navigation**: Traverse deep trees with the keyboard, breadcrumbs keep you oriented.
 - **🎨 Themes**: **Catppuccin Mocha** (default) and **Solarized Dark** ship in the box; `t` cycles. Persistent config at `~/.config/twig/config.json`.
 - **⚡ Streaming ingestion**: Constant memory relative to file size — load 10 MB or 10 GB without the process growing.
@@ -150,20 +150,20 @@ twig --check huge.json
 
 ## Keyboard shortcuts
 
-| Context       | Action             | Key                              |
-| ------------- | ------------------ | -------------------------------- |
-| General       | Quit               | `q`                              |
-|               | Help / cheatsheet  | `?`                              |
-|               | Toggle theme       | `t`                              |
-| Navigation    | Move selection     | `↑` / `↓` / `←` / `→`            |
-|               | Drill in / expand  | `→` / `Enter` / `l`             |
-|               | Step back / collapse | `←` / `Esc` / `h`            |
-|               | Jump to top / bottom | `g` / `G`                    |
-|               | Jump to path       | `:`                              |
-| Search        | Global search      | `/`                              |
-|               | Next / prev match  | `n` / `N`                        |
-| Actions       | Copy path          | `c`                              |
-|               | Copy source slice  | `y`                              |
+| Context    | Action                  | Key                              |
+| ---------- | ----------------------- | -------------------------------- |
+| General    | Quit                     | `q`                              |
+|            | Help / cheatsheet        | `?`                              |
+|            | Toggle theme             | `t`                              |
+| Navigation | Move selection           | `↑` `↓` `←` `→`                  |
+|            | Drill in / expand        | `→` `Enter` `l`                  |
+|            | Step back / collapse     | `←` `Esc` `h`                    |
+|            | Jump to top / bottom     | `g` `G`                          |
+|            | Jump to path             | `:`                              |
+| Search     | Global search            | `/`                              |
+|            | Next / prev match        | `n` `N`                          |
+| Actions    | Copy path                | `c`                              |
+|            | Copy source slice        | `y`                              |
 
 ---
 

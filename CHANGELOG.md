@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [3.0.0] — 2026-XX-XX — Rust Rewrite
+## [3.0.0] — 2026-08-28 — Rust Rewrite
 
 This is a **major version bump** that signals a complete rewrite of Twig in Rust.
 The Python implementation (≤ 2.1.4) is preserved on the
