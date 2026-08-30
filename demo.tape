@@ -1,78 +1,74 @@
 Output asset/demo.gif
 
 Set Shell bash
-Set FontSize 14
-Set Width 1600
-Set Height 1000
-Set Padding 24
+Set FontSize 18
+Set Width 1200
+Set Height 760
+Set Padding 0
 Set FontFamily "JetBrains Mono"
-Set TypingSpeed 60ms
+Set TypingSpeed 50ms
 Set WindowBar Colorful
 Set CursorBlink false
 
-# --- Scene 1: open the JSON sample, navigate Miller columns ---
+# --- Scene 1: open the JSON sample ---
 Type "twig samples/cloud_infrastructure.json"
 Enter
-Sleep 2.5s
+Sleep 3s
 
-# Drill down: cloud_provider -> regions
+# Drill down into the structure
 Down
-Sleep 200ms
+Sleep 250ms
 Down
-Sleep 200ms
+Sleep 250ms
 Right
-Sleep 1.5s
+Sleep 2s
 
-# Continue drilling: us-east-1
 Right
-Sleep 1s
+Sleep 2s
 
-# Further drill into VPCs
 Down
-Sleep 200ms
+Sleep 250ms
 Right
-Sleep 1.5s
+Sleep 2s
 
-# Search across keys and values
+# Search for "subnet"
 Type "/"
 Sleep 400ms
 Type "subnet"
-Sleep 600ms
+Sleep 800ms
 Enter
-Sleep 2s
+Sleep 3s
 
 # Exit JSON
 Type "q"
 Sleep 800ms
 
-# --- Scene 2: open a HAR file, show URL detection in inspector ---
+# --- Scene 2: open the HAR file (URL detection in inspector) ---
 Type "clear"
 Enter
-Sleep 200ms
+Sleep 300ms
 Type "twig samples/browser_navigation.har"
 Enter
-Sleep 2.5s
+Sleep 3s
 
 # Drill into entries -> request
 Down
-Sleep 200ms
+Sleep 250ms
 Down
-Sleep 200ms
+Sleep 250ms
+Down
+Sleep 250ms
 Right
-Sleep 800ms
+Sleep 1.2s
 Down
-Sleep 200ms
-Right
-Sleep 800ms
-Down
-Sleep 200ms
+Sleep 250ms
 Right
 Sleep 1.5s
 
-# Cycle through themes for visual variety
+# Cycle theme for visual variety
 Type "t"
-Sleep 1s
+Sleep 1.2s
 
 # Final frame
 Type "q"
-Sleep 400ms
+Sleep 500ms
