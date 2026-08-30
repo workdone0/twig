@@ -6,7 +6,6 @@
 
 <p align="center">
   <a href="https://github.com/workdone0/twig/releases/latest"><img src="https://img.shields.io/github/v/release/workdone0/twig?style=flat-square&color=2ecc71" alt="Latest release"/></a>
-  <a href="https://crates.io/crates/twig"><img src="https://img.shields.io/crates/v/twig.svg?style=flat-square&color=2ecc71" alt="Crates.io"/></a>
   <a href="https://github.com/workdone0/twig/blob/master/LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square" alt="License: MIT"/></a>
   <a href="https://github.com/workdone0/twig/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/workdone0/twig/ci.yml?style=flat-square&branch=master" alt="CI"/></a>
   <a href="https://buymeacoffee.com/workdone0"><img src="https://img.shields.io/badge/Buy_Me_A_Coffee-FFDD00?style=flat-square&logo=buy-me-a-coffee&logoColor=black" alt="Buy Me A Coffee"/></a>
@@ -63,18 +62,6 @@ curl -fsSL https://twig.wtf/install.sh | sh -s -- --yes
 
 The script supports Linux (x86_64, aarch64), macOS (Intel, Apple Silicon), and reports unsupported platforms with a clear error instead of failing silently. Run `curl -fsSL https://twig.wtf/install.sh | sh -s -- --help` for the full flag list.
 
-### Cargo
-
-```bash
-cargo install twig
-```
-
-### cargo-binstall
-
-```bash
-cargo binstall twig
-```
-
 ### Manual download
 
 Grab a prebuilt `.tar.gz` from the [Releases page](https://github.com/workdone0/twig/releases/latest). Each archive contains a single `twig` (or `twig.exe`) binary and a matching `*.sha256` checksum file.
@@ -97,6 +84,8 @@ cd twig
 cargo build --release
 ./target/release/twig --help
 ```
+
+Or install directly from the GitHub repo with `cargo install --locked --git https://github.com/workdone0/twig twig`. We don't publish to [crates.io](https://crates.io/crates/twig) because that name is taken by an unrelated Rust templating engine — the GitHub-only path keeps the install unambiguous.
 
 ### Legacy Python version
 

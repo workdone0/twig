@@ -38,7 +38,7 @@ which is this Rust rewrite.**
   downloads the latest release, verifies its SHA-256, and installs to
   `~/.local/bin` (or `/usr/local/bin` when writable). Re-running safely
   **upgrades** an existing install.
-- **`cargo install twig`** and **`cargo binstall twig`** as alternative paths.
+- **`cargo install --git https://github.com/workdone0/twig twig --locked`** as an alternative install path. The `twig` crates.io slot is taken by an unrelated Rust templating engine (last touched 2017), so we don't and can't publish there -- use the `--git` form, or `cargo binstall --git https://github.com/workdone0/twig twig`, or the curl installer above.
 - **`twig --check <file>`** — non-TUI mode that exercises the streaming
   ingestion pipeline and prints size / node count / elapsed / throughput
   stats. Designed for CI benchmarking and ad-hoc performance checks.

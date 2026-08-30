@@ -13,7 +13,8 @@
 #   -t, --to <DIR>         Install directory. Default: ~/.local/bin
 #                          (or /usr/local/bin when writable).
 #   -m, --method <METHOD>  Install method: "fetch" (download from GitHub,
-#                          default) or "build" (cargo install --locked).
+#                          default) or "build" (cargo install --git, which
+#                          builds from source rather than touching crates.io).
 #   -y, --yes              Skip the confirmation prompt.
 #   -h, --help             Show this message.
 #
