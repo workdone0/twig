@@ -729,10 +729,15 @@ q          quit</code></pre>
 
     /* Why */
     .why {
-        padding: 4rem 0;
-        background: var(--bg-secondary);
-        border-top: 1px solid var(--border-color);
-        border-bottom: 1px solid var(--border-color);
+        /* The Why section gets visual separation from the sections
+           above (Features) and below (Final CTA) via generous top
+           AND bottom padding, not border lines. Borders on the band
+           combined with borders on each card looked like a single
+           thick bar where the section's edge met the card edges --
+           two competing lines on the same visual axis. Dropping the
+           outer borders lets the cards be the only border in the
+           area, which is the hierarchy we want. */
+        padding: 6rem 0 7rem;
     }
 
     .why-inner {
@@ -743,30 +748,38 @@ q          quit</code></pre>
     .why-grid {
         display: grid;
         grid-template-columns: 1fr;
-        gap: 1.5rem;
+        gap: 1.75rem;
     }
 
     @media (min-width: 768px) {
         .why-grid {
             grid-template-columns: repeat(3, 1fr);
-            gap: 1.75rem;
+            /* Card gap needs to clearly exceed the card's own
+               internal horizontal padding so adjacent cards read
+               as separate tiles, not as one wide card split by a
+               vertical line. */
+            gap: 2.5rem;
         }
     }
 
     .why-card {
         background: var(--bg-surface);
         border: 1px solid var(--border-color);
-        border-radius: 14px;
-        padding: 2rem 1.75rem;
+        /* Larger radius + slightly stronger border at rest so the
+           card body reads as a single tile, not a content block with
+           a 1px hairline around it. */
+        border-radius: 16px;
+        padding: 2.25rem 2rem;
         display: flex;
         flex-direction: column;
         gap: 0.875rem;
-        transition: border-color 0.2s, transform 0.2s;
+        transition: border-color 0.2s, transform 0.2s, box-shadow 0.2s;
     }
 
     .why-card:hover {
         border-color: var(--border-focus);
         transform: translateY(-2px);
+        box-shadow: 0 8px 24px -8px rgba(0, 0, 0, 0.18);
     }
 
     .why-label {
