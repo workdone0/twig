@@ -5,7 +5,7 @@ Set FontSize 18
 Set Width 1200
 Set Height 760
 Set Padding 0
-Set FontFamily "JetBrains Mono"
+Set FontFamily "Fira Code"
 Set TypingSpeed 50ms
 Set WindowBar Colorful
 Set CursorBlink false
