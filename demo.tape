@@ -1,9 +1,9 @@
 Output asset/demo.gif
 
 Set Shell bash
-Set FontSize 18
+Set FontSize 14
 Set Width 1200
-Set Height 760
+Set Height 640
 Set Padding 0
 Set FontFamily "Fira Code"
 Set TypingSpeed 50ms
