@@ -489,7 +489,7 @@ mod tests {
             value,
             ty,
             parent,
-            path: format!(".{}", key),
+            path: format!(".{key}"),
             is_expanded: false,
             rank,
         }

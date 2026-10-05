@@ -19,7 +19,7 @@ class InstallerTests(unittest.TestCase):
         self.bin = self.root / "bin"
         self.bin.mkdir()
         self.env = dict(os.environ, HOME=str(self.root), TMPDIR=str(self.root), PATH=str(self.bin), MOCK_ROOT=str(self.root))
-        for tool in ["cat", "bash", "tar", "install", "mkdir", "mktemp", "rm", "mv", "awk", "sed", "head", "shasum", "perl", "dirname", "basename"]:
+        for tool in ["cat", "bash", "tar", "gzip", "install", "mkdir", "mktemp", "rm", "mv", "awk", "sed", "head", "shasum", "perl", "dirname", "basename"]:
             found = shutil.which(tool)
             if found: (self.bin / tool).symlink_to(found)
         self.mock("uname", '#!/bin/bash\nif [[ "$1" == -s ]]; then echo "${MOCK_OS:-Linux}"; else echo x86_64; fi\n')

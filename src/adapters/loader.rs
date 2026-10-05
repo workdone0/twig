@@ -133,7 +133,10 @@ pub fn load_cached(
         .db_conn()
         .execute_batch("PRAGMA synchronous=FULL; PRAGMA user_version=2;")?;
     drop(store);
-    std::fs::File::open(&db)?.sync_all()?;
+    std::fs::OpenOptions::new()
+        .write(true)
+        .open(&db)?
+        .sync_all()?;
     #[cfg(unix)]
     {
         use std::os::unix::fs::PermissionsExt;

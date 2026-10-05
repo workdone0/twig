@@ -213,7 +213,7 @@ fn cli_formats_repairs_and_writes_consistently() {
         .arg(&input)
         .output()
         .unwrap();
-    assert!(result.status.success(), "{:?}", result);
+    assert!(result.status.success(), "{result:?}");
     assert!(String::from_utf8_lossy(&result.stdout).contains("    \"a\""));
     let saved = binary()
         .args(["--fix", "--print", "--indent", "4", "-o"])
