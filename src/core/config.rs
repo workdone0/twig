@@ -29,7 +29,22 @@ impl Config {
     /// is missing or unreadable. I/O and parse errors are surfaced via
     /// stderr so the TUI can still start.
     pub fn load() -> Self {
-        Self::load_from(&default_path())
+        let path = default_path();
+        #[cfg(target_os = "macos")]
+        if !path.exists() {
+            let legacy = std::env::var_os("XDG_CONFIG_HOME")
+                .map(PathBuf::from)
+                .or_else(|| dirs::home_dir().map(|p| p.join(".config")))
+                .map(|p| p.join("twig/config.json"));
+            if let Some(old) = legacy.filter(|p| p.is_file()) {
+                let cfg = Self::load_from(&old);
+                if let Err(e) = cfg.save_to(&path) {
+                    eprintln!("twig: config migration: {e}");
+                }
+                return cfg;
+            }
+        }
+        Self::load_from(&path)
     }
 
     /// Variant used by tests and by callers that want to keep their
@@ -65,6 +80,10 @@ impl Config {
         let json = serde_json::to_string_pretty(&self.0)
             .map_err(|e| std::io::Error::new(std::io::ErrorKind::InvalidData, e))?;
         std::fs::write(path, json)
+    }
+
+    pub fn set_memory(&mut self, key: &str, value: serde_json::Value) {
+        self.0.insert(key.into(), value);
     }
 
     pub fn get(&self, key: &str) -> Option<&serde_json::Value> {

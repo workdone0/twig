@@ -1,6 +1,6 @@
 //! Right-side details pane.
 //!
-//! Mirrors `ui/widgets/inspector.py` from the Python version:
+//! Displays:
 //! - Title bar
 //! - Human-readable path
 //! - Details grid (Type / Size / Format / Time)
@@ -127,7 +127,7 @@ pub fn render(
 
     // Source.
     let source_block = Block::default()
-        .title(" Source ")
+        .title(" Source preview (limited) ")
         .borders(Borders::ALL)
         .border_style(Style::default().add_modifier(Modifier::DIM));
     let source_inner = source_block.inner(rows[4]);
@@ -297,7 +297,7 @@ fn build_preview(node: &Node, store: &Store) -> Vec<Line<'static>> {
         lines.push(Line::from(value));
         return lines;
     }
-    let children = store.get_children(node.id).unwrap_or_default();
+    let children = store.get_children_page(node.id, 0, 30).unwrap_or_default();
     let limit = 30;
     for child in children.iter().take(limit) {
         let icon = if child.is_container() { "[+]" } else { "-" };
@@ -310,7 +310,7 @@ fn build_preview(node: &Node, store: &Store) -> Vec<Line<'static>> {
                 .map(|v| v.to_string())
                 .unwrap_or_default();
             if v.len() > 50 {
-                format!("{}...", &v[..47])
+                super::text::truncate(&v, 50)
             } else {
                 v
             }
@@ -339,7 +339,7 @@ fn build_source(node: &Node, store: &Store, format: &str) -> Vec<Line<'static>> 
             Style::default().add_modifier(Modifier::ITALIC | Modifier::DIM),
         ))];
     }
-    let value = match store.reconstruct_value(node.id, 4) {
+    let value = match store.preview_value(node.id, 4, &mut 200) {
         Ok(v) => v,
         Err(_) => {
             return vec![Line::from(Span::styled(
@@ -349,7 +349,7 @@ fn build_source(node: &Node, store: &Store, format: &str) -> Vec<Line<'static>> 
         }
     };
     let serialized = if format == "yaml" {
-        serde_yml::to_string(&value).unwrap_or_default()
+        serde_norway::to_string(&value).unwrap_or_default()
     } else {
         serde_json::to_string_pretty(&value).unwrap_or_default()
     };

@@ -14,26 +14,3 @@ CREATE TABLE IF NOT EXISTS nodes (
 CREATE INDEX IF NOT EXISTS idx_parent_rank ON nodes(parent_id, rank);
 -- Index for path lookups
 CREATE INDEX IF NOT EXISTS idx_path ON nodes(path);
-
--- FTS5 Search Table (contentless mirror kept in sync via triggers)
-CREATE VIRTUAL TABLE IF NOT EXISTS nodes_search USING fts5(
-    key,
-    value,
-    path,
-    content='nodes',
-    content_rowid='rowid'
-);
-
--- Triggers to keep FTS updated
-CREATE TRIGGER IF NOT EXISTS nodes_ai AFTER INSERT ON nodes BEGIN
-  INSERT INTO nodes_search(rowid, key, value, path) VALUES (new.rowid, new.key, new.value, new.path);
-END;
-
-CREATE TRIGGER IF NOT EXISTS nodes_ad AFTER DELETE ON nodes BEGIN
-  INSERT INTO nodes_search(nodes_search, rowid, key, value, path) VALUES('delete', old.rowid, old.key, old.value, old.path);
-END;
-
-CREATE TRIGGER IF NOT EXISTS nodes_au AFTER UPDATE ON nodes BEGIN
-  INSERT INTO nodes_search(nodes_search, rowid, key, value, path) VALUES('delete', old.rowid, old.key, old.value, old.path);
-  INSERT INTO nodes_search(rowid, key, value, path) VALUES (new.rowid, new.key, new.value, new.path);
-END;

@@ -28,7 +28,7 @@ fn smart_search_via_resolve_path_and_navigator() {
     let store = load_sample(cache.path());
     let mut nav = ColumnNavigator::new(store);
     // The sample has `regions` as an object, not an array.
-    let path = ".regions.us-east-1.vpcs[0]";
+    let path = r#".regions["us-east-1"].vpcs[0]"#;
     let node = nav
         .store
         .resolve_path(path)
@@ -448,22 +448,22 @@ fn search_modal_shows_cursor_indicator() {
 // info, the in-app error screen should render the message, and
 // `twig --fix` should be able to repair the file.
 
-fn write_temp_json(name: &str, body: &str) -> std::path::PathBuf {
+fn write_temp_json(name: &str, body: &str) -> (tempfile::TempDir, std::path::PathBuf) {
     let dir = tempfile::tempdir().unwrap();
     let path = dir.path().join(name);
     std::fs::write(&path, body).unwrap();
-    // Keep the tempdir alive by leaking it; the test process exits
-    // before the OS reclaims /tmp.
-    std::mem::forget(dir);
-    path
+    (dir, path)
 }
 
 #[test]
 fn json_loader_reports_truncated_json_with_line_info() {
     use twig::adapters::json_loader::JsonLoader;
     use twig::adapters::loader::Loader;
-    let path = write_temp_json("broken.json", r#"{"a":1,"b":[1,2,3"#);
-    let loader = JsonLoader::new();
+    let (_dir, path) = write_temp_json("broken.json", r#"{"a":1,"b":[1,2,3"#);
+    let loader = JsonLoader::with_options(twig::adapters::loader::LoadOptions {
+        no_cache: true,
+        ..Default::default()
+    });
     let err = loader
         .load(&path, true)
         .expect_err("truncated JSON must surface an error");
@@ -482,8 +482,11 @@ fn json_loader_reports_truncated_json_with_line_info() {
 fn json_loader_reports_garbage_with_line_info() {
     use twig::adapters::json_loader::JsonLoader;
     use twig::adapters::loader::Loader;
-    let path = write_temp_json("garbage.json", "{{{{");
-    let loader = JsonLoader::new();
+    let (_dir, path) = write_temp_json("garbage.json", "{{{{");
+    let loader = JsonLoader::with_options(twig::adapters::loader::LoadOptions {
+        no_cache: true,
+        ..Default::default()
+    });
     let err = loader
         .load(&path, true)
         .expect_err("garbage JSON must surface an error");
@@ -496,8 +499,11 @@ fn json_loader_reports_garbage_with_line_info() {
 fn json_loader_reports_empty_file() {
     use twig::adapters::json_loader::JsonLoader;
     use twig::adapters::loader::Loader;
-    let path = write_temp_json("empty.json", "");
-    let loader = JsonLoader::new();
+    let (_dir, path) = write_temp_json("empty.json", "");
+    let loader = JsonLoader::with_options(twig::adapters::loader::LoadOptions {
+        no_cache: true,
+        ..Default::default()
+    });
     let err = loader.load(&path, true).expect_err("empty file must error");
     let msg = format!("{err:#}");
     assert!(
@@ -511,7 +517,10 @@ fn json_loader_reports_nonexistent_file() {
     use twig::adapters::json_loader::JsonLoader;
     use twig::adapters::loader::Loader;
     let path = std::path::Path::new("/tmp/twig_does_not_exist_xyzzy.json");
-    let loader = JsonLoader::new();
+    let loader = JsonLoader::with_options(twig::adapters::loader::LoadOptions {
+        no_cache: true,
+        ..Default::default()
+    });
     let err = loader
         .load(path, true)
         .expect_err("missing file must error");
@@ -526,8 +535,12 @@ fn json_loader_reports_nonexistent_file() {
 fn yaml_loader_reports_parse_error_with_line_info() {
     use twig::adapters::loader::Loader;
     use twig::adapters::yaml_loader::YamlLoader;
-    let path = write_temp_json("broken.yaml", "name: ok\n  bad_indent: |\n  more: : oops\n");
-    let loader = YamlLoader::new();
+    let (_dir, path) =
+        write_temp_json("broken.yaml", "name: ok\n  bad_indent: |\n  more: : oops\n");
+    let loader = YamlLoader::with_options(twig::adapters::loader::LoadOptions {
+        no_cache: true,
+        ..Default::default()
+    });
     let err = loader.load(&path, true).expect_err("bad YAML must error");
     let msg = format!("{err:#}");
     assert!(msg.contains("YAML parse error"), "{msg}");
@@ -610,13 +623,16 @@ fn twig_fix_can_repair_truncated_json() {
     // round-trip the new error hint points the user at.
     use twig::adapters::json_loader::JsonLoader;
     use twig::adapters::loader::Loader;
-    let path = write_temp_json("trunc.json", r#"{"a":1,"b":[1,2,3"#);
+    let (_dir, path) = write_temp_json("trunc.json", r#"{"a":1,"b":[1,2,3"#);
 
     // Step 1: --fix repairs the file in place.
     twig::cli::fix::run_from_path(&path).expect("--fix should succeed");
 
     // Step 2: the fixed file now loads cleanly.
-    let loader = JsonLoader::new();
+    let loader = JsonLoader::with_options(twig::adapters::loader::LoadOptions {
+        no_cache: true,
+        ..Default::default()
+    });
     let store = loader.load(&path, true).expect("fixed file loads");
     assert!(store.node_count().unwrap() > 1);
 }
@@ -629,8 +645,11 @@ fn main_returns_error_when_load_fails() {
     // by main, plus shown in-app via the Error screen).
     use twig::adapters::json_loader::JsonLoader;
     use twig::adapters::loader::Loader;
-    let path = write_temp_json("trunc.json", r#"{"a":1,"b":[1,2,3"#);
-    let loader = JsonLoader::new();
+    let (_dir, path) = write_temp_json("trunc.json", r#"{"a":1,"b":[1,2,3"#);
+    let loader = JsonLoader::with_options(twig::adapters::loader::LoadOptions {
+        no_cache: true,
+        ..Default::default()
+    });
     let res = loader.load(&path, true);
     assert!(res.is_err(), "truncated JSON must produce a load error");
     let msg = format!("{}", res.err().unwrap());
@@ -648,8 +667,11 @@ fn check_mode_loads_file_and_reports_stats() {
     // count from a small in-memory JSON file.
     use twig::adapters::json_loader::JsonLoader;
     use twig::adapters::loader::Loader;
-    let path = write_temp_json("check.json", r#"{"a":1,"b":[1,2,3],"c":{"x":1}}"#);
-    let loader = JsonLoader::new();
+    let (_dir, path) = write_temp_json("check.json", r#"{"a":1,"b":[1,2,3],"c":{"x":1}}"#);
+    let loader = JsonLoader::with_options(twig::adapters::loader::LoadOptions {
+        no_cache: true,
+        ..Default::default()
+    });
     let store = loader
         .load(&path, true)
         .expect("check-mode sample should load cleanly");
@@ -667,8 +689,11 @@ fn check_mode_reports_failure_for_truncated_json() {
     // exit code rather than a silent pass.
     use twig::adapters::json_loader::JsonLoader;
     use twig::adapters::loader::Loader;
-    let path = write_temp_json("check_trunc.json", r#"{"a":1,"b":[1,2"#);
-    let loader = JsonLoader::new();
+    let (_dir, path) = write_temp_json("check_trunc.json", r#"{"a":1,"b":[1,2"#);
+    let loader = JsonLoader::with_options(twig::adapters::loader::LoadOptions {
+        no_cache: true,
+        ..Default::default()
+    });
     let res = loader.load(&path, true);
     assert!(res.is_err(), "truncated JSON must surface an error");
 }

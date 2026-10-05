@@ -1,85 +1,87 @@
 use anyhow::{Context, Result};
 use clap::Parser;
-use owo_colors::{OwoColorize, Stream::Stdout};
-use ratatui::backend::CrosstermBackend;
-use ratatui::Terminal;
+use ratatui::{backend::CrosstermBackend, Terminal};
+use twig::{
+    cli::{check, print, Cli},
+    tui::app::App,
+};
 
-use twig::cli::{check, fix, print as print_mode, Cli};
-use twig::tui::app::App;
-
-fn main() -> Result<()> {
-    let cli = Cli::parse();
-
-    if cli.check {
-        return check::run(&cli.file, cli.rebuild_db);
-    }
-    if cli.fix {
-        return fix::run(&cli);
-    }
-    if cli.print {
-        return print_mode::run(&cli);
-    }
-
-    // Interactive TUI.
-    let mut terminal =
-        Terminal::new(CrosstermBackend::new(std::io::stdout())).context("opening terminal")?;
-    crossterm::terminal::enable_raw_mode().context("enabling raw mode")?;
-    let _ = crossterm::execute!(
-        std::io::stdout(),
-        crossterm::terminal::EnterAlternateScreen,
-        crossterm::event::EnableMouseCapture
-    );
-
-    let mut app = App::new(&cli.file, cli.rebuild_db);
-    let res = app.run(&mut terminal);
-
+fn restore_terminal() {
     let _ = crossterm::terminal::disable_raw_mode();
     let _ = crossterm::execute!(
         std::io::stdout(),
         crossterm::terminal::LeaveAlternateScreen,
         crossterm::event::DisableMouseCapture
     );
+}
+struct TerminalGuard;
+impl Drop for TerminalGuard {
+    fn drop(&mut self) {
+        restore_terminal();
+    }
+}
 
-    if let Err(err) = res {
-        eprintln!();
-        let error_label = "Error"
-            .if_supports_color(Stdout, |t| t.bright_red())
-            .to_string();
-        let detail = err
-            .to_string()
-            .if_supports_color(Stdout, |t| t.white())
-            .to_string();
-        eprintln!(" {error_label}: {detail}");
-
-        // Suggest --fix for parse errors, since that's the most likely
-        // failure mode when a user runs `twig some-bad.json`.
-        let lower = format!("{err:#}").to_lowercase();
-        let hint_label = "Tip"
-            .if_supports_color(Stdout, |t| t.bright_yellow())
-            .to_string();
-        if lower.contains("json")
-            || lower.contains("parse")
-            || lower.contains("expected")
-            || lower.contains("trailing")
-        {
-            let cmd = format!(
-                "twig --fix {} -o {}",
-                cli.file.display(),
-                cli.file.display()
-            );
-            let cmd_colored = cmd.if_supports_color(Stdout, |t| t.green()).to_string();
-            eprintln!(" {hint_label}: this looks like a parse error — try:");
-            eprintln!("   {cmd_colored}");
-        } else if !lower.contains("permission") && !lower.contains("not found") {
-            eprintln!(" {hint_label}: re-run with --fix if the file is malformed:");
-            eprintln!(
-                "   twig --fix {} -o {}",
-                cli.file.display(),
-                cli.file.display()
-            );
+fn main() {
+    if let Err(e) = run() {
+        if e.chain().any(|e| {
+            e.downcast_ref::<std::io::Error>()
+                .is_some_and(|e| e.kind() == std::io::ErrorKind::BrokenPipe)
+        }) {
+            return;
         }
-        eprintln!();
+        eprintln!("twig: {e:#}");
         std::process::exit(1);
     }
-    Ok(())
+}
+fn run() -> Result<()> {
+    let cli = Cli::parse();
+    if cli.clear_cache {
+        println!(
+            "Removed {} cache files",
+            twig::adapters::loader::clear_cache()?
+        );
+        return Ok(());
+    }
+    if cli.fix || cli.print {
+        return print::run(&cli);
+    }
+    let file = cli.file.as_deref().context("a file is required")?;
+    let mut input_temp = None;
+    let file = if file == std::path::Path::new("-") {
+        anyhow::ensure!(cli.check, "stdin requires --print, --fix, or --check");
+        let mut temp = tempfile::NamedTempFile::new()?;
+        std::io::copy(&mut std::io::stdin().lock(), &mut temp)?;
+        input_temp = Some(temp);
+        input_temp.as_ref().unwrap().path()
+    } else {
+        file
+    };
+    let options = twig::adapters::loader::LoadOptions {
+        no_cache: cli.no_cache || input_temp.is_some(),
+        ..Default::default()
+    };
+    if cli.check {
+        return check::run_with_options(file, cli.rebuild_db, options);
+    }
+    use std::io::IsTerminal;
+    anyhow::ensure!(
+        std::io::stdin().is_terminal() && std::io::stdout().is_terminal(),
+        "the TUI requires a terminal; use --print or --check"
+    );
+    let previous = std::panic::take_hook();
+    std::panic::set_hook(Box::new(move |info| {
+        restore_terminal();
+        previous(info);
+    }));
+    crossterm::terminal::enable_raw_mode().context("enabling raw mode")?;
+    let _guard = TerminalGuard;
+    crossterm::execute!(
+        std::io::stdout(),
+        crossterm::terminal::EnterAlternateScreen,
+        crossterm::event::EnableMouseCapture
+    )?;
+    let mut terminal = Terminal::new(CrosstermBackend::new(std::io::stdout()))?;
+    let mut app = App::new(file, cli.rebuild_db);
+    app.load_options = options;
+    app.run(&mut terminal)
 }

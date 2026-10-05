@@ -1,14 +1,14 @@
 [package]
 name = "twig"
-version = "3.0.0"
+version = "3.1.0"
 description = "Terminal-based JSON & YAML viewer (TUI) for exploring and searching large files — fast, interactive, and privacy-first."
 readme = "README.md"
 authors = ["Shubham Kumar"]
 license = "MIT"
 edition = "2021"
-rust-version = "1.75"
+rust-version = "1.88"
 repository = "https://github.com/workdone0/twig"
-keywords = ["json", "yaml", "viewer", "explorer", "terminal", "tui", "cli", "kubernetes", "developer-tools"]
+keywords = ["json", "yaml", "viewer", "terminal", "tui"]
 categories = ["command-line-utilities", "data-structures"]
 
 [[bin]]
@@ -26,8 +26,7 @@ rusqlite = { version = "0.32", features = ["bundled"] }
 clap = { version = "4", features = ["derive"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = { version = "1", features = ["preserve_order"] }
-serde_yml = "0.0.12"
-arboard = "3"
+arboard = { version = "3", default-features = false }
 jsonrepair = "0.1"
 uuid = { version = "1", features = ["v4"] }
 regex = "1"
@@ -37,8 +36,11 @@ dirs = "5"
 anyhow = "1"
 thiserror = "1"
 
-[dev-dependencies]
+sha2 = "0.10"
 tempfile = "3"
+unicode-width = "0.2"
+unicode-segmentation = "1"
+serde_norway = "0.9"
 
 [profile.release]
 lto = "thin"

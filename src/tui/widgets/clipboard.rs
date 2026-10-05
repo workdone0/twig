@@ -18,9 +18,19 @@ pub struct Clipboard;
 
 impl Clipboard {
     pub fn copy(text: &str) -> Result<(), ClipboardError> {
-        let mut cb =
-            arboard::Clipboard::new().map_err(|e| ClipboardError::Unavailable(e.to_string()))?;
-        cb.set_text(text.to_string())
-            .map_err(|e| ClipboardError::Copy(e.to_string()))
+        thread_local! { static CLIPBOARD: std::cell::RefCell<Option<arboard::Clipboard>> = const { std::cell::RefCell::new(None) }; }
+        CLIPBOARD.with(|slot| {
+            let mut slot = slot.borrow_mut();
+            if slot.is_none() {
+                *slot = Some(
+                    arboard::Clipboard::new()
+                        .map_err(|e| ClipboardError::Unavailable(e.to_string()))?,
+                );
+            }
+            slot.as_mut()
+                .unwrap()
+                .set_text(text.to_string())
+                .map_err(|e| ClipboardError::Copy(e.to_string()))
+        })
     }
 }

@@ -1,158 +1,72 @@
-//! Streaming YAML ingestion into the SQLite store.
-//!
-//! Drives `serde_yml::Deserializer::from_reader`, which yields one
-//! YAML document at a time. Each document is converted to a
-//! `serde_json::Value` so we can reuse the same `Emitter` machinery the
-//! JSON loader uses, then fed through the same defer-indexing dance.
-//!
-//! Single-document YAML files are wrapped in a virtual array root so
-//! `.kind` resolves to `.[0].kind` (the Python loader did the same).
-
-use std::fs::File;
-use std::io::BufReader;
+//! YAML document stream to JSON-compatible SQLite nodes.
+//! The YAML library may buffer document/parser state; unlike JSON, bounded
+//! parser memory is not guaranteed. Emitted node batches are bounded.
+use crate::adapters::{
+    json_loader::{Seed, Sink},
+    loader::{load_cached, LoadOptions, Loader},
+};
+use crate::core::{
+    model::{DataType, Node},
+    store::Store,
+};
+use anyhow::Result;
+use serde::de::DeserializeSeed;
+#[cfg(test)]
+use serde_json::Value;
 use std::path::Path;
 
-use anyhow::{Context, Result};
-use serde_json::Value;
-
-use crate::adapters::json_loader::Emitter;
-use crate::adapters::loader::{
-    cache_path_for, drop_indexes, open_existing, rebuild_indexes, Loader,
-};
-use crate::core::model::Node;
-use crate::core::store::Store;
-
 pub struct YamlLoader {
-    /// Override the default cache directory (used by tests).
-    cache_dir_override: Option<std::path::PathBuf>,
+    options: LoadOptions,
 }
-
 impl Default for YamlLoader {
     fn default() -> Self {
         Self::new()
     }
 }
-
 impl YamlLoader {
     pub fn new() -> Self {
-        Self {
-            cache_dir_override: None,
-        }
+        Self::with_options(LoadOptions::default())
     }
-
+    pub fn with_options(options: LoadOptions) -> Self {
+        Self { options }
+    }
     pub fn with_cache_dir(mut self, dir: std::path::PathBuf) -> Self {
-        self.cache_dir_override = Some(dir);
+        self.options.cache_dir = Some(dir);
         self
     }
-
-    fn cache_path(&self, file: &Path) -> Result<std::path::PathBuf> {
-        match &self.cache_dir_override {
-            Some(dir) => {
-                std::fs::create_dir_all(dir).context("creating test cache dir")?;
-                Ok(dir.join(crate::core::paths::db_filename_for(file)))
-            }
-            None => cache_path_for(file),
-        }
-    }
 }
-
 impl Loader for YamlLoader {
-    fn load(&self, file: &Path, force_rebuild: bool) -> Result<Store> {
-        if !force_rebuild {
-            if let Ok(db_path) = self.cache_path(file) {
-                if let Some(store) = open_existing(&db_path)? {
-                    return Ok(store);
+    fn load(&self, file: &Path, force: bool) -> Result<Store> {
+        load_cached(file, force, &self.options, |reader, store| {
+            let mut sink = Sink::new(store, &self.options);
+            let root = uuid::Uuid::new_v4();
+            sink.push(Node {
+                id: root,
+                parent: None,
+                key: "root".into(),
+                path: ".".into(),
+                ty: DataType::Array,
+                value: None,
+                rank: 0,
+                is_expanded: false,
+            })?;
+            for (rank, doc) in serde_norway::Deserializer::from_reader(reader).enumerate() {
+                Seed {
+                    sink: &mut sink,
+                    parent: Some(root),
+                    key: rank.to_string(),
+                    path: format!(".[{rank}]"),
+                    rank: rank as i64,
+                    depth: 0,
                 }
+                .deserialize(doc)
+                .map_err(|e| anyhow::anyhow!("YAML parse error: {e}"))?;
             }
-        }
-
-        let db_path = self.cache_path(file)?;
-        if db_path.exists() {
-            std::fs::remove_file(&db_path).ok();
-        }
-        if db_path.with_extension("db-wal").exists() {
-            std::fs::remove_file(db_path.with_extension("db-wal")).ok();
-        }
-        if db_path.with_extension("db-shm").exists() {
-            std::fs::remove_file(db_path.with_extension("db-shm")).ok();
-        }
-
-        let mut store =
-            Store::open(&db_path).context("opening fresh sqlite database for yaml load")?;
-        store.db_conn_mut().execute_batch(
-            "PRAGMA synchronous = OFF;
-             PRAGMA journal_mode = MEMORY;",
-        )?;
-        drop_indexes(&store)?;
-
-        let fh = File::open(file).with_context(|| format!("opening {}", file.display()))?;
-        let reader = BufReader::new(fh);
-        let iter = serde_yml::Deserializer::from_reader(reader);
-
-        const BATCH: usize = 10_000;
-        let mut batch: Vec<Node> = Vec::with_capacity(BATCH);
-        let mut emitter = Emitter::new();
-
-        // The Python loader always wraps the YAML stream in a virtual
-        // array root so single-document YAML looks like .[0].… under
-        // the hood. We do the same: emit a root Array and append each
-        // top-level document to it.
-        let virtual_root_id = uuid::Uuid::new_v4();
-        batch.push(Node {
-            id: virtual_root_id,
-            key: "root".to_string(),
-            value: None,
-            ty: crate::core::model::DataType::Array,
-            parent: None,
-            path: ".".to_string(),
-            is_expanded: false,
-            rank: 0,
-        });
-
-        for (rank, doc) in (0_i64..).zip(iter) {
-            let value: Value = match serde::Deserialize::deserialize(doc) {
-                Ok(v) => v,
-                Err(e) => {
-                    let (line, col) = e
-                        .location()
-                        .map(|l| (l.line(), l.column()))
-                        .unwrap_or((0, 0));
-                    return Err(anyhow::anyhow!(
-                        "YAML parse error at line {line}, column {col}: {e}"
-                    ));
-                }
-            };
-            let base = format!(".[{rank}]");
-            emitter.reset();
-            emitter.emit_value(
-                Some(virtual_root_id),
-                &rank.to_string(),
-                &base,
-                &value,
-                &mut batch,
-            );
-            if batch.len() >= BATCH {
-                let drained = std::mem::take(&mut batch);
-                store.bulk_load(&drained)?;
-                batch.reserve(BATCH);
-            }
-        }
-
-        if !batch.is_empty() {
-            store.bulk_load(&batch)?;
-        }
-
-        rebuild_indexes(&store)?;
-        store.db_conn_mut().execute_batch(
-            "PRAGMA synchronous = NORMAL;
-             PRAGMA journal_mode = WAL;",
-        )?;
-
-        let store = Store::open(&db_path)?;
-        Ok(store)
+            sink.flush()?;
+            Ok(())
+        })
     }
 }
-
 #[cfg(test)]
 mod tests {
     use super::*;

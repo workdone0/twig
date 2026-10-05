@@ -20,3 +20,6 @@ Thumbs.db
 
 # Logs
 *.log
+# Generated website and Python tooling
+/website/dist/
+__pycache__/

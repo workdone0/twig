@@ -57,11 +57,26 @@ pub struct App {
     pub last_search_query: Option<String>,
     pub format: String,
     config: Config,
+    config_path: Option<std::path::PathBuf>,
+    pub load_options: crate::adapters::loader::LoadOptions,
 }
 
 impl App {
     pub fn new(file: &Path, force_rebuild: bool) -> Self {
-        let config = Config::load();
+        Self::with_config(
+            file,
+            force_rebuild,
+            Config::load(),
+            Some(crate::core::config::default_path()),
+        )
+    }
+
+    pub fn with_config(
+        file: &Path,
+        force_rebuild: bool,
+        config: Config,
+        config_path: Option<std::path::PathBuf>,
+    ) -> Self {
         // Pick the theme from config; fall back to the registered
         // default (Catppuccin Mocha) if config has none or refers to
         // an unknown theme. The `ALL_THEMES[0]` lookup ensures the
@@ -86,6 +101,8 @@ impl App {
             last_search_query: None,
             format: Self::format_for(file),
             config,
+            config_path,
+            load_options: Default::default(),
         }
     }
 
@@ -126,8 +143,14 @@ impl App {
         let next_name = names[next];
         if let Some(t) = ALL_THEMES.iter().find(|t| t.name == next_name) {
             self.theme = (*t).clone();
-            let _ = self.config.set("theme", serde_json::Value::from(next_name));
+            self.config
+                .set_memory("theme", serde_json::Value::from(next_name));
             self.status_message = Some(format!("Theme: {next_name}"));
+            if let Some(path) = &self.config_path {
+                if let Err(e) = self.config.save_to(path) {
+                    self.status_message = Some(format!("Theme changed, but could not save: {e}"));
+                }
+            }
         }
     }
 
@@ -138,8 +161,17 @@ impl App {
         let (tx, rx) = mpsc::channel::<LoadEvent>();
         let file = self.file.clone();
         let force_rebuild = self.force_rebuild;
-        std::thread::spawn(move || {
-            let loader = App::loader_for(&file);
+        let options = self.load_options.clone();
+        let worker = std::thread::spawn(move || {
+            let loader: Box<dyn Loader> = if crate::cli::is_yaml(&file) {
+                Box::new(crate::adapters::yaml_loader::YamlLoader::with_options(
+                    options,
+                ))
+            } else {
+                Box::new(crate::adapters::json_loader::JsonLoader::with_options(
+                    options,
+                ))
+            };
             match loader.load(&file, force_rebuild) {
                 Ok(store) => {
                     let _ = tx.send(LoadEvent::Loaded(store));
@@ -150,12 +182,41 @@ impl App {
             }
         });
 
+        struct WorkerGuard {
+            cancelled: std::sync::Arc<std::sync::atomic::AtomicBool>,
+            worker: Option<std::thread::JoinHandle<()>>,
+        }
+        impl Drop for WorkerGuard {
+            fn drop(&mut self) {
+                self.cancelled
+                    .store(true, std::sync::atomic::Ordering::Relaxed);
+                if let Some(worker) = self.worker.take() {
+                    let _ = worker.join();
+                }
+            }
+        }
+        let _worker = WorkerGuard {
+            cancelled: self.load_options.cancelled.clone(),
+            worker: Some(worker),
+        };
         let tick = std::time::Duration::from_millis(50);
         loop {
-            while let Ok(ev) = rx.try_recv() {
+            loop {
+                let ev = match rx.try_recv() {
+                    Ok(ev) => ev,
+                    Err(mpsc::TryRecvError::Empty) => break,
+                    Err(mpsc::TryRecvError::Disconnected) => {
+                        if self.mode == AppMode::Loading {
+                            self.error = Some("Loader stopped unexpectedly".into());
+                            self.mode = AppMode::Error;
+                        }
+                        break;
+                    }
+                };
                 match ev {
                     LoadEvent::Loaded(store) => {
                         self.navigator = Some(ColumnNavigator::new(store));
+                        self.focused = self.navigator.as_ref().and_then(|n| n.focused()).cloned();
                         self.mode = AppMode::Normal;
                     }
                     LoadEvent::Error(msg) => {
@@ -172,7 +233,7 @@ impl App {
             }
 
             if let Err(e) = terminal.draw(|f| render(f, self)) {
-                eprintln!("twig: draw error: {e:?}");
+                self.error = Some(format!("Terminal draw error: {e:?}"));
                 self.mode = AppMode::Exiting;
             }
 
@@ -181,18 +242,21 @@ impl App {
             }
 
             if crossterm::event::poll(tick)? {
-                if let Event::Key(key) = crossterm::event::read()? {
-                    if key.kind == KeyEventKind::Press {
-                        self.on_key(key);
+                match crossterm::event::read()? {
+                    Event::Key(key) if key.kind == KeyEventKind::Press => self.on_key(key),
+                    Event::Mouse(mouse) if self.mode == AppMode::Normal => {
+                        if let Some(nav) = &mut self.navigator {
+                            nav.on_mouse(mouse);
+                            self.focused = nav.focused().cloned();
+                        }
                     }
+                    _ => {}
                 }
             }
             self.frame = self.frame.wrapping_add(1);
         }
 
-        // If the loader failed, surface the error to the caller so
-        // main.rs can print it. The TUI itself has already restored
-        // its terminal state before this point.
+        // The terminal guard in main restores state before errors are printed.
         if let Some(msg) = self.error.take() {
             Err(anyhow::anyhow!("{msg}"))
         } else {
@@ -214,7 +278,7 @@ impl App {
             AppMode::Normal => match key.code {
                 KeyCode::Char('q') => self.mode = AppMode::Exiting,
                 KeyCode::Char('t') => self.cycle_theme(),
-                KeyCode::Char('?') | KeyCode::Char('h') => {
+                KeyCode::Char('?') => {
                     self.mode = AppMode::Help;
                 }
                 KeyCode::Char('/') => {
@@ -229,22 +293,32 @@ impl App {
                 KeyCode::Char('N') => self.next_match(-1),
                 KeyCode::Char('c') => self.copy_path(),
                 KeyCode::Char('y') => self.copy_source(),
-                KeyCode::Down => {
+                KeyCode::Char('g') | KeyCode::Home => {
+                    if let Some(n) = &mut self.navigator {
+                        n.first();
+                    }
+                }
+                KeyCode::Char('G') | KeyCode::End => {
+                    if let Some(n) = &mut self.navigator {
+                        n.last();
+                    }
+                }
+                KeyCode::Down | KeyCode::Char('j') => {
                     if let Some(n) = self.navigator.as_mut() {
                         n.move_down();
                     }
                 }
-                KeyCode::Up => {
+                KeyCode::Up | KeyCode::Char('k') => {
                     if let Some(n) = self.navigator.as_mut() {
                         n.move_up();
                     }
                 }
-                KeyCode::Right => {
+                KeyCode::Right | KeyCode::Enter | KeyCode::Char('l') => {
                     if let Some(n) = self.navigator.as_mut() {
                         n.drill();
                     }
                 }
-                KeyCode::Left => {
+                KeyCode::Left | KeyCode::Esc | KeyCode::Char('h') => {
                     if let Some(n) = self.navigator.as_mut() {
                         n.step_back();
                     }
@@ -378,15 +452,15 @@ impl App {
         let Some(nav) = &self.navigator else {
             return;
         };
-        let value = if node.is_container() {
-            nav.store
-                .reconstruct_value(node.id, 5)
-                .unwrap_or(serde_json::Value::Null)
-        } else {
-            node.value.clone().unwrap_or(serde_json::Value::Null)
+        let value = match nav.store.export_value(node.id) {
+            Ok(value) => value,
+            Err(e) => {
+                self.status_message = Some(format!("Copy failed: {e}"));
+                return;
+            }
         };
         let text = if self.format == "yaml" {
-            serde_yml::to_string(&value).unwrap_or_default()
+            serde_norway::to_string(&value).unwrap_or_default()
         } else {
             serde_json::to_string_pretty(&value).unwrap_or_default()
         };
@@ -455,14 +529,31 @@ fn render(f: &mut ratatui::Frame, app: &mut App) {
                 f,
                 chunks[2],
                 theme,
-                &app.file.display().to_string(),
+                &format!(
+                    "{} · read {:.1}/{:.1} MiB · {} nodes",
+                    app.file.display(),
+                    app.load_options
+                        .progress
+                        .bytes
+                        .load(std::sync::atomic::Ordering::Relaxed) as f64
+                        / 1_048_576.0,
+                    app.load_options
+                        .progress
+                        .total
+                        .load(std::sync::atomic::Ordering::Relaxed) as f64
+                        / 1_048_576.0,
+                    app.load_options
+                        .progress
+                        .nodes
+                        .load(std::sync::atomic::Ordering::Relaxed)
+                ),
                 app.frame,
             );
         }
         AppMode::Error => {
             crate::tui::widgets::error::render(f, chunks[2], theme, app.error.as_deref());
         }
-        AppMode::Normal => {
+        AppMode::Normal | AppMode::Search | AppMode::Jump | AppMode::Help => {
             // Refresh focused node from navigator so the inspector
             // tracks the user's selection.
             if app.focused.is_none() {
@@ -493,7 +584,7 @@ fn render(f: &mut ratatui::Frame, app: &mut App) {
                 &app.format,
             );
         }
-        AppMode::Exiting | AppMode::Search | AppMode::Jump | AppMode::Help => {}
+        AppMode::Exiting => {}
     }
 
     crate::tui::widgets::hints::render(f, chunks[3], theme);
@@ -550,27 +641,97 @@ mod tests {
     fn app_renders_initial_loading_state() {
         let backend = TestBackend::new(80, 24);
         let mut terminal = Terminal::new(backend).unwrap();
-        let app = App::new(std::path::Path::new("does-not-exist.json"), false);
+        let app = App::with_config(
+            std::path::Path::new("does-not-exist.json"),
+            false,
+            Config::default(),
+            None,
+        );
         terminal.draw(|f| render(f, &mut { app })).unwrap();
     }
 
-    /// First-press of `t` on a fresh install must move *away* from
-    /// Catppuccin (i.e. Catppuccin must be the boot theme), and the
-    /// second press must land back on Catppuccin.
-    ///
-    /// Note: this test reads the user's real config.json (which is
-    /// mutated by cycle_theme) and therefore can be flaky if a
-    /// prior run left a non-default theme. The compile-time
-    /// invariant in `theme::tests::catppuccin_is_default_theme`
-    /// is the load-bearing guarantee; this test is supplementary.
+    // Injected config keeps theme persistence independent of the user profile.
     #[test]
-    #[ignore = "depends on user's real config.json; relies on theme.rs invariants"]
     fn default_theme_is_catppuccin_and_cycle_round_trips() {
-        let mut app = App::new(std::path::Path::new("x.json"), false);
+        let dir = tempfile::tempdir().unwrap();
+        let mut app = App::with_config(
+            std::path::Path::new("x.json"),
+            false,
+            Config::default(),
+            Some(dir.path().join("config.json")),
+        );
         assert_eq!(app.theme.name, "catppuccin-mocha");
         app.cycle_theme();
         assert_ne!(app.theme.name, "catppuccin-mocha");
         app.cycle_theme();
         assert_eq!(app.theme.name, "catppuccin-mocha");
+    }
+}
+
+#[cfg(test)]
+mod interaction_tests {
+    use super::*;
+    fn loaded_app() -> (tempfile::TempDir, App) {
+        let dir = tempfile::tempdir().unwrap();
+        let file = dir.path().join("data.json");
+        std::fs::write(&file, r#"{"first":{"nested":42},"last":"😀"}"#).unwrap();
+        let store = crate::adapters::json_loader::JsonLoader::new()
+            .with_cache_dir(dir.path().join("cache"))
+            .load(&file, true)
+            .unwrap();
+        let mut app = App::with_config(&file, false, Config::default(), None);
+        app.navigator = Some(ColumnNavigator::new(store));
+        app.mode = AppMode::Normal;
+        app.focused = app.navigator.as_ref().and_then(|n| n.focused()).cloned();
+        (dir, app)
+    }
+    #[test]
+    fn keys_navigation_modals_and_copy_selection() {
+        let (_dir, mut app) = loaded_app();
+        let press = |app: &mut App, c| app.on_key(KeyEvent::new(c, KeyModifiers::NONE));
+        assert_eq!(app.focused.as_ref().unwrap().key, "first");
+        press(&mut app, KeyCode::Enter);
+        assert_eq!(app.focused.as_ref().unwrap().key, "nested");
+        press(&mut app, KeyCode::Char('h'));
+        press(&mut app, KeyCode::Char('G'));
+        assert_eq!(app.focused.as_ref().unwrap().key, "last");
+        press(&mut app, KeyCode::Char('g'));
+        assert_eq!(app.focused.as_ref().unwrap().key, "first");
+        press(&mut app, KeyCode::Char('/'));
+        press(&mut app, KeyCode::Char('4'));
+        press(&mut app, KeyCode::Char('2'));
+        press(&mut app, KeyCode::Enter);
+        assert_eq!(app.focused.as_ref().unwrap().key, "nested");
+        press(&mut app, KeyCode::Char('?'));
+        assert_eq!(app.mode, AppMode::Help);
+        press(&mut app, KeyCode::Esc);
+        assert_eq!(app.mode, AppMode::Normal);
+        app.on_key(KeyEvent::new(KeyCode::Char('c'), KeyModifiers::CONTROL));
+        assert_eq!(app.mode, AppMode::Exiting);
+    }
+    #[test]
+    fn every_modal_renders_at_tiny_sizes_and_config_errors_are_visible() {
+        let (dir, mut app) = loaded_app();
+        app.config_path = Some(dir.path().to_path_buf());
+        app.cycle_theme();
+        assert!(app
+            .status_message
+            .as_ref()
+            .unwrap()
+            .contains("could not save"));
+        for mode in [
+            AppMode::Normal,
+            AppMode::Loading,
+            AppMode::Help,
+            AppMode::Search,
+            AppMode::Jump,
+            AppMode::Error,
+        ] {
+            app.mode = mode;
+            for (w, h) in [(0, 0), (1, 1), (10, 3), (80, 24)] {
+                let mut terminal = Terminal::new(ratatui::backend::TestBackend::new(w, h)).unwrap();
+                terminal.draw(|f| render(f, &mut app)).unwrap();
+            }
+        }
     }
 }

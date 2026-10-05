@@ -12,3 +12,5 @@ pub mod loading;
 pub mod navigator;
 pub mod search;
 pub mod status_bar;
+
+pub mod text;

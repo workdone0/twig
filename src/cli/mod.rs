@@ -1,52 +1,81 @@
-//! CLI argument parsing and non-interactive subcommands.
-//!
-//! `Cli` is the `clap` parser; `fix::run`, `print::run`, and
-//! `check::run` implement the three non-TUI modes (`--fix`,
-//! `--print` / `-p`, and `--check`).
-
+//! Argument parsing and shared output utilities.
 pub mod check;
 pub mod fix;
 pub mod print;
-
-use std::path::PathBuf;
-
+use anyhow::{Context, Result};
 use clap::Parser;
+use std::io::Write;
+use std::path::{Path, PathBuf};
 
 #[derive(Debug, Parser)]
+#[command(group(clap::ArgGroup::new("format_mode").args(["fix", "print"]).multiple(true)))]
 #[command(
     name = "twig",
     version,
-    about = "Inspect. Navigate. Understand. A modern, terminal-based data explorer.",
-    long_about = None,
+    disable_version_flag = true,
+    about = "Inspect. Navigate. Understand. A terminal explorer for JSON and YAML."
 )]
 pub struct Cli {
-    /// The JSON / YAML / HAR file to explore.
-    pub file: PathBuf,
-
-    /// Attempt to repair malformed JSON and exit.
-    #[arg(long)]
+    /// JSON, YAML, or HAR file. Use '-' for stdin in non-interactive modes.
+    #[arg(
+        required_unless_present = "clear_cache",
+        conflicts_with = "clear_cache"
+    )]
+    pub file: Option<PathBuf>,
+    /// Repair JSON before formatting. May be combined with --print.
+    #[arg(long, conflicts_with = "check")]
     pub fix: bool,
-
-    /// Pretty-print the file (after --fix if applicable) and exit.
-    #[arg(short = 'p', long)]
+    /// Format JSON or YAML documents and exit.
+    #[arg(short = 'p', long, conflicts_with = "check")]
     pub print: bool,
-
-    /// Output file. For --fix, saves the repaired JSON. For --print,
-    /// saves the formatted JSON. If omitted, prints to stdout.
-    #[arg(short = 'o', long)]
+    /// Atomically write formatted output to this file.
+    #[arg(short = 'o', long, requires = "format_mode")]
     pub output: Option<PathBuf>,
-
-    /// Number of spaces for indentation (default: 2).
-    #[arg(long, default_value_t = 2)]
-    pub indent: usize,
-
-    /// Force rebuild of the internal SQLite database cache.
-    #[arg(long)]
+    /// JSON indentation width, from 0 to 16. YAML uses its standard formatter.
+    #[arg(short='i', long, default_value_t=2, value_parser=clap::value_parser!(u8).range(0..=16))]
+    pub indent: u8,
+    /// Rebuild the cache even when source content matches.
+    #[arg(long, conflicts_with_all=["fix", "print", "clear_cache"])]
     pub rebuild_db: bool,
-
-    /// Load the file via the streaming ingestion pipeline, print
-    /// timing stats, and exit. Useful for benchmarking and CI;
-    /// does not open the TUI.
+    /// Validate input and report ingestion timing without opening the TUI.
     #[arg(long)]
     pub check: bool,
+    /// Use a temporary database removed when Twig closes.
+    #[arg(long, conflicts_with = "clear_cache")]
+    pub no_cache: bool,
+    /// Remove stored SQLite caches and exit (close other Twig processes first).
+    #[arg(long, conflicts_with_all=["fix", "print", "check", "output"])]
+    pub clear_cache: bool,
+    /// Print version.
+    #[arg(short='V', long, visible_short_alias='v', action=clap::ArgAction::Version)]
+    pub version: Option<bool>,
+}
+
+pub fn is_yaml(path: &Path) -> bool {
+    path.extension()
+        .and_then(|e| e.to_str())
+        .is_some_and(|e| e.eq_ignore_ascii_case("yaml") || e.eq_ignore_ascii_case("yml"))
+}
+
+pub fn write_output(path: Option<&Path>, text: &str) -> Result<()> {
+    if let Some(path) = path {
+        let parent = path
+            .parent()
+            .filter(|p| !p.as_os_str().is_empty())
+            .unwrap_or(Path::new("."));
+        let mut temp =
+            tempfile::NamedTempFile::new_in(parent).context("creating output temporary file")?;
+        if let Ok(meta) = std::fs::metadata(path) {
+            temp.as_file().set_permissions(meta.permissions())?;
+        }
+        temp.write_all(text.as_bytes())?;
+        temp.write_all(b"\n")?;
+        temp.as_file().sync_all()?;
+        temp.persist(path)
+            .with_context(|| format!("writing {}", path.display()))?;
+    } else {
+        let mut out = std::io::stdout().lock();
+        writeln!(out, "{text}")?;
+    }
+    Ok(())
 }
