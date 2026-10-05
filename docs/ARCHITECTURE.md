@@ -109,7 +109,7 @@ manifest version, runs CI, builds five targets, and publishes archives, checksum
 build metadata, and provenance. Recovery does not require moving a tag.
 
 `website/` is a dependency-free static site. Python build tooling generates guides
-from repository Markdown and copies the canonical installer. Website deployment
+from repository Markdown and copies both canonical installers (`install.sh` and `install.ps1`). Website deployment
 follows a successful release or a maintainer's manual dispatch, publishing to
 `twig-web` for the existing `twig.wtf` GitHub Pages domain. Old Astro source on
 `gh-pages` is no longer the maintained source.

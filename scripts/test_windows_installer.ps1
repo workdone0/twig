@@ -19,10 +19,10 @@ try {
     Copy-Item -LiteralPath $Binary -Destination (Join-Path $fixture 'twig.exe')
     Copy-Item -LiteralPath "$PSScriptRoot\..\LICENSE" -Destination $fixture
     $script:releaseVersion = 'v' + ((& $Binary --version) -replace '^twig ', '')
-    $archive = Join-Path $root 'archive.tar.gz'
-    & tar.exe -czf $archive -C $fixture twig.exe LICENSE
+    $script:fixtureArchive = Join-Path $root 'archive.tar.gz'
+    & tar.exe -czf $script:fixtureArchive -C $fixture twig.exe LICENSE
     Assert ($LASTEXITCODE -eq 0) 'Fixture archive failed'
-    $script:hash = (Get-FileHash -LiteralPath $archive -Algorithm SHA256).Hash
+    $script:hash = (Get-FileHash -LiteralPath $script:fixtureArchive -Algorithm SHA256).Hash
     $script:badHash = $false; $script:missingHash = $false; $script:arch = 'AMD64'; $script:userPath = 'C:\existing'
     function Get-TwigRelease { $script:releaseVersion }
     function Get-TwigArchitecture { $script:arch }
@@ -33,7 +33,7 @@ try {
             if ($script:missingHash) { throw 'Missing checksum' }
             $checksum = if ($script:badHash) { '0' * 64 } else { $script:hash }
             Set-Content -LiteralPath $Destination -Value "$checksum  archive.tar.gz" -Encoding ASCII
-        } else { Copy-Item -LiteralPath $archive -Destination $Destination }
+        } else { Copy-Item -LiteralPath $script:fixtureArchive -Destination $Destination }
     }
     Assert ((Install-Twig -Help | Out-String) -match 'PowerShell 5.1') 'Help unavailable'
     $destination = Join-Path $root 'directory with spaces'

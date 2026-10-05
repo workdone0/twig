@@ -5,6 +5,13 @@ earlier are the Python implementation.
 
 ## [Unreleased]
 
+- Add a per-user Windows PowerShell installer with checksum/version verification,
+  PATH setup, staged upgrades, cleanup, and native PowerShell 5.1/7 tests.
+- Clarify platform installation, manual verification, troubleshooting, upgrades,
+  and uninstall steps; harden Bash platform/version checks and cleanup.
+- Polish the website with muted rust-red colors, clearer copy, consistent guide
+  navigation, complete installation commands, and keyboard/mobile demo support.
+
 ## [3.1.0] — 2026-10-05
 
 ### Fixed

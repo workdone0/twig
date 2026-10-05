@@ -106,7 +106,7 @@ code{font-family:var(--mono);font-size:.88em}
 .platforms button{min-height:40px;background:none;border:0;font-size:12px;color:var(--muted);padding:7px 9px;border-radius:3px}
 .platforms button[aria-pressed=true]{background:#efded2;color:#803f2f}
 .command-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;font:10px var(--mono);color:var(--muted);margin-bottom:10px}
-.command-heading button{font:12px inherit;background:transparent;border:1px solid var(--line);border-radius:4px;min-height:36px;padding:6px 10px;color:var(--rust)}
+.command-heading button{font-size:12px;font-family:inherit;background:transparent;border:1px solid var(--line);border-radius:4px;min-height:36px;padding:6px 10px;color:var(--rust)}
 .install-command{margin:0;background:#f6eee6;padding:16px;border:1px solid #e6d6c7;border-radius:4px;white-space:pre-wrap;overflow-wrap:anywhere}
 .install-command code{font:12px/1.85 var(--mono)}
 #install-steps{padding-left:21px;color:var(--muted);font-size:12px;line-height:1.85;margin:18px 0}
