@@ -139,7 +139,7 @@ version: update `Cargo.toml`, `Cargo.lock`, CHANGELOG, and RELEASE_NOTES togethe
 5. Release resolves the tag once, verifies its package version, re-runs CI at
    that commit, builds all five targets, and publishes checksums, provenance,
    build metadata, and the checked-in release notes.
-6. Successful release completion triggers **Website**, which builds and validates
+6. After publishing, Release explicitly dispatches **Website**, which builds and validates
    the site from `master`, deploys generated files to `twig-web`, and explicitly
    requests a Pages build (token-authored pushes do not trigger it).
 
