@@ -1,4 +1,4 @@
-# Twig 🌿
+# Twig
 
 **Inspect. Navigate. Understand.** A local terminal explorer for JSON, YAML, and
 JSON-based HAR files, written in Rust.
@@ -27,8 +27,12 @@ Windows ARM64 and 32-bit binaries are not provided.
 Download the installer, inspect it if desired, then run it:
 
 ```powershell
-Invoke-WebRequest https://twig.wtf/install.ps1 -OutFile install.ps1
-powershell -NoProfile -ExecutionPolicy Bypass -File .\install.ps1
+Invoke-WebRequest -UseBasicParsing `
+  https://twig.wtf/install.ps1 `
+  -OutFile install.ps1
+powershell -NoProfile `
+  -ExecutionPolicy Bypass `
+  -File .\install.ps1
 ```
 
 `-ExecutionPolicy Bypass` applies only to that installer process; it does not
@@ -68,8 +72,8 @@ If scripts are restricted, download and verify the release in PowerShell:
 $version = 'v3.1.0'
 $asset = 'twig-x86_64-pc-windows-msvc.tar.gz'
 $base = "https://github.com/workdone0/twig/releases/download/$version"
-Invoke-WebRequest "$base/$asset" -OutFile $asset
-Invoke-WebRequest "$base/$asset.sha256" -OutFile "$asset.sha256"
+Invoke-WebRequest -UseBasicParsing "$base/$asset" -OutFile $asset
+Invoke-WebRequest -UseBasicParsing "$base/$asset.sha256" -OutFile "$asset.sha256"
 $expected = ((Get-Content "$asset.sha256" -Raw).Trim() -split '\s+')[0]
 $actual = (Get-FileHash $asset -Algorithm SHA256).Hash
 if ($expected -notmatch '^[a-fA-F0-9]{64}$' -or $actual -ine $expected) {

@@ -95,7 +95,7 @@ const methods = {
   },
   windows: {
     shell: 'POWERSHELL · WINDOWS x64',
-    command: "Invoke-WebRequest `\n  https://twig.wtf/install.ps1 `\n  -OutFile install.ps1\npowershell -NoProfile `\n  -ExecutionPolicy Bypass `\n  -File .\\install.ps1",
+    command: "Invoke-WebRequest -UseBasicParsing `\n  https://twig.wtf/install.ps1 `\n  -OutFile install.ps1\npowershell -NoProfile `\n  -ExecutionPolicy Bypass `\n  -File .\\install.ps1",
     note: 'PowerShell 5.1+ and tar.exe. Installs for your account and adds Twig to user PATH. No administrator access needed. The execution-policy option applies only to this installer process.',
     steps: ['Download the script with the first command; inspect it before running the second.', 'Close and reopen your terminal to load the updated PATH.', 'Run twig --version. For restricted scripts, use the manual guide below.'],
     guide: '/guide/#windows', label: 'Windows instructions & troubleshooting ↗'
@@ -126,3 +126,13 @@ document.querySelector('#copy-install')?.addEventListener('click', async () => {
     status.textContent = 'Copied. Paste into your terminal when ready.';
   } catch { status.textContent = 'Select the commands above and copy them manually.'; }
 });
+
+// Guides use the same copy interaction as the installation panel.
+document.querySelectorAll('.copy-code').forEach(button => button.addEventListener('click', async () => {
+  const block = button.closest('.code-block');
+  const feedback = block.querySelector('.copy-feedback');
+  try {
+    await navigator.clipboard.writeText(block.querySelector('code').textContent);
+    feedback.textContent = 'Copied.';
+  } catch { feedback.textContent = 'Select and copy the example manually.'; }
+}));
