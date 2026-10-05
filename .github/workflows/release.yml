@@ -99,6 +99,7 @@ jobs:
       contents: write
       id-token: write
       attestations: write
+      actions: write
     steps:
       - uses: actions/checkout@v4
         with:
@@ -121,3 +122,7 @@ jobs:
           body_path: RELEASE_NOTES.md
           files: artifacts/*
           fail_on_unmatched_files: true
+      - name: Dispatch website deployment
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh workflow run website.yml --ref master
