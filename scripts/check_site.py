@@ -25,6 +25,7 @@ for path,page in pages.items():
         if dest.is_dir():dest=dest/'index.html'
         if not dest.exists():errors.append(f'{path}: missing {link}')
         elif parts.fragment and dest in pages and unquote(parts.fragment) not in pages[dest].ids:errors.append(f'{path}: missing anchor {link}')
-assert (OUT/'install.sh').read_bytes()==(ROOT/'install.sh').read_bytes()
+for installer in ['install.sh', 'install.ps1']:
+    assert (OUT/installer).read_bytes()==(ROOT/installer).read_bytes()
 if errors:raise SystemExit('\n'.join(errors))
 print(f'Validated {len(pages)} pages, internal links and installer parity')

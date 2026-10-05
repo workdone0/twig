@@ -35,9 +35,10 @@ def markdown(source):
         line=lines[i]
         if not line.strip() or line.startswith('[Unreleased]:') or re.match(r'^\[[^\]]+\]:',line): i+=1;continue
         if line.startswith('```'):
+            language={'bash':'Bash / zsh','powershell':'PowerShell','json':'JSON','yaml':'YAML'}.get(line[3:].strip(),'Text')
             block=[];i+=1
             while i<len(lines) and not lines[i].startswith('```'):block.append(lines[i]);i+=1
-            out.append('<pre><code>'+html.escape('\n'.join(block))+'</code></pre>');i+=1;continue
+            out.append('<div class="code-block"><div class="code-toolbar"><span>'+language+'</span><button type="button" class="copy-code" aria-label="Copy '+language+' example">Copy</button><span class="copy-feedback" role="status"></span></div><pre tabindex="0"><code>'+html.escape('\n'.join(block))+'</code></pre></div>');i+=1;continue
         heading=re.match(r'^(#{1,6}) (.+)',line)
         if heading:
             level=len(heading[1]);text=heading[2];out.append(f'<h{level} id="{slug(text)}">{inline(text,source)}</h{level}>');i+=1;continue
@@ -67,12 +68,18 @@ def markdown(source):
 def build():
     OUT.mkdir(parents=True,exist_ok=True)
     for name in ['index.html','style.css','app.js','favicon.svg']:shutil.copyfile(ROOT/'website'/name,OUT/name)
-    shutil.copyfile(ROOT/'install.sh',OUT/'install.sh')
+    for installer in ['install.sh', 'install.ps1']:
+        shutil.copyfile(ROOT/installer,OUT/installer)
     (OUT/'.nojekyll').touch();(OUT/'CNAME').write_text('twig.wtf\n')
+    homepage=(ROOT/'website/index.html').read_text()
+    header=re.search(r'<header.*?</header>',homepage,re.S)[0]
+    footer=re.search(r'<footer.*?</footer>',homepage,re.S)[0]
     nav=''.join(f'<a href="/guide/{route+"/" if route else ""}">{title}</a>' for route,title in PAGES.values())
     for file,(route,title) in PAGES.items():
         destination=OUT/'guide'/route;destination.mkdir(parents=True,exist_ok=True)
-        document=f'''<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{title} — Twig</title><meta name="description" content="Twig {title.lower()}: practical documentation for the Rust terminal data explorer."><link rel="stylesheet" href="/style.css"><link rel="icon" href="/favicon.svg"><link rel="canonical" href="https://twig.wtf/guide/{route+'/' if route else ''}"></head><body><a class="skip" href="#main">Skip to content</a><header class="site-header wrap"><a class="brand" href="/">twig.</a><nav aria-label="Main navigation"><a href="/guide/">Guide</a><a href="https://github.com/workdone0/twig">GitHub ↗</a></nav></header><div class="docs-grid wrap"><nav class="docs-sidebar" aria-label="Documentation"><strong>TWIG / DOCUMENTATION</strong>{nav}</nav><main id="main" class="prose">{markdown(ROOT/file)}</main></div><footer class="wrap"><a href="https://github.com/workdone0/twig/blob/master/{file}">Edit this page on GitHub ↗</a><p>Generated from the repository documentation.</p></footer></body></html>'''
+        current='/guide/'+(route+'/' if route else '')
+        page_nav=nav.replace(f'href="{current}"',f'aria-current="page" href="{current}"')
+        document=f'''<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{title} — Twig</title><meta name="description" content="Twig {title.lower()}: practical documentation for the Rust terminal data explorer."><link rel="stylesheet" href="/style.css"><script src="/app.js" defer></script><link rel="icon" href="/favicon.svg"><link rel="canonical" href="https://twig.wtf/guide/{route+'/' if route else ''}"></head><body><a class="skip" href="#main">Skip to content</a>{header}<div class="docs-grid wrap"><nav class="docs-sidebar" aria-label="Documentation"><strong>TWIG / DOCUMENTATION</strong>{page_nav}</nav><main id="main" class="prose">{markdown(ROOT/file)}<p class="edit-page"><a href="https://github.com/workdone0/twig/blob/master/{file}">Edit this page on GitHub ↗</a></p></main></div>{footer}</body></html>'''
         (destination/'index.html').write_text(document)
     (OUT/'robots.txt').write_text('User-agent: *\nAllow: /\nSitemap: https://twig.wtf/sitemap.xml\n')
     routes=['/']+['/guide/'+(route+'/' if route else '') for route,_ in PAGES.values()]
