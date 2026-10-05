@@ -44,6 +44,10 @@ try {
     Assert ($script:userPath -eq "C:\existing;$destination") 'PATH duplicated during upgrade'
     Assert ((& (Join-Path $destination 'twig.exe') --version) -eq "twig $($script:releaseVersion.Substring(1))") 'Wrong installed binary'
     $before = (Get-FileHash (Join-Path $destination 'twig.exe')).Hash
+    $locked = [IO.File]::Open((Join-Path $destination 'twig.exe'), [IO.FileMode]::Open, [IO.FileAccess]::Read, [IO.FileShare]::None)
+    try { Expect-Failure { Install-Twig -InstallDir $destination } 'Could not replace' }
+    finally { $locked.Dispose() }
+    Assert ((Get-FileHash (Join-Path $destination 'twig.exe')).Hash -eq $before) 'Locked install modified existing executable'
     $script:badHash = $true
     Expect-Failure { Install-Twig -InstallDir $destination } 'Checksum mismatch'
     $script:badHash = $false; $script:missingHash = $true

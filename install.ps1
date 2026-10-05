@@ -87,7 +87,7 @@ Verifies SHA-256 before extraction. Close Twig before upgrading.
         Copy-Item -LiteralPath $binary -Destination $staged
         # Keep the existing installation intact if download/verification or replacement fails.
         try {
-            if ([IO.File]::Exists($target)) { [IO.File]::Replace($staged, $target, $null) }
+            if ([IO.File]::Exists($target)) { [IO.File]::Replace($staged, $target, [NullString]::Value) }
             else { [IO.File]::Move($staged, $target) }
         } catch { throw "Could not replace '$target'. Close any running Twig process and check directory permissions. $($_.Exception.Message)" }
         $staged = $null
