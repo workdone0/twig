@@ -140,7 +140,8 @@ version: update `Cargo.toml`, `Cargo.lock`, CHANGELOG, and RELEASE_NOTES togethe
    that commit, builds all five targets, and publishes checksums, provenance,
    build metadata, and the checked-in release notes.
 6. Successful release completion triggers **Website**, which builds and validates
-   the site from `master` and deploys generated files to `twig-web`.
+   the site from `master`, deploys generated files to `twig-web`, and explicitly
+   requests a Pages build (token-authored pushes do not trigger it).
 
 For recovery, run Release manually with an existing `vX.Y.Z` tag. Builds always
 check out the resolved tag commit, independent of the dispatch ref. A tag/manifest

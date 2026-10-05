@@ -6,6 +6,7 @@ on:
   workflow_dispatch:
 permissions:
   contents: write
+  pages: write
 concurrency:
   group: website
   cancel-in-progress: false
@@ -23,3 +24,8 @@ jobs:
           publish_dir: website/dist
           publish_branch: twig-web
           cname: twig.wtf
+      # GITHUB_TOKEN pushes do not trigger legacy Pages builds automatically.
+      - name: Request Pages build
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api --method POST "repos/$GITHUB_REPOSITORY/pages/builds"
