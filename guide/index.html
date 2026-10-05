@@ -1,37 +1,83 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>User guide — Twig</title><meta name="description" content="Twig user guide: practical documentation for the Rust terminal data explorer."><link rel="stylesheet" href="/style.css"><link rel="icon" href="/favicon.svg"><link rel="canonical" href="https://twig.wtf/guide/"></head><body><a class="skip" href="#main">Skip to content</a><header class="site-header wrap"><a class="brand" href="/">twig.</a><nav aria-label="Main navigation"><a href="/guide/">Guide</a><a href="https://github.com/workdone0/twig">GitHub ↗</a></nav></header><div class="docs-grid wrap"><nav class="docs-sidebar" aria-label="Documentation"><strong>TWIG / DOCUMENTATION</strong><a href="/guide/">User guide</a><a href="/guide/contributing/">Contributing</a><a href="/guide/migration/">Migration</a><a href="/guide/architecture/">Architecture</a><a href="/guide/evaluation/">Release evaluation</a><a href="/guide/release-notes/">Release notes</a></nav><main id="main" class="prose"><h1 id="twig">Twig 🌿</h1>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>User guide — Twig</title><meta name="description" content="Twig user guide: practical documentation for the Rust terminal data explorer."><link rel="stylesheet" href="/style.css"><script src="/app.js" defer></script><link rel="icon" href="/favicon.svg"><link rel="canonical" href="https://twig.wtf/guide/"></head><body><a class="skip" href="#main">Skip to content</a><header class="site-header wrap">
+  <a class="brand" href="/" aria-label="Twig home"><svg width="29" height="34" viewBox="0 0 29 34" aria-hidden="true"><path d="M14 31V3m0 18L3 10m11 4L25 3m-11 24L25 16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>twig<span class="brand-dot">.</span></a>
+  <nav aria-label="Main navigation"><a href="/guide/">Guide</a><a href="/guide/contributing/">Contribute</a><a class="github-link" href="https://github.com/workdone0/twig">GitHub <span aria-hidden="true">↗</span></a></nav>
+</header><div class="docs-grid wrap"><nav class="docs-sidebar" aria-label="Documentation"><strong>TWIG / DOCUMENTATION</strong><a aria-current="page" href="/guide/">User guide</a><a href="/guide/contributing/">Contributing</a><a href="/guide/migration/">Migration</a><a href="/guide/architecture/">Architecture</a><a href="/guide/evaluation/">Release evaluation</a><a href="/guide/release-notes/">Release notes</a></nav><main id="main" class="prose"><h1 id="twig">Twig</h1>
 <p><strong>Inspect. Navigate. Understand.</strong> A local terminal explorer for JSON, YAML, and JSON-based HAR files, written in Rust.</p>
 <p>Explore nested data with Miller columns, search keys and values, jump to paths, and inspect values without a browser. The TUI never edits your input. Separate CLI modes format data and repair JSON.</p>
 <p><a href="https://twig.wtf">Website</a> · <a href="https://twig.wtf/guide/">Guide</a> · <a href="https://github.com/workdone0/twig/releases">Releases</a> · <a href="/guide/contributing/">Contributing</a></p>
 <h2 id="installation">Installation</h2>
+<p>Choose the instructions for the terminal you are using. Native Windows uses PowerShell; WSL uses the Linux instructions. No Rust or Python installation is needed for a prebuilt release.</p>
+<h3 id="windows">Windows</h3>
+<p>Use <strong>Windows PowerShell 5.1 or PowerShell 7</strong> on Windows x64. Open a regular PowerShell tab in Windows Terminal; administrator access is not needed. The installer needs <code>tar.exe</code> (included in Windows 10 1803+ and Windows 11). Windows ARM64 and 32-bit binaries are not provided.</p>
+<p>Download the installer, inspect it if desired, then run it:</p>
+<div class="code-block"><div class="code-toolbar"><span>PowerShell</span><button type="button" class="copy-code" aria-label="Copy PowerShell example">Copy</button><span class="copy-feedback" role="status"></span></div><pre tabindex="0"><code>Invoke-WebRequest -UseBasicParsing `
+  https://twig.wtf/install.ps1 `
+  -OutFile install.ps1
+powershell -NoProfile `
+  -ExecutionPolicy Bypass `
+  -File .\install.ps1</code></pre></div>
+<p><code>-ExecutionPolicy Bypass</code> applies only to that installer process; it does not change your saved execution policy. Organization policies can still block scripts. If that happens, use the manual download instructions below or ask your administrator; do not change an organization policy to install Twig.</p>
+<p>The script downloads the latest release, verifies SHA-256 and the executable&#x27;s version, installs to <code>%LOCALAPPDATA%\Programs\Twig\bin</code>, and adds that folder to your <strong>user PATH</strong>. It does not edit the system PATH. Close and reopen your terminal, then check the installation:</p>
+<div class="code-block"><div class="code-toolbar"><span>PowerShell</span><button type="button" class="copy-code" aria-label="Copy PowerShell example">Copy</button><span class="copy-feedback" role="status"></span></div><pre tabindex="0"><code>twig --version
+twig --help
+twig &#x27;C:\path\to\data.json&#x27;</code></pre></div>
+<p>Choose a version or directory, or skip PATH changes:</p>
+<div class="code-block"><div class="code-toolbar"><span>PowerShell</span><button type="button" class="copy-code" aria-label="Copy PowerShell example">Copy</button><span class="copy-feedback" role="status"></span></div><pre tabindex="0"><code>powershell -NoProfile -ExecutionPolicy Bypass -File .\install.ps1 -Version v3.1.0 -InstallDir &quot;$env:LOCALAPPDATA\Programs\Twig\bin&quot;
+powershell -NoProfile -ExecutionPolicy Bypass -File .\install.ps1 -NoPath
+powershell -NoProfile -ExecutionPolicy Bypass -File .\install.ps1 -Help</code></pre></div>
+<p>Close any running Twig process before upgrading, then rerun the installer. Downloads and checksum verification happen before the installed executable is replaced. Failed downloads or mismatched versions leave the old executable intact. Temporary downloads are cleaned up on success and failure.</p>
+<h4 id="windows-manual-download">Windows manual download</h4>
+<p>If scripts are restricted, download and verify the release in PowerShell:</p>
+<div class="code-block"><div class="code-toolbar"><span>PowerShell</span><button type="button" class="copy-code" aria-label="Copy PowerShell example">Copy</button><span class="copy-feedback" role="status"></span></div><pre tabindex="0"><code>$version = &#x27;v3.1.0&#x27;
+$asset = &#x27;twig-x86_64-pc-windows-msvc.tar.gz&#x27;
+$base = &quot;https://github.com/workdone0/twig/releases/download/$version&quot;
+Invoke-WebRequest -UseBasicParsing &quot;$base/$asset&quot; -OutFile $asset
+Invoke-WebRequest -UseBasicParsing &quot;$base/$asset.sha256&quot; -OutFile &quot;$asset.sha256&quot;
+$expected = ((Get-Content &quot;$asset.sha256&quot; -Raw).Trim() -split &#x27;\s+&#x27;)[0]
+$actual = (Get-FileHash $asset -Algorithm SHA256).Hash
+if ($expected -notmatch &#x27;^[a-fA-F0-9]{64}$&#x27; -or $actual -ine $expected) {
+    throw &#x27;Checksum mismatch. Do not extract this archive.&#x27;
+}
+$dest = &quot;$env:LOCALAPPDATA\Programs\Twig\bin&quot;
+New-Item -ItemType Directory -Force -Path $dest | Out-Null
+tar -xzf $asset -C $dest twig.exe LICENSE
+if ($LASTEXITCODE -ne 0) { throw &#x27;Extraction failed.&#x27; }
+&amp; &quot;$dest\twig.exe&quot; --version</code></pre></div>
+<p>To run <code>twig</code> by name, open <strong>Edit environment variables for your account</strong> from the Start menu. Under <strong>User variables</strong>, select <strong>Path → Edit → New</strong>, add <code>%LOCALAPPDATA%\Programs\Twig\bin</code>, and save. Keep the existing entries. Close and reopen your terminal. The manual method overwrites the extracted files; close Twig and verify the checksum before doing so.</p>
+<h4 id="windows-troubleshooting">Windows troubleshooting</h4>
+<ul>
+<li><strong>“twig is not recognized”</strong>: reopen Windows Terminal completely. Try <code>&amp; &quot;$env:LOCALAPPDATA\Programs\Twig\bin\twig.exe&quot; --version</code> to check the installation independently of PATH. Use your chosen directory if customized.</li>
+<li><strong>An older version runs</strong>: <code>Get-Command twig -All</code> lists copies on PATH. Remove the obsolete executable or adjust your user PATH order, then open a new terminal.</li>
+<li><strong>Access denied while upgrading</strong>: close Twig in every terminal and retry. Choose a directory owned by your account; do not install into Program Files with the per-user installer.</li>
+<li><strong>Missing <code>tar.exe</code></strong>: run <code>Get-Command tar.exe</code>. Use a Windows installation with the built-in tar tool available, or extract the verified archive with an archive utility and follow the manual PATH steps.</li>
+<li><strong>Using Git Bash or WSL</strong>: run the PowerShell installer for native Windows. WSL is a separate Linux environment and uses <code>install.sh</code> inside WSL.</li>
+</ul>
+<p>To uninstall, close Twig, delete its installation directory (the default contains <code>twig.exe</code> and LICENSE), and remove that directory from your user PATH. If you used a shared custom directory, remove only Twig&#x27;s installed files. <code>twig --clear-cache</code> removes cached data before uninstalling; config is separate.</p>
 <h3 id="linux-and-macos">Linux and macOS</h3>
-<pre><code>curl -fsSL https://twig.wtf/install.sh | bash</code></pre>
-<p>The Bash installer downloads the latest published release, requires a matching SHA-256 checksum, and installs to <code>~/.local/bin</code>. It supports <code>sha256sum</code> or macOS&#x27;s <code>shasum -a 256</code>. Add the destination to your <code>PATH</code> if needed.</p>
+<div class="code-block"><div class="code-toolbar"><span>Bash / zsh</span><button type="button" class="copy-code" aria-label="Copy Bash / zsh example">Copy</button><span class="copy-feedback" role="status"></span></div><pre tabindex="0"><code>curl -fsSL https://twig.wtf/install.sh | bash</code></pre></div>
+<p>The Bash installer downloads the latest release, verifies SHA-256 and the executable&#x27;s version, and installs to <code>~/.local/bin</code>. It requires Bash, curl, tar and its gzip support, <code>install</code>, and either <code>sha256sum</code> or macOS&#x27;s <code>shasum</code>. Linux uses GNU libc; Alpine/musl binaries are not provided. macOS builds target 11.0 or newer on Intel and Apple Silicon.</p>
 <p>To inspect the script first or choose a version/directory:</p>
-<pre><code>curl -fsSL https://twig.wtf/install.sh -o install.sh
+<div class="code-block"><div class="code-toolbar"><span>Bash / zsh</span><button type="button" class="copy-code" aria-label="Copy Bash / zsh example">Copy</button><span class="copy-feedback" role="status"></span></div><pre tabindex="0"><code>curl -fsSL https://twig.wtf/install.sh -o install.sh
 bash install.sh --help
-bash install.sh --version v3.1.0 --to &quot;$HOME/.local/bin&quot; --yes</code></pre>
-<p>Use <code>--method build</code> to compile the selected release with Cargo; it honors the same destination. Interactive invocations ask before installing unless <code>--yes</code> is supplied. Piped invocations run noninteractively. Re-running upgrades an existing installation through an atomic executable replacement.</p>
-<h3 id="manual-download-and-windows">Manual download and Windows</h3>
+bash install.sh --version v3.1.0 --to &quot;$HOME/.local/bin&quot; --yes</code></pre></div>
+<p>If <code>twig</code> is not found, add <code>export PATH=&quot;$HOME/.local/bin:$PATH&quot;</code> to your shell profile (<code>~/.zshrc</code> for zsh or <code>~/.bashrc</code> for Bash), then open a new terminal. Run <code>twig --version</code> and <code>twig --help</code>. For a custom directory, use that path. <code>command -v twig</code> shows which executable your shell resolves.</p>
+<p>Use <code>--method build</code> to compile the selected release with Cargo; it honors the same destination. Interactive invocations ask before installing unless <code>--yes</code> is supplied. Piped invocations run noninteractively. Rerun to upgrade through an atomic executable replacement. To uninstall, remove the installed <code>twig</code> file; configuration and caches are separate.</p>
+<h3 id="release-downloads-and-verification">Release downloads and verification</h3>
 <p>Download <code>twig-&lt;target&gt;.tar.gz</code> and its separate <code>.tar.gz.sha256</code> file from <a href="https://github.com/workdone0/twig/releases/latest">Releases</a>.</p>
 <table>
 <tr><th>OS</th><th>Targets</th></tr>
 <tr><td>Linux (GNU libc)</td><td><code>x86_64-unknown-linux-gnu</code>, <code>aarch64-unknown-linux-gnu</code></td></tr>
 <tr><td>macOS</td><td><code>x86_64-apple-darwin</code>, <code>aarch64-apple-darwin</code></td></tr>
-<tr><td>Windows</td><td><code>x86_64-pc-windows-msvc</code></td></tr>
+<tr><td>Windows x64</td><td><code>x86_64-pc-windows-msvc</code></td></tr>
 </table>
-<p>Verify the archive with <code>sha256sum -c &lt;checksum-file&gt;</code> (Linux), <code>shasum -a 256 -c &lt;checksum-file&gt;</code> (macOS), or compare PowerShell&#x27;s <code>Get-FileHash &lt;archive&gt; -Algorithm SHA256</code> against the checksum file (Windows). Extract it with <code>tar -xzf &lt;archive&gt;</code>. Archives contain <code>twig</code>/<code>twig.exe</code> and LICENSE. Put the executable on <code>PATH</code>.</p>
-<p>These are native executables, not universal static binaries. Linux builds use GNU libc; macOS targets a deployment minimum of 11.0. Release <code>.build.txt</code> assets record the source commit, compiler, size, and available linkage diagnostics. Clipboard support depends on the host desktop; SSH sessions may not provide it. Binaries are not OS code-signed/notarized. Release archives have checksums and GitHub build provenance attestations.</p>
+<p>Verify with <code>sha256sum -c &lt;checksum-file&gt;</code> on Linux or <code>shasum -a 256 -c &lt;checksum-file&gt;</code> on macOS, then use <code>tar -xzf &lt;archive&gt;</code>. Windows commands are shown above. Archives contain the executable and LICENSE.</p>
+<p>These are native executables, not universal static binaries. Release <code>.build.txt</code> assets record the commit, compiler, size, and available linkage diagnostics. Clipboard support depends on the host desktop; SSH sessions may not provide it. Binaries and the PowerShell script are not OS code-signed/notarized. Archives have SHA-256 checksums and GitHub build provenance attestations.</p>
 <h3 id="build-from-source">Build from source</h3>
-<p>Requires Rust 1.88 or newer, Cargo, and a C compiler/linker for bundled SQLite.</p>
-<pre><code>git clone https://github.com/workdone0/twig.git
-cd twig
-cargo build --release --locked
-./target/release/twig --help</code></pre>
-<p>Or install directly from the Git release:</p>
-<pre><code>cargo install --locked --git https://github.com/workdone0/twig --tag v3.1.0 twig</code></pre>
-<p>Use the Git source explicitly: the <code>twig</code> package on crates.io is unrelated. Python is not needed to run the application.</p>
+<p>Requires Rust 1.88+, Cargo, and a C compiler/linker for bundled SQLite. On Windows, use the MSVC Rust toolchain with Visual Studio Build Tools&#x27; C++ workload and Windows SDK; on macOS, install Xcode Command Line Tools; on Linux, use your distribution&#x27;s C build toolchain.</p>
+<div class="code-block"><div class="code-toolbar"><span>Bash / zsh</span><button type="button" class="copy-code" aria-label="Copy Bash / zsh example">Copy</button><span class="copy-feedback" role="status"></span></div><pre tabindex="0"><code>cargo install --locked --git https://github.com/workdone0/twig --tag v3.1.0 twig</code></pre></div>
+<p>Cargo installs into its own bin directory, usually <code>~/.cargo/bin</code> on Unix or <code>%USERPROFILE%\.cargo\bin</code> on Windows. Ensure that directory is on PATH. Use the Git source explicitly: the <code>twig</code> package on crates.io is unrelated. Python is not needed to run the application.</p>
 <h2 id="usage">Usage</h2>
-<pre><code>twig samples/cloud_infrastructure.json
+<div class="code-block"><div class="code-toolbar"><span>Bash / zsh</span><button type="button" class="copy-code" aria-label="Copy Bash / zsh example">Copy</button><span class="copy-feedback" role="status"></span></div><pre tabindex="0"><code>twig samples/cloud_infrastructure.json
 twig samples/k8s_manifest.yaml
 twig samples/browser_navigation.har
 
@@ -49,7 +95,7 @@ twig --check --rebuild-db data.json
 twig --no-cache secrets.json
 
 # JSON stdin is available for non-interactive modes
-cat response.json | twig --print -</code></pre>
+cat response.json | twig --print -</code></pre></div>
 <p>Output is plain JSON/YAML, suitable for piping. <code>-o</code> writes atomically after successful parsing and can replace an existing file, including the input. Prefer a separate output when reviewing repairs. Never redirect stdout to the input path: the shell truncates that file before Twig reads it.</p>
 <h3 id="cli-reference">CLI reference</h3>
 <table>
@@ -87,10 +133,11 @@ cat response.json | twig --print -</code></pre>
 <p>Mouse wheel moves selection. Click a row to select it; click the selected row to open its container. Right-click returns to the parent. Clipboard ownership is kept while Twig runs; persistence after exit depends on the desktop clipboard manager. Failures are shown in the status message.</p>
 <p>Paths look like <code>.users[0].name</code>; root arrays use <code>.[0]</code>. Keys containing punctuation, spaces, or empty strings use JSON-quoted brackets, such as <code>.regions[&quot;us-east-1&quot;]</code> or <code>.[&quot;a.b&quot;]</code>. This is a path lookup syntax, not a full jq or JSONPath query language. YAML documents are wrapped in an array: <code>.[0].kind</code> addresses the first document, and <code>.kind</code> is a shorthand fallback.</p>
 <p>Search is a literal substring match, with ASCII case-insensitivity; <code>%</code> and <code>_</code> are ordinary characters. Matches cycle in source traversal order, including numeric array order. Non-ASCII characters match exactly.</p>
+<h3 id="copying-and-preview-limits">Copying and preview limits</h3>
 <p>The inspector shows a limited preview. Clipboard <code>y</code> exports the <strong>complete selected value</strong>, preserving scalar types and order, up to 10,000 nodes; larger selections give an explicit error directing you to <code>--print</code>. Serialization does not preserve original whitespace, comments, anchors, or quoting.</p>
 <h2 id="configuration-and-local-data">Configuration and local data</h2>
 <p>Themes: <code>catppuccin-mocha</code> (default) and <code>solarized-dark</code>. Press <code>t</code> to save. Unknown config keys are preserved. Unknown theme names fall back to the default; custom theme definitions are not supported.</p>
-<pre><code>{&quot;theme&quot;: &quot;catppuccin-mocha&quot;}</code></pre>
+<div class="code-block"><div class="code-toolbar"><span>JSON</span><button type="button" class="copy-code" aria-label="Copy JSON example">Copy</button><span class="copy-feedback" role="status"></span></div><pre tabindex="0"><code>{&quot;theme&quot;: &quot;catppuccin-mocha&quot;}</code></pre></div>
 <table>
 <tr><th>Platform</th><th>Config directory (<code>config.json</code>)</th><th>Cache directory</th></tr>
 <tr><td>Linux</td><td><code>$XDG_CONFIG_HOME/twig</code> or <code>~/.config/twig</code></td><td><code>$XDG_CACHE_HOME/twig</code> or <code>~/.cache/twig</code></td></tr>
@@ -107,8 +154,8 @@ cat response.json | twig --print -</code></pre>
 <p>Navigation fetches pages of at most 256 siblings, with a horizontal viewport for deep trees. Inspector previews have depth/node limits. Search is a SQLite substring scan; broad searches on very large files can take time.</p>
 <p>JSON input must contain a single document. Duplicate object keys and ambiguous stored paths are rejected. Maximum supported nesting is 128 levels (the JSON parser may reject at its own recursion boundary). YAML&#x27;s TUI model supports JSON-compatible scalar types, sequences, and string-keyed mappings; non-finite numbers, tagged values, and complex mapping keys are not supported. <code>--print</code> uses the YAML value serializer and supports a wider YAML value model.</p>
 <p>Measure cold ingestion explicitly:</p>
-<pre><code>cargo build --release --locked
-python3 scripts/benchmark.py --binary target/release/twig</code></pre>
+<div class="code-block"><div class="code-toolbar"><span>Bash / zsh</span><button type="button" class="copy-code" aria-label="Copy Bash / zsh example">Copy</button><span class="copy-feedback" role="status"></span></div><pre tabindex="0"><code>cargo build --release --locked
+python3 scripts/benchmark.py --binary target/release/twig</code></pre></div>
 <p>The benchmark generates a deterministic file and reports wall time and peak RSS. <code>--check</code> uses MiB units. Cached loads still read/hash the source to verify it; they are not evidence of parsing throughput. No universal latency or fixed binary-size claim is made.</p>
 <h2 id="development">Development</h2>
 <ul>
@@ -118,6 +165,6 @@ python3 scripts/benchmark.py --binary target/release/twig</code></pre>
 <li><a href="/guide/evaluation/">Release evaluation</a>: audit findings and their resolution.</li>
 <li><a href="https://github.com/workdone0/twig/blob/master/CHANGELOG.md">Changelog</a> and <a href="/guide/release-notes/">release notes</a>.</li>
 </ul>
-<p>Website source lives in <code>website/</code>. Its guides are generated from these Markdown files, and the deployed installer is copied from this repository&#x27;s <code>install.sh</code>. The Python source remains on <a href="https://github.com/workdone0/twig/tree/legacy-python">legacy-python</a>.</p>
+<p>Website source lives in <code>website/</code>. Its guides are generated from these Markdown files, and both deployed installers are copied from this repository&#x27;s <code>install.sh</code> and <code>install.ps1</code>. The Python source remains on <a href="https://github.com/workdone0/twig/tree/legacy-python">legacy-python</a>.</p>
 <h2 id="license">License</h2>
-<p>MIT — see <a href="https://github.com/workdone0/twig/blob/master/LICENSE">LICENSE</a>.</p></main></div><footer class="wrap"><a href="https://github.com/workdone0/twig/blob/master/README.md">Edit this page on GitHub ↗</a><p>Generated from the repository documentation.</p></footer></body></html>
+<p>MIT — see <a href="https://github.com/workdone0/twig/blob/master/LICENSE">LICENSE</a>.</p><p class="edit-page"><a href="https://github.com/workdone0/twig/blob/master/README.md">Edit this page on GitHub ↗</a></p></main></div><footer class="wrap"><a class="brand" href="/" aria-label="Twig home">twig<span class="brand-dot">.</span></a><p>Clarity for nested data.</p><div><a href="https://github.com/workdone0/twig/releases/latest">Releases ↗</a><a href="https://github.com/workdone0/twig/issues">Issues ↗</a><a href="https://github.com/workdone0/twig/blob/master/LICENSE">MIT License</a></div></footer></body></html>

@@ -8,7 +8,11 @@ METHOD=fetch
 INSTALL_DIR="${HOME}/.local/bin"
 ASSUME_YES=0
 TWIG_INSTALL_TMP=""
-cleanup() { if [[ -n "$TWIG_INSTALL_TMP" ]]; then rm -rf "$TWIG_INSTALL_TMP"; fi; }
+STAGED=""
+cleanup() {
+    if [[ -n "$STAGED" ]]; then rm -f "$STAGED"; fi
+    if [[ -n "$TWIG_INSTALL_TMP" ]]; then rm -rf "$TWIG_INSTALL_TMP"; fi
+}
 trap cleanup EXIT
 usage() {
     cat <<'HELP'
@@ -37,9 +41,34 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 [[ "$METHOD" == fetch || "$METHOD" == build ]] || fail "method must be fetch or build"
+case "$(uname -s)" in
+    Linux) os=unknown-linux-gnu ;;
+    Darwin) os=apple-darwin ;;
+    MINGW*|MSYS*|CYGWIN*) fail 'On Windows, use the PowerShell installer: https://twig.wtf/guide/#windows' ;;
+    *) fail 'this installer supports Linux and macOS' ;;
+esac
+case "$(uname -m)" in
+    x86_64|amd64) arch=x86_64 ;;
+    arm64|aarch64) arch=aarch64 ;;
+    *) fail 'unsupported architecture; build manually from source' ;;
+esac
 need curl
+need install
+need mktemp
+if [[ "$METHOD" == fetch ]]; then
+    need tar
+    if command -v sha256sum >/dev/null 2>&1; then
+        hash_command=(sha256sum)
+    elif command -v shasum >/dev/null 2>&1; then
+        hash_command=(shasum -a 256)
+    else
+        fail 'checksum verification requires sha256sum or shasum'
+    fi
+else
+    need cargo
+fi
 if [[ "$VERSION" == latest ]]; then
-    VERSION="$(curl --proto '=https' --tlsv1.2 -fsSL "https://api.github.com/repos/${TWIG_REPO}/releases/latest" | sed -n 's/.*"tag_name":[[:space:]]*"\([^"]*\)".*/\1/p' | head -n 1)"
+    VERSION="$(curl --proto '=https' --tlsv1.2 --connect-timeout 15 --max-time 120 --retry 3 -fsSL "https://api.github.com/repos/${TWIG_REPO}/releases/latest" | sed -n 's/.*"tag_name":[[:space:]]*"\([^"]*\)".*/\1/p' | head -n 1)"
 fi
 [[ "$VERSION" =~ ^v[0-9]+\.[0-9]+\.[0-9]+([-+][A-Za-z0-9.-]+)?$ ]] || fail "invalid release tag: $VERSION"
 printf 'Install Twig %s via %s into %s\n' "$VERSION" "$METHOD" "$INSTALL_DIR"
@@ -54,29 +83,11 @@ if [[ "$METHOD" == build ]]; then
     cargo install --locked --git "https://github.com/${TWIG_REPO}.git" --tag "$VERSION" --root "$TWIG_INSTALL_TMP/build" twig
     BINARY="$TWIG_INSTALL_TMP/build/bin/twig"
 else
-    need tar
-    case "$(uname -s)" in
-        Linux) os=unknown-linux-gnu ;;
-        Darwin) os=apple-darwin ;;
-        *) fail 'prebuilt installer supports Linux and macOS; use a Windows release archive on Windows' ;;
-    esac
-    case "$(uname -m)" in
-        x86_64|amd64) arch=x86_64 ;;
-        arm64|aarch64) arch=aarch64 ;;
-        *) fail 'unsupported architecture' ;;
-    esac
-    if command -v sha256sum >/dev/null 2>&1; then
-        hash_command=(sha256sum)
-    elif command -v shasum >/dev/null 2>&1; then
-        hash_command=(shasum -a 256)
-    else
-        fail 'checksum verification requires sha256sum or shasum'
-    fi
     asset="twig-${arch}-${os}.tar.gz"
     url="https://github.com/${TWIG_REPO}/releases/download/${VERSION}/${asset}"
-    curl --proto '=https' --tlsv1.2 -fL --retry 3 --connect-timeout 15 -o "$TWIG_INSTALL_TMP/$asset" "$url"
-    curl --proto '=https' --tlsv1.2 -fL --retry 3 --connect-timeout 15 -o "$TWIG_INSTALL_TMP/checksum" "$url.sha256" || fail 'checksum download failed; refusing to install'
-    expected="$(awk 'NR==1 {print $1}' "$TWIG_INSTALL_TMP/checksum")"
+    curl --proto '=https' --tlsv1.2 -fL --retry 3 --connect-timeout 15 --max-time 120 -o "$TWIG_INSTALL_TMP/$asset" "$url"
+    curl --proto '=https' --tlsv1.2 -fL --retry 3 --connect-timeout 15 --max-time 120 -o "$TWIG_INSTALL_TMP/checksum" "$url.sha256" || fail 'checksum download failed; refusing to install'
+    expected="$(awk 'NR==1 {print $1}' "$TWIG_INSTALL_TMP/checksum" | tr 'A-F' 'a-f')"
     [[ "$expected" =~ ^[a-fA-F0-9]{64}$ ]] || fail 'invalid checksum file'
     actual="$("${hash_command[@]}" "$TWIG_INSTALL_TMP/$asset" | awk '{print $1}')"
     [[ "$actual" == "$expected" ]] || fail 'checksum mismatch; refusing to install'
@@ -84,11 +95,13 @@ else
     BINARY="$TWIG_INSTALL_TMP/twig"
 fi
 [[ -x "$BINARY" ]] || fail 'archive/build did not contain an executable twig'
-"$BINARY" --version
+reported="$("$BINARY" --version)" || fail 'downloaded executable cannot run on this system'
+[[ "$reported" == "twig ${VERSION#v}" ]] || fail "executable version mismatch: expected ${VERSION#v}, got $reported"
 mkdir -p "$INSTALL_DIR"
 # Stage next to the destination so replacement is atomic on the filesystem.
 STAGED="$(mktemp "$INSTALL_DIR/.twig.XXXXXX")"
 if install -m 0755 "$BINARY" "$STAGED" && mv -f "$STAGED" "$INSTALL_DIR/$TWIG_BIN"; then
+    STAGED=""
     printf 'Installed %s\n' "$INSTALL_DIR/$TWIG_BIN"
 else
     rm -f "$STAGED"
@@ -96,5 +109,8 @@ else
 fi
 case ":$PATH:" in
     *":$INSTALL_DIR:"*) ;;
-    *) printf 'Add this directory to your PATH: %s\n' "$INSTALL_DIR" ;;
+    *) printf 'Add this directory to PATH in your shell profile: %s\n' "$INSTALL_DIR"
+       # Print a literal PATH variable for the user's shell to expand.
+       # shellcheck disable=SC2016
+       printf 'For this terminal: export PATH=%q:"$PATH"\n' "$INSTALL_DIR" ;;
 esac
