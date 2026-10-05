@@ -13,15 +13,113 @@ CLI modes format data and repair JSON.
 
 ## Installation
 
+Choose the instructions for the terminal you are using. Native Windows uses
+PowerShell; WSL uses the Linux instructions. No Rust or Python installation is
+needed for a prebuilt release.
+
+### Windows
+
+Use **Windows PowerShell 5.1 or PowerShell 7** on Windows x64. Open a regular
+PowerShell tab in Windows Terminal; administrator access is not needed.
+The installer needs `tar.exe` (included in Windows 10 1803+ and Windows 11).
+Windows ARM64 and 32-bit binaries are not provided.
+
+Download the installer, inspect it if desired, then run it:
+
+```powershell
+Invoke-WebRequest https://twig.wtf/install.ps1 -OutFile install.ps1
+powershell -NoProfile -ExecutionPolicy Bypass -File .\install.ps1
+```
+
+`-ExecutionPolicy Bypass` applies only to that installer process; it does not
+change your saved execution policy. Organization policies can still block
+scripts. If that happens, use the manual download instructions below or ask
+your administrator; do not change an organization policy to install Twig.
+
+The script downloads the latest release, verifies SHA-256 and the executable's
+version, installs to `%LOCALAPPDATA%\Programs\Twig\bin`, and adds that folder to
+your **user PATH**. It does not edit the system PATH. Close and reopen your
+terminal, then check the installation:
+
+```powershell
+twig --version
+twig --help
+twig 'C:\path\to\data.json'
+```
+
+Choose a version or directory, or skip PATH changes:
+
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File .\install.ps1 -Version v3.1.0 -InstallDir "$env:LOCALAPPDATA\Programs\Twig\bin"
+powershell -NoProfile -ExecutionPolicy Bypass -File .\install.ps1 -NoPath
+powershell -NoProfile -ExecutionPolicy Bypass -File .\install.ps1 -Help
+```
+
+Close any running Twig process before upgrading, then rerun the installer.
+Downloads and checksum verification happen before the installed executable is
+replaced. Failed downloads or mismatched versions leave the old executable
+intact. Temporary downloads are cleaned up on success and failure.
+
+#### Windows manual download
+
+If scripts are restricted, download and verify the release in PowerShell:
+
+```powershell
+$version = 'v3.1.0'
+$asset = 'twig-x86_64-pc-windows-msvc.tar.gz'
+$base = "https://github.com/workdone0/twig/releases/download/$version"
+Invoke-WebRequest "$base/$asset" -OutFile $asset
+Invoke-WebRequest "$base/$asset.sha256" -OutFile "$asset.sha256"
+$expected = ((Get-Content "$asset.sha256" -Raw).Trim() -split '\s+')[0]
+$actual = (Get-FileHash $asset -Algorithm SHA256).Hash
+if ($expected -notmatch '^[a-fA-F0-9]{64}$' -or $actual -ine $expected) {
+    throw 'Checksum mismatch. Do not extract this archive.'
+}
+$dest = "$env:LOCALAPPDATA\Programs\Twig\bin"
+New-Item -ItemType Directory -Force -Path $dest | Out-Null
+tar -xzf $asset -C $dest twig.exe LICENSE
+if ($LASTEXITCODE -ne 0) { throw 'Extraction failed.' }
+& "$dest\twig.exe" --version
+```
+
+To run `twig` by name, open **Edit environment variables for your account** from
+the Start menu. Under **User variables**, select **Path → Edit → New**, add
+`%LOCALAPPDATA%\Programs\Twig\bin`, and save. Keep the existing entries. Close
+and reopen your terminal. The manual method overwrites the extracted files;
+close Twig and verify the checksum before doing so.
+
+#### Windows troubleshooting
+
+- **“twig is not recognized”**: reopen Windows Terminal completely. Try
+  `& "$env:LOCALAPPDATA\Programs\Twig\bin\twig.exe" --version` to check the
+  installation independently of PATH. Use your chosen directory if customized.
+- **An older version runs**: `Get-Command twig -All` lists copies on PATH. Remove
+  the obsolete executable or adjust your user PATH order, then open a new terminal.
+- **Access denied while upgrading**: close Twig in every terminal and retry.
+  Choose a directory owned by your account; do not install into Program Files
+  with the per-user installer.
+- **Missing `tar.exe`**: run `Get-Command tar.exe`. Use a Windows installation
+  with the built-in tar tool available, or extract the verified archive with
+  an archive utility and follow the manual PATH steps.
+- **Using Git Bash or WSL**: run the PowerShell installer for native Windows.
+  WSL is a separate Linux environment and uses `install.sh` inside WSL.
+
+To uninstall, close Twig, delete its installation directory (the default
+contains `twig.exe` and LICENSE), and remove that directory from your user PATH.
+If you used a shared custom directory, remove only Twig's installed files.
+`twig --clear-cache` removes cached data before uninstalling; config is separate.
+
 ### Linux and macOS
 
 ```bash
 curl -fsSL https://twig.wtf/install.sh | bash
 ```
 
-The Bash installer downloads the latest published release, requires a matching
-SHA-256 checksum, and installs to `~/.local/bin`. It supports `sha256sum` or
-macOS's `shasum -a 256`. Add the destination to your `PATH` if needed.
+The Bash installer downloads the latest release, verifies SHA-256 and the
+executable's version, and installs to `~/.local/bin`. It requires Bash, curl,
+tar and its gzip support, `install`, and either `sha256sum` or macOS's `shasum`.
+Linux uses GNU libc; Alpine/musl binaries are not provided. macOS builds target
+11.0 or newer on Intel and Apple Silicon.
 
 To inspect the script first or choose a version/directory:
 
@@ -31,12 +129,18 @@ bash install.sh --help
 bash install.sh --version v3.1.0 --to "$HOME/.local/bin" --yes
 ```
 
+If `twig` is not found, add `export PATH="$HOME/.local/bin:$PATH"` to your shell
+profile (`~/.zshrc` for zsh or `~/.bashrc` for Bash), then open a new terminal.
+Run `twig --version` and `twig --help`. For a custom directory, use that path.
+`command -v twig` shows which executable your shell resolves.
+
 Use `--method build` to compile the selected release with Cargo; it honors the
 same destination. Interactive invocations ask before installing unless `--yes`
-is supplied. Piped invocations run noninteractively. Re-running upgrades an
-existing installation through an atomic executable replacement.
+is supplied. Piped invocations run noninteractively. Rerun to upgrade through
+an atomic executable replacement. To uninstall, remove the installed `twig`
+file; configuration and caches are separate.
 
-### Manual download and Windows
+### Release downloads and verification
 
 Download `twig-<target>.tar.gz` and its separate `.tar.gz.sha256` file from
 [Releases](https://github.com/workdone0/twig/releases/latest).
@@ -45,38 +149,31 @@ Download `twig-<target>.tar.gz` and its separate `.tar.gz.sha256` file from
 | --- | --- |
 | Linux (GNU libc) | `x86_64-unknown-linux-gnu`, `aarch64-unknown-linux-gnu` |
 | macOS | `x86_64-apple-darwin`, `aarch64-apple-darwin` |
-| Windows | `x86_64-pc-windows-msvc` |
+| Windows x64 | `x86_64-pc-windows-msvc` |
 
-Verify the archive with `sha256sum -c <checksum-file>` (Linux),
-`shasum -a 256 -c <checksum-file>` (macOS), or compare PowerShell's
-`Get-FileHash <archive> -Algorithm SHA256` against the checksum file (Windows).
-Extract it with `tar -xzf <archive>`. Archives contain `twig`/`twig.exe` and LICENSE.
-Put the executable on `PATH`.
+Verify with `sha256sum -c <checksum-file>` on Linux or
+`shasum -a 256 -c <checksum-file>` on macOS, then use `tar -xzf <archive>`.
+Windows commands are shown above. Archives contain the executable and LICENSE.
 
-These are native executables, not universal static binaries. Linux builds use
-GNU libc; macOS targets a deployment minimum of 11.0. Release `.build.txt` assets
-record the source commit, compiler, size, and available linkage diagnostics.
+These are native executables, not universal static binaries. Release `.build.txt`
+assets record the commit, compiler, size, and available linkage diagnostics.
 Clipboard support depends on the host desktop; SSH sessions may not provide it.
-Binaries are not OS code-signed/notarized. Release archives have checksums and
-GitHub build provenance attestations.
+Binaries and the PowerShell script are not OS code-signed/notarized. Archives
+have SHA-256 checksums and GitHub build provenance attestations.
 
 ### Build from source
 
-Requires Rust 1.88 or newer, Cargo, and a C compiler/linker for bundled SQLite.
-
-```bash
-git clone https://github.com/workdone0/twig.git
-cd twig
-cargo build --release --locked
-./target/release/twig --help
-```
-
-Or install directly from the Git release:
+Requires Rust 1.88+, Cargo, and a C compiler/linker for bundled SQLite. On Windows,
+use the MSVC Rust toolchain with Visual Studio Build Tools' C++ workload and
+Windows SDK; on macOS, install Xcode Command Line Tools; on Linux, use your
+distribution's C build toolchain.
 
 ```bash
 cargo install --locked --git https://github.com/workdone0/twig --tag v3.1.0 twig
 ```
 
+Cargo installs into its own bin directory, usually `~/.cargo/bin` on Unix or
+`%USERPROFILE%\.cargo\bin` on Windows. Ensure that directory is on PATH.
 Use the Git source explicitly: the `twig` package on crates.io is unrelated.
 Python is not needed to run the application.
 
@@ -162,6 +259,8 @@ Search is a literal substring match, with ASCII case-insensitivity; `%` and `_`
 are ordinary characters. Matches cycle in source traversal order, including
 numeric array order. Non-ASCII characters match exactly.
 
+### Copying and preview limits
+
 The inspector shows a limited preview. Clipboard `y` exports the **complete
 selected value**, preserving scalar types and order, up to 10,000 nodes; larger
 selections give an explicit error directing you to `--print`. Serialization does
@@ -244,7 +343,8 @@ binary-size claim is made.
 - [Changelog](CHANGELOG.md) and [release notes](RELEASE_NOTES.md).
 
 Website source lives in `website/`. Its guides are generated from these Markdown
-files, and the deployed installer is copied from this repository's `install.sh`.
+files, and both deployed installers are copied from this repository's `install.sh` and
+`install.ps1`.
 The Python source remains on
 [legacy-python](https://github.com/workdone0/twig/tree/legacy-python).
 

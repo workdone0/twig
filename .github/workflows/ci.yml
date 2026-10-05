@@ -31,6 +31,14 @@ jobs:
       - run: cargo clippy --locked --all-targets -- -D warnings
       - run: cargo test --locked --all-targets
       - run: cargo test --locked --doc
+      - name: Windows PowerShell 5.1 installer contracts
+        if: matrix.os == 'windows-latest' && matrix.rust == 'stable'
+        shell: powershell
+        run: ./scripts/test_windows_installer.ps1 -Binary (Resolve-Path target/debug/twig.exe)
+      - name: PowerShell 7 installer contracts
+        if: matrix.os == 'windows-latest' && matrix.rust == 'stable'
+        shell: pwsh
+        run: ./scripts/test_windows_installer.ps1 -Binary (Resolve-Path target/debug/twig.exe)
   tooling:
     runs-on: ubuntu-22.04
     steps:

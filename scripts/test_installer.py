@@ -19,7 +19,7 @@ class InstallerTests(unittest.TestCase):
         self.bin = self.root / "bin"
         self.bin.mkdir()
         self.env = dict(os.environ, HOME=str(self.root), TMPDIR=str(self.root), PATH=str(self.bin), MOCK_ROOT=str(self.root))
-        for tool in ["cat", "bash", "tar", "gzip", "install", "mkdir", "mktemp", "rm", "mv", "awk", "sed", "head", "shasum", "perl", "dirname", "basename"]:
+        for tool in ["cat", "tr", "bash", "tar", "gzip", "install", "mkdir", "mktemp", "rm", "mv", "awk", "sed", "head", "shasum", "perl", "dirname", "basename"]:
             found = shutil.which(tool)
             if found: (self.bin / tool).symlink_to(found)
         self.mock("uname", '#!/bin/bash\nif [[ "$1" == -s ]]; then echo "${MOCK_OS:-Linux}"; else echo x86_64; fi\n')
@@ -52,6 +52,20 @@ else /bin/cp "$MOCK_ROOT/archive" "$out"; fi
         self.env["MOCK_OS"]="Darwin"
         dest=self.root/"chosen"
         p=self.run_installer("--to",str(dest),"--yes");self.assertEqual(p.returncode,0,p.stderr);self.assertTrue((dest/"twig").exists());self.assertEqual(list(self.root.glob("twig-install.*")),[])
+    def test_wrong_version_preserves_existing_install(self):
+        dest=self.root/'chosen';dest.mkdir();(dest/'twig').write_text('previous installation')
+        result=self.run_installer('--version','v9.9.9','--to',str(dest),'--yes')
+        self.assertNotEqual(result.returncode,0)
+        self.assertIn('version mismatch',result.stderr)
+        self.assertEqual((dest/'twig').read_text(),'previous installation')
+        self.assertEqual(list(self.root.glob('twig-install.*')),[])
+    def test_git_bash_points_to_powershell(self):
+        self.env['MOCK_OS']='MINGW64_NT-10.0'
+        result=self.run_installer('--yes')
+        self.assertNotEqual(result.returncode,0);self.assertIn('PowerShell',result.stderr)
+    def test_uppercase_checksum(self):
+        checksum=self.root/'checksum';checksum.write_text(checksum.read_text().upper())
+        result=self.run_installer('--yes');self.assertEqual(result.returncode,0,result.stderr)
     def test_missing_checksum_fails_closed(self):
         self.env["MOCK_MISSING"]="1";self.assertNotEqual(self.run_installer("--yes").returncode,0);self.assertFalse((self.root/".local/bin/twig").exists())
     def test_bad_checksum_fails_closed(self):

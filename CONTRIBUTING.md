@@ -9,7 +9,8 @@ large feature or new dependency.
 
 The application is Rust; the website and tooling use Python's standard library.
 Use Rust 1.88+ with Cargo, rustfmt, Clippy, a C compiler/linker for bundled SQLite,
-and Python 3.10+. ShellCheck checks the Bash installer. No Python application
+and Python 3.10+. ShellCheck checks the Bash installer. Windows installer contracts run with
+Windows PowerShell 5.1 and PowerShell 7 on the Windows stable CI job. No Python application
 runtime, Node installation, or website package install is required.
 
 ```bash
@@ -68,6 +69,11 @@ resized terminals, mouse/keyboard navigation, search/jump, copy failures, quitti
 during loading, and terminal restoration. Clipboard ownership after exit depends
 on the platform manager; test Linux desktop and SSH separately when changing it.
 
+On Windows, after `cargo build --locked`, run
+`./scripts/test_windows_installer.ps1 -Binary (Resolve-Path target/debug/twig.exe)`
+in both Windows PowerShell 5.1 and PowerShell 7. The tests mock release downloads
+and user PATH persistence; they never change the contributor's registry PATH.
+
 ## Performance
 
 ```bash
@@ -98,7 +104,7 @@ python3 -m http.server 4321 --directory website/dist --bind 127.0.0.1
 
 Check desktop/mobile widths, keyboard navigation, readable contrast, sample data
 exploration, install tabs, copy feedback, and links. The site uses no tracking,
-external fonts, or framework runtime. `install.sh` is copied from the root at
+external fonts, or framework runtime. `install.sh` and `install.ps1` are copied from the root at
 build time so it cannot silently diverge from application releases.
 
 `master` is the source of truth for both app and website. The old `gh-pages`
