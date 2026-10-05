@@ -24,26 +24,11 @@ pub fn render(
     let line = Line::from(vec![
         Span::styled("Path: ", Style::default().add_modifier(Modifier::BOLD)),
         Span::styled(display, theme.primary_style()),
-        Span::styled("  (jq)", Style::default().add_modifier(Modifier::DIM)),
+        Span::styled("  (path)", Style::default().add_modifier(Modifier::DIM)),
     ]);
     f.render_widget(Paragraph::new(line).style(theme.base_style()), area);
 }
 
 fn truncate(path: &str, max: usize) -> String {
-    if path.len() <= max {
-        return path.to_string();
-    }
-    let parts: Vec<&str> = path.split('.').collect();
-    if parts.len() > 6 {
-        let head = format!("{}.{}", parts[0], parts[1]);
-        let tail = format!(
-            "{}.{}.{}",
-            parts[parts.len() - 3],
-            parts[parts.len() - 2],
-            parts[parts.len() - 1]
-        );
-        format!("{head} … {tail}")
-    } else {
-        format!("…{}", &path[path.len() - (max - 1)..])
-    }
+    super::text::truncate(path, max)
 }

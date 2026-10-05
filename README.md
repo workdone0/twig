@@ -1,289 +1,253 @@
-<p align="center">
-  <img src="https://raw.githubusercontent.com/workdone0/twig/master/asset/logo.png" alt="Twig Logo" width="200"/>
-</p>
+# Twig 🌿
 
-<h1 align="center">Twig 🌿</h1>
+**Inspect. Navigate. Understand.** A local terminal explorer for JSON, YAML, and
+JSON-based HAR files, written in Rust.
 
-<p align="center">
-  <a href="https://github.com/workdone0/twig/releases/latest"><img src="https://img.shields.io/github/v/release/workdone0/twig?style=flat-square&color=2ecc71" alt="Latest release"/></a>
-  <a href="https://github.com/workdone0/twig/blob/master/LICENSE"><img src="https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square" alt="License: MIT"/></a>
-  <a href="https://github.com/workdone0/twig/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/workdone0/twig/ci.yml?style=flat-square&branch=master" alt="CI"/></a>
-  <a href="https://buymeacoffee.com/workdone0"><img src="https://img.shields.io/badge/Buy_Me_A_Coffee-FFDD00?style=flat-square&logo=buy-me-a-coffee&logoColor=black" alt="Buy Me A Coffee"/></a>
-</p>
+Explore nested data with Miller columns, search keys and values, jump to paths,
+and inspect values without a browser. The TUI never edits your input. Separate
+CLI modes format data and repair JSON.
 
-<p align="center">
-  <strong>Inspect. Navigate. Understand.</strong>
-  <br/>
-  A modern, terminal-based explorer for <strong>JSON</strong> and <strong>YAML</strong> files,
-  written in Rust as a single static binary — no Python runtime required.
-</p>
-
-<p align="center">
-  <img src="https://raw.githubusercontent.com/workdone0/twig/master/asset/demo.gif" alt="Twig demo"/>
-</p>
-
----
-
-## What is Twig?
-
-**Twig** is a high-performance **terminal UI** for exploring **JSON** and **YAML** files interactively. It turns deeply nested data into a navigable tree, letting you search, jump, and inspect complex structures without piping commands together or scrolling endlessly.
-
-Twig is designed for **understanding data**, not editing it. It fills the gap between `cat`/`less` (no structure) and heavy IDEs (too slow, GUI-only), making it perfect for production logs, Kubernetes manifests, Terraform state, and large API responses.
-
-Since v3.0.0, Twig is a single ~4 MB static binary with zero runtime dependencies — drop it on any Linux, macOS, or Windows machine and it runs.
-
----
+[Website](https://twig.wtf) · [Guide](https://twig.wtf/guide/) ·
+[Releases](https://github.com/workdone0/twig/releases) ·
+[Contributing](CONTRIBUTING.md)
 
 ## Installation
 
-### One-line installer (recommended)
-
-Downloads a prebuilt binary for your platform, verifies its SHA-256 against the GitHub-published `*.sha256` file, and installs it to `~/.local/bin` (or `/usr/local/bin` when writable):
+### Linux and macOS
 
 ```bash
-curl -fsSL https://twig.wtf/install.sh | sh
+curl -fsSL https://twig.wtf/install.sh | bash
 ```
 
-Re-running the command safely **upgrades** an existing install. Useful flags:
+The Bash installer downloads the latest published release, requires a matching
+SHA-256 checksum, and installs to `~/.local/bin`. It supports `sha256sum` or
+macOS's `shasum -a 256`. Add the destination to your `PATH` if needed.
+
+To inspect the script first or choose a version/directory:
 
 ```bash
-# Pin a specific version (e.g. v3.0.0)
-curl -fsSL https://twig.wtf/install.sh | sh -s -- --version v3.0.0
-
-# Install to a different directory
-curl -fsSL https://twig.wtf/install.sh | sh -s -- --to /usr/local/bin
-
-# Build from source instead of downloading a binary
-curl -fsSL https://twig.wtf/install.sh | sh -s -- --method build
-
-# Skip the install confirmation prompt
-curl -fsSL https://twig.wtf/install.sh | sh -s -- --yes
+curl -fsSL https://twig.wtf/install.sh -o install.sh
+bash install.sh --help
+bash install.sh --version v3.1.0 --to "$HOME/.local/bin" --yes
 ```
 
-The script supports Linux (x86_64, aarch64), macOS (Intel, Apple Silicon), and reports unsupported platforms with a clear error instead of failing silently. Run `curl -fsSL https://twig.wtf/install.sh | sh -s -- --help` for the full flag list.
+Use `--method build` to compile the selected release with Cargo; it honors the
+same destination. Interactive invocations ask before installing unless `--yes`
+is supplied. Piped invocations run noninteractively. Re-running upgrades an
+existing installation through an atomic executable replacement.
 
-### Manual download
+### Manual download and Windows
 
-Grab a prebuilt `.tar.gz` from the [Releases page](https://github.com/workdone0/twig/releases/latest). Each archive contains a single `twig` (or `twig.exe`) binary and a matching `*.sha256` checksum file.
+Download `twig-<target>.tar.gz` and its separate `.tar.gz.sha256` file from
+[Releases](https://github.com/workdone0/twig/releases/latest).
 
-Supported targets:
+| OS | Targets |
+| --- | --- |
+| Linux (GNU libc) | `x86_64-unknown-linux-gnu`, `aarch64-unknown-linux-gnu` |
+| macOS | `x86_64-apple-darwin`, `aarch64-apple-darwin` |
+| Windows | `x86_64-pc-windows-msvc` |
 
-| OS      | Architectures          |
-| ------- | ---------------------- |
-| Linux   | x86_64, aarch64        |
-| macOS   | x86_64 (Intel), aarch64 (Apple Silicon) |
-| Windows | x86_64                 |
+Verify the archive with `sha256sum -c <checksum-file>` (Linux),
+`shasum -a 256 -c <checksum-file>` (macOS), or compare PowerShell's
+`Get-FileHash <archive> -Algorithm SHA256` against the checksum file (Windows).
+Extract it with `tar -xzf <archive>`. Archives contain `twig`/`twig.exe` and LICENSE.
+Put the executable on `PATH`.
+
+These are native executables, not universal static binaries. Linux builds use
+GNU libc; macOS targets a deployment minimum of 11.0. Release `.build.txt` assets
+record the source commit, compiler, size, and available linkage diagnostics.
+Clipboard support depends on the host desktop; SSH sessions may not provide it.
+Binaries are not OS code-signed/notarized. Release archives have checksums and
+GitHub build provenance attestations.
 
 ### Build from source
 
-Requires Rust 1.75 or later:
+Requires Rust 1.88 or newer, Cargo, and a C compiler/linker for bundled SQLite.
 
 ```bash
 git clone https://github.com/workdone0/twig.git
 cd twig
-cargo build --release
+cargo build --release --locked
 ./target/release/twig --help
 ```
 
-Or install directly from the GitHub repo with `cargo install --locked --git https://github.com/workdone0/twig twig`. We don't publish to [crates.io](https://crates.io/crates/twig) because that name is taken by an unrelated Rust templating engine — the GitHub-only path keeps the install unambiguous.
-
-### Legacy Python version
-
-Twig ≤ v2.1.4 was a Python project distributed on PyPI as `twg`. That implementation is preserved on the [`legacy-python`](https://github.com/workdone0/twig/tree/legacy-python) branch for users who specifically need it. **All new installs and active development happen on `master`, which is the Rust rewrite shipped in v3.0.0.**
-
-If you're upgrading from `twg`:
+Or install directly from the Git release:
 
 ```bash
-uv tool uninstall twg                       # remove the old install
-curl -fsSL https://twig.wtf/install.sh | sh # install the new binary
+cargo install --locked --git https://github.com/workdone0/twig --tag v3.1.0 twig
 ```
 
-No code changes required — `twig <file>`, `twig --fix <file>`, and `twig --print <file>` all work identically, and the persistent config at `~/.config/twig/config.json` is shared across both versions.
-
----
+Use the Git source explicitly: the `twig` package on crates.io is unrelated.
+Python is not needed to run the application.
 
 ## Usage
 
 ```bash
-# Open a file in the interactive TUI
-twig data.json
-twig config.yaml
+twig samples/cloud_infrastructure.json
+twig samples/k8s_manifest.yaml
+twig samples/browser_navigation.har
 
-# Pretty-print to stdout (non-TUI, with syntax highlighting)
-twig -p large.json
+# Format JSON to stdout or an output file
+twig --print data.json --indent 4
+twig --print data.json --indent 4 -o formatted.json
 
-# Repair common JSON malformations (trailing commas, unquoted keys,
-# single quotes, NaN/Infinity) and write a clean round-trippable copy
-twig --fix broken.json -o clean.json
+# Repair JSON, then format the repaired value
+twig --fix --print broken.json -o repaired.json
 
-# Benchmark the streaming ingestion pipeline (non-TUI)
-twig --check huge.json
+# Validate/load without a terminal; force parsing for a cold benchmark
+twig --check --rebuild-db data.json
+
+# Keep no persistent cache
+twig --no-cache secrets.json
+
+# JSON stdin is available for non-interactive modes
+cat response.json | twig --print -
 ```
 
-`twig --check` is non-interactive and prints size, node count, elapsed time, and throughput — useful in CI and ad-hoc perf checks.
+Output is plain JSON/YAML, suitable for piping. `-o` writes atomically after
+successful parsing and can replace an existing file, including the input.
+Prefer a separate output when reviewing repairs. Never redirect stdout to the
+input path: the shell truncates that file before Twig reads it.
 
----
+### CLI reference
 
-## Key features
+| Option | Behavior |
+| --- | --- |
+| `<FILE>` | Positional JSON, YAML, or HAR path; `-` means JSON stdin in CLI modes |
+| `-p`, `--print` | Format JSON or a YAML document stream |
+| `--fix` | Repair JSON and format it; may combine with `--print` |
+| `-o`, `--output <PATH>` | Write formatted output atomically; requires print/fix |
+| `-i`, `--indent <N>` | JSON indentation, 0–16 spaces, default 2; YAML uses its formatter |
+| `--check` | Report validation/load time, size, nodes, throughput; conflicts with print/fix |
+| `--rebuild-db` | Parse again even if a matching completed cache exists |
+| `--no-cache` | Use a private temporary SQLite database |
+| `--clear-cache` | Remove stored cache files and exit; takes no input file |
+| `-h`, `--help` | Show help |
+| `-V`, `-v`, `--version` | Show version; `-v` preserves the Python alias |
 
-- **📂 Multi-format native**: JSON and YAML with the same UI; format is auto-detected from file extension.
-- **👀 Read-only by design**: Safely explore production secrets without risk of accidental edits.
-- **🔍 Deep search**: Substring search across keys and values, with `n` / `N` to jump between matches.
-- **🧭 Miller-column navigation**: Traverse deep trees with the keyboard, breadcrumbs keep you oriented.
-- **🎨 Themes**: **Catppuccin Mocha** (default) and **Solarized Dark** ship in the box; `t` cycles. Persistent config at `~/.config/twig/config.json`.
-- **⚡ Streaming ingestion**: Constant memory relative to file size — load 10 MB or 10 GB without the process growing.
-- **🩺 Smart inspector**: String values get auto-detection for URLs, hex colors, and ISO-8601 timestamps; each gets a side panel.
-- **📋 Clipboard actions**: `c` copies the JSONPath, `y` copies the source slice.
+Format detection is case-insensitive: `.yaml`/`.yml` use YAML, other extensions
+use JSON. HAR is ordinary JSON. There is no `--file` flag or live watch mode.
+The TUI requires stdin and stdout attached to a terminal.
 
----
+### Keyboard controls
 
-## Keyboard shortcuts
+| Action | Controls |
+| --- | --- |
+| Move up / down | `↑` / `↓`, `k` / `j` |
+| Open selected container | `→`, `l`, `Enter` |
+| Return to parent | `←`, `h`, `Esc` |
+| First / last sibling | `g` / `G`, `Home` / `End` |
+| Search keys and values | `/`, query, `Enter` |
+| Next / previous match | `n` / `N` |
+| Jump to a path | `:`, path, `Enter` |
+| Copy path / entire selected value | `c` / `y` |
+| Cycle theme | `t` |
+| Open help | `?` |
+| Dismiss search/jump | `Esc` |
+| Dismiss help | `Esc`, `?`, `h`, or `Enter` |
+| Quit | `q` in normal/loading mode; `Ctrl+C` in any mode |
 
-| Context    | Action                  | Key                              |
-| ---------- | ----------------------- | -------------------------------- |
-| General    | Quit                     | `q`                              |
-|            | Help / cheatsheet        | `?`                              |
-|            | Toggle theme             | `t`                              |
-| Navigation | Move selection           | `↑` `↓` `←` `→`                  |
-|            | Drill in / expand        | `→` `Enter` `l`                  |
-|            | Step back / collapse     | `←` `Esc` `h`                    |
-|            | Jump to top / bottom     | `g` `G`                          |
-|            | Jump to path             | `:`                              |
-| Search     | Global search            | `/`                              |
-|            | Next / prev match        | `n` `N`                          |
-| Actions    | Copy path                | `c`                              |
-|            | Copy source slice        | `y`                              |
+Mouse wheel moves selection. Click a row to select it; click the selected row to
+open its container. Right-click returns to the parent. Clipboard ownership is
+kept while Twig runs; persistence after exit depends on the desktop clipboard
+manager. Failures are shown in the status message.
 
----
+Paths look like `.users[0].name`; root arrays use `.[0]`. Keys containing
+punctuation, spaces, or empty strings use JSON-quoted brackets, such as
+`.regions["us-east-1"]` or `.["a.b"]`. This is a path lookup syntax, not a full jq
+or JSONPath query language. YAML documents are wrapped in an array:
+`.[0].kind` addresses the first document, and `.kind` is a shorthand fallback.
 
-## Why Twig exists
+Search is a literal substring match, with ASCII case-insensitivity; `%` and `_`
+are ordinary characters. Matches cycle in source traversal order, including
+numeric array order. Non-ASCII characters match exactly.
 
-Many real-world files (API responses, K8s manifests, Terraform state, log exports) contain **sensitive information**. Pasting them into web-based viewers is a security risk. Existing CLI tools like `jq` are powerful for **transformation** but unintuitive for **interactive exploration**. IDE plugins are heavy and require GUI.
+The inspector shows a limited preview. Clipboard `y` exports the **complete
+selected value**, preserving scalar types and order, up to 10,000 nodes; larger
+selections give an explicit error directing you to `--print`. Serialization does
+not preserve original whitespace, comments, anchors, or quoting.
 
-Twig is the missing middle ground:
+## Configuration and local data
 
-- **Runs entirely locally** — no network calls, no telemetry.
-- **Works over SSH** and on headless servers.
-- **Optimized for reading**, not mutation.
-- **Single binary** — copy it onto a fresh container and it just works.
+Themes: `catppuccin-mocha` (default) and `solarized-dark`. Press `t` to save.
+Unknown config keys are preserved. Unknown theme names fall back to the default;
+custom theme definitions are not supported.
 
-### Compared to alternatives
-
-| Tool           | Strength                        | Limitation                                |
-| -------------- | ------------------------------- | ----------------------------------------- |
-| `jq`           | Powerful transformation         | Steep learning curve for exploration      |
-| `less` / `cat` | Simple and universal            | No structure awareness                    |
-| Web viewers    | Visual and easy                 | Privacy, size limits, trust issues        |
-| IDE plugins    | Integrated with the editor      | Heavy, GUI-only, can't run over SSH       |
-| **Twig**       | Interactive, structured, local  | Read-only, exploration-focused            |
-
-### Non-goals
-
-Twig is **not**:
-
-- An editor (use `vi` / your IDE).
-- A replacement for `jq` (use `jq` for transforms).
-- A streaming log viewer (use `lnav` / `less +F`).
-- A web service (no server, no API).
-
----
-
-## Architecture
-
-Built with:
-
-- **[ratatui](https://github.com/ratatui/ratatui)** + **crossterm** — TUI rendering and terminal I/O.
-- **rusqlite** with **bundled SQLite + FTS5** — persistent data store with full-text search.
-- **serde_json** streaming ingestion — constant memory regardless of file size.
-- **serde_yml** — YAML parsing.
-- **jsonrepair** — automatic JSON repair for `--fix`.
-- **arboard** — system clipboard with graceful fallback.
-- **clap** — CLI argument parsing.
-- **owo-colors** — colored terminal output for `--print`.
-
-The on-disk cache is a SQLite file with an FTS5 virtual table; old (Python-era) flat-file caches are ignored and rebuilt on first run. There's no migration script because there's nothing to preserve.
-
-### Performance
-
-Benchmark on a 50 MB / ~1 M-node synthetic JSON file (cold start, M-class CPU):
-
-| Build          | Load time   | Throughput     |
-| -------------- | ----------- | -------------- |
-| Debug          | ~6 s        | ~8 MB/s        |
-| Release (LTO)  | ~16 ms      | ~3 GB/s        |
-
-Release builds use `lto = "thin"`, `codegen-units = 1`, `strip = "symbols"` to get the binary down to ~4 MB.
-
----
-
-## CLI reference
-
-```
-twig [OPTIONS] <FILE>
-
-Arguments:
-  <FILE>   Path to a JSON or YAML file
-
-Options:
-  -p, --print            Print pretty-printed output to stdout (non-TUI)
-  -o, --output <FILE>    Write output to FILE instead of stdout (with --print or --fix)
-  -i, --indent <N>       Indent width for pretty-printed / fixed output [default: 2]
-      --fix              Attempt to repair malformed JSON and write a clean copy
-      --check            Load the file and print size/node count/throughput stats
-      --rebuild-db       Drop the on-disk SQLite cache before loading
-      --version          Print version and exit
-      --help             Print help and exit
+```json
+{"theme": "catppuccin-mocha"}
 ```
 
----
+| Platform | Config directory (`config.json`) | Cache directory |
+| --- | --- | --- |
+| Linux | `$XDG_CONFIG_HOME/twig` or `~/.config/twig` | `$XDG_CACHE_HOME/twig` or `~/.cache/twig` |
+| macOS | `~/Library/Application Support/twig` | `~/Library/Caches/twig` |
+| Windows | `%APPDATA%\twig` | `%LOCALAPPDATA%\twig` |
 
-## Project layout
+On macOS, when the new config is missing, Twig imports the legacy Python config
+from `$XDG_CONFIG_HOME/twig/config.json` or `~/.config/twig/config.json`. An
+existing new config is never overwritten by migration.
 
-```
-.
-├── Cargo.toml          Rust crate manifest
-├── Cargo.lock          Locked dependency graph (committed for reproducible builds)
-├── schema.sql          SQLite schema (nodes + FTS5 virtual table)
-├── .cargo/config.toml  Cross-compile linker config for aarch64-linux
-├── src/                Library + binary sources
-│   ├── main.rs         CLI entry point
-│   ├── cli/            clap parser, --check, --fix, --print modes
-│   ├── core/           Node, DataType, paths, store, config, repair
-│   ├── adapters/       Streaming JSON and YAML loaders
-│   └── tui/            ratatui app, theme, widgets
-├── tests/              Integration test suite
-├── samples/            Test fixtures (k8s manifest, HAR, etc.)
-├── install.sh          POSIX bash installer (curl | sh)
-├── asset/              Logo and demo.gif used by README + site
-└── .github/workflows/  CI matrix, release pipeline, auto-tag-on-push
-```
+The explorer makes no network requests or telemetry calls. Parsed values are
+stored **unencrypted** in private SQLite cache files. Unix cache directories are
+restricted to mode 0700 and published files to 0600; Windows uses profile ACLs.
 
----
+Every load snapshots and hashes the input. Only completed caches matching the
+source contents and schema version can be reused. Failed/cancelled builds are
+never published. Concurrent loads use independent staging databases and publish
+immutable generations. A source change automatically selects a new generation.
 
-## Releasing a new version
+New-format caches are pruned on load after seven days, or oldest-first when the
+existing cache exceeds 512 MiB. A newly built cache may exceed that budget until
+a subsequent load. Close other Twig processes and run `twig --clear-cache` to
+remove caches, including older versions. Configuration is preserved.
 
-The release pipeline is fully automated:
+`--no-cache` uses temporary disk storage, not an in-memory database. Normal exit
+cleans up temporary data; abrupt OS/process termination may leave temporary
+files. Sensitive data is not encrypted in either mode.
 
-1. Bump the `version` field in `Cargo.toml` and push to `master`.
-2. `.github/workflows/auto-release.yml` detects the version change, creates a `v<version>` tag (idempotent — skips if the tag already exists), and dispatches the release workflow via `workflow_dispatch`.
-3. `.github/workflows/release.yml` runs in response: builds Linux x86_64, Linux aarch64 (via `cargo-cross`), macOS x86_64, macOS aarch64, and Windows x86_64 in parallel; packages each as `twig-<triple>.tar.gz` with matching `*.sha256` files; and publishes them to a GitHub release via `softprops/action-gh-release@v2`.
-4. `curl -fsSL https://twig.wtf/install.sh | sh` always picks up the highest-versioned release from the GitHub Releases API.
+## Performance and supported data
 
-For a hotfix, push the tag manually (with a PAT, since `GITHUB_TOKEN` can't fire tag-push events):
+JSON is parsed into node events and inserted in batches of 1,024. It does not
+materialize the whole document tree. Memory still depends on the largest
+scalar, nesting/path lengths, SQLite working space, and requested exports.
+YAML parsing can buffer document state; bounded parser memory is not guaranteed.
+
+Navigation fetches pages of at most 256 siblings, with a horizontal viewport for
+deep trees. Inspector previews have depth/node limits. Search is a SQLite
+substring scan; broad searches on very large files can take time.
+
+JSON input must contain a single document. Duplicate object keys and ambiguous
+stored paths are rejected. Maximum supported nesting is 128 levels (the JSON
+parser may reject at its own recursion boundary). YAML's TUI model supports
+JSON-compatible scalar types, sequences, and string-keyed mappings; non-finite
+numbers, tagged values, and complex mapping keys are not supported. `--print`
+uses the YAML value serializer and supports a wider YAML value model.
+
+Measure cold ingestion explicitly:
 
 ```bash
-git tag v3.0.1
-git push origin v3.0.1
+cargo build --release --locked
+python3 scripts/benchmark.py --binary target/release/twig
 ```
 
----
+The benchmark generates a deterministic file and reports wall time and peak RSS.
+`--check` uses MiB units. Cached loads still read/hash the source to verify it;
+they are not evidence of parsing throughput. No universal latency or fixed
+binary-size claim is made.
 
-## Contributing
+## Development
 
-Contributions welcome. See [`CONTRIBUTING.md`](CONTRIBUTING.md) for setup, architecture notes, and submission guidelines.
+- [Contributing](CONTRIBUTING.md): setup, tests, review, release workflow.
+- [Architecture](docs/ARCHITECTURE.md): data flow and implementation boundaries.
+- [Migration](docs/MIGRATION.md): Python 2.x and Rust 3.0 upgrade differences.
+- [Release evaluation](docs/EVALUATION.md): audit findings and their resolution.
+- [Changelog](CHANGELOG.md) and [release notes](RELEASE_NOTES.md).
 
----
+Website source lives in `website/`. Its guides are generated from these Markdown
+files, and the deployed installer is copied from this repository's `install.sh`.
+The Python source remains on
+[legacy-python](https://github.com/workdone0/twig/tree/legacy-python).
 
 ## License
 
-MIT — see [`LICENSE`](LICENSE).
+MIT — see [LICENSE](LICENSE).

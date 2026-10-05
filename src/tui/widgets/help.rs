@@ -47,8 +47,8 @@ pub fn render(f: &mut Frame, area: Rect, theme: &Theme, version: &str) {
     let needed_h = content_h + 4;
     // Allow up to the full terminal height (no margin) so the layout
     // has room to breathe on standard 24-30 row terminals.
-    let modal_h = needed_h.min(area.height).max(8);
-    let modal_w = 70u16.min(area.width.saturating_sub(4)).max(20);
+    let modal_h = needed_h.min(area.height);
+    let modal_w = 70u16.min(area.width);
     let modal = Rect {
         x: area.x + (area.width.saturating_sub(modal_w)) / 2,
         y: area.y + (area.height.saturating_sub(modal_h)) / 2,

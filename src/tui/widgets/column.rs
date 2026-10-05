@@ -1,7 +1,6 @@
 //! Single Miller column showing the children of one parent node.
 //!
-//! Mirrors `ui/widgets/navigator.py::Column` from the Python version:
-//! a vertical list of `▶ {key}: {value_preview}` items, with optional
+//! A paginated vertical list of `▶ {key}: {value_preview}` items, with optional
 //! highlighted search-match substrings.
 
 use ratatui::layout::Rect;
@@ -23,6 +22,8 @@ pub struct Column {
     pub parent_id: Uuid,
     pub index: usize,
     pub children: Vec<Node>,
+    pub total: usize,
+    pub offset: usize,
     pub state: ListState,
     pub last_query: Option<String>,
 }
@@ -31,7 +32,16 @@ impl Column {
     pub const WIDTH: u16 = COLUMN_WIDTH;
 
     pub fn new(store: &Store, parent_id: Uuid, index: usize) -> Self {
-        let children = store.get_children(parent_id).unwrap_or_default();
+        let mut children = store
+            .get_children_page(parent_id, 0, 256)
+            .unwrap_or_default();
+        let mut total = store.get_children_count(parent_id).unwrap_or(0) as usize;
+        if let Ok(Some(node)) = store.get_node(parent_id) {
+            if !node.is_container() {
+                children = vec![node];
+                total = 1;
+            }
+        }
         let mut state = ListState::default();
         if !children.is_empty() {
             state.select(Some(0));
@@ -40,6 +50,8 @@ impl Column {
             parent_id,
             index,
             children,
+            total,
+            offset: 0,
             state,
             last_query: None,
         }
@@ -61,6 +73,24 @@ impl Column {
         if idx < self.children.len() {
             self.state.select(Some(idx));
         }
+    }
+
+    pub fn position(&self) -> usize {
+        self.offset + self.state.selected().unwrap_or(0)
+    }
+
+    pub fn select_position(&mut self, store: &Store, position: usize) {
+        if position >= self.total {
+            return;
+        }
+        if position < self.offset || position >= self.offset + self.children.len() {
+            self.offset = (position / 256) * 256;
+            self.children = store
+                .get_children_page(self.parent_id, self.offset, 256)
+                .unwrap_or_default();
+            self.state = ListState::default();
+        }
+        self.state.select(Some(position - self.offset));
     }
 
     pub fn render(&mut self, f: &mut Frame, area: Rect, theme: &Theme) {
@@ -116,11 +146,7 @@ fn value_preview(node: &Node) -> String {
         Some(v) => v.to_string(),
         None => String::new(),
     };
-    if raw.len() <= 24 {
-        raw
-    } else {
-        format!("{}…", &raw[..21])
-    }
+    super::text::truncate(&raw, 24)
 }
 
 fn highlight_spans(text: &str, query: &str, theme: &Theme) -> Vec<Span<'static>> {
@@ -128,8 +154,8 @@ fn highlight_spans(text: &str, query: &str, theme: &Theme) -> Vec<Span<'static>>
         return vec![Span::raw(text.to_string())];
     }
     let mut spans: Vec<Span<'static>> = Vec::new();
-    let lower = text.to_lowercase();
-    let q = query.to_lowercase();
+    let lower = text.to_ascii_lowercase();
+    let q = query.to_ascii_lowercase();
     let mut start = 0;
     while let Some(pos) = lower[start..].find(&q) {
         let abs = start + pos;

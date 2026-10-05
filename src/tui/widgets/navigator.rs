@@ -1,10 +1,4 @@
-//! Miller-column navigator.
-//!
-//! Mirrors `ui/widgets/navigator.py::ColumnNavigator` from the Python
-//! version: a horizontal chain of `Column` widgets, one per depth in
-//! the currently focused lineage. Handles up/down/left/right key
-//! navigation, expansion to a specific node (used by `:jump` and
-//! global search), and `find_next` for substring navigation.
+//! Paginated Miller columns with keyboard/mouse navigation and a horizontal viewport.
 
 use ratatui::layout::Rect;
 use ratatui::Frame;
@@ -19,6 +13,7 @@ pub struct ColumnNavigator {
     pub store: Store,
     pub columns: Vec<Column>,
     pub last_query: Option<String>,
+    areas: Vec<(usize, Rect)>,
 }
 
 impl ColumnNavigator {
@@ -27,6 +22,7 @@ impl ColumnNavigator {
             store,
             columns: Vec::new(),
             last_query: None,
+            areas: Vec::new(),
         };
         if let Some(root) = nav.store.root_id {
             nav.columns.push(Column::new(&nav.store, root, 0));
@@ -60,24 +56,24 @@ impl ColumnNavigator {
 
     pub fn move_down(&mut self) {
         if let Some(col) = self.columns.last_mut() {
-            let next = match col.state.selected() {
-                Some(i) if i + 1 < col.children.len() => Some(i + 1),
-                other => other,
-            };
-            col.state.select(next);
+            col.select_position(&self.store, col.position().saturating_add(1));
         }
     }
-
     pub fn move_up(&mut self) {
         if let Some(col) = self.columns.last_mut() {
-            let next = match col.state.selected() {
-                Some(0) | None => Some(0),
-                Some(i) => Some(i - 1),
-            };
-            col.state.select(next);
+            col.select_position(&self.store, col.position().saturating_sub(1));
         }
     }
-
+    pub fn first(&mut self) {
+        if let Some(col) = self.columns.last_mut() {
+            col.select_position(&self.store, 0);
+        }
+    }
+    pub fn last(&mut self) {
+        if let Some(col) = self.columns.last_mut() {
+            col.select_position(&self.store, col.total.saturating_sub(1));
+        }
+    }
     pub fn drill(&mut self) {
         let focused = match self.columns.last() {
             Some(c) => c.selected().map(|n| (n.id, n.is_container())),
@@ -121,13 +117,8 @@ impl ColumnNavigator {
             } else {
                 target_id
             };
-            if let Some((idx, _)) = col
-                .children
-                .iter()
-                .enumerate()
-                .find(|(_, n)| n.id == highlight_id)
-            {
-                col.state.select(Some(idx));
+            if let Ok(Some(target)) = self.store.get_node(highlight_id) {
+                col.select_position(&self.store, target.rank as usize);
             }
             self.columns.push(col);
         }
@@ -156,8 +147,41 @@ impl ColumnNavigator {
             .flatten()
     }
 
+    pub fn on_mouse(&mut self, mouse: crossterm::event::MouseEvent) {
+        use crossterm::event::{MouseButton, MouseEventKind};
+        match mouse.kind {
+            MouseEventKind::ScrollDown => self.move_down(),
+            MouseEventKind::ScrollUp => self.move_up(),
+            MouseEventKind::Down(MouseButton::Right) => self.step_back(),
+            MouseEventKind::Down(MouseButton::Left) => {
+                if let Some((index, area)) = self
+                    .areas
+                    .iter()
+                    .find(|(_, a)| a.contains((mouse.column, mouse.row).into()))
+                    .copied()
+                {
+                    if mouse.row <= area.y {
+                        return;
+                    }
+                    self.columns.truncate(index + 1);
+                    if let Some(col) = self.columns.last_mut() {
+                        let row = (mouse.row - area.y - 1) as usize + col.state.offset();
+                        let was_selected = col.state.selected() == Some(row);
+                        col.select_index(row);
+                        if was_selected && row < col.children.len() {
+                            self.drill();
+                        }
+                    }
+                }
+            }
+            _ => {}
+        }
+    }
+
     pub fn render(&mut self, f: &mut Frame, area: Rect, theme: &Theme) {
-        let n = self.columns.len();
+        let visible = (area.width as usize / Column::WIDTH as usize).max(1);
+        let start = self.columns.len().saturating_sub(visible);
+        let n = self.columns.len() - start;
         if n == 0 {
             return;
         }
@@ -179,8 +203,10 @@ impl ColumnNavigator {
             .direction(ratatui::layout::Direction::Horizontal)
             .constraints(widths)
             .split(area);
-        for (i, col) in self.columns.iter_mut().enumerate() {
+        self.areas.clear();
+        for (i, col) in self.columns.iter_mut().skip(start).enumerate() {
             if let Some(area) = chunks.get(i) {
+                self.areas.push((start + i, *area));
                 col.render(f, *area, theme);
             }
         }

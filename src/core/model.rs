@@ -47,10 +47,8 @@ impl DataType {
         }
     }
 
-    /// Mirror of the Python `DataType.from_value` helper. Note that
-    /// `bool` is checked before `int` because in Python (and now in
-    /// `serde_json::Value`) `true.is_instance(int)` is true; we keep the
-    /// same precedence so JSON `true` stays a boolean.
+    /// Classify JSON values, retaining integer versus floating-point types.
+    /// Booleans have their own serde_json::Value variant.
     pub fn from_value(value: &Value) -> Self {
         match value {
             Value::Null => DataType::Null,

@@ -1,17 +1,5 @@
-//! SQLite-backed store with FTS5 search.
-//!
-//! `Store` is the Rust analogue of the Python `SQLiteModel`. It owns a
-//! single `rusqlite::Connection`, applies the same PRAGMAs the Python
-//! version used (WAL, synchronous=NORMAL, cache_size=-64000, temp_store
-//! =MEMORY), and exposes the read API the UI needs:
-//!
-//! - `get_node`, `get_children`, `get_children_count`, `get_path`
-//! - `find_next_node`, `resolve_path`, `get_search_stats`
-//! - `reconstruct_value` (depth-limited rebuild of the native
-//!   `serde_json::Value` tree)
-//!
-//! Writes go through `Store::bulk_load`, which is used by the streaming
-//! adapters during ingestion.
+//! SQLite node storage, literal substring search, paginated traversal and export.
+//! Published caches are immutable; import batches use a private writable store.
 
 use std::path::Path;
 use std::str::FromStr;
@@ -27,6 +15,7 @@ use crate::core::schema::SCHEMA_SQL;
 pub struct Store {
     pub conn: Connection,
     pub root_id: Option<Uuid>,
+    pub(crate) temporary: Option<tempfile::TempDir>,
 }
 
 // Expose the inner connection for adapter use. We don't try to enforce
@@ -64,6 +53,11 @@ impl Store {
         Self::init_with_conn(conn)
     }
 
+    pub fn open_read_only(path: &Path) -> Result<Self, StoreError> {
+        let conn = Connection::open_with_flags(path, rusqlite::OpenFlags::SQLITE_OPEN_READ_ONLY)?;
+        Self::from_conn(conn)
+    }
+
     fn init_with_conn(conn: Connection) -> Result<Self, StoreError> {
         conn.execute_batch(
             "PRAGMA journal_mode = WAL;
@@ -72,6 +66,10 @@ impl Store {
              PRAGMA cache_size = -64000;",
         )?;
         conn.execute_batch(SCHEMA_SQL)?;
+        Self::from_conn(conn)
+    }
+
+    fn from_conn(conn: Connection) -> Result<Self, StoreError> {
         let root_id = conn
             .query_row(
                 "SELECT id FROM nodes WHERE parent_id IS NULL LIMIT 1",
@@ -83,7 +81,11 @@ impl Store {
             Some(s) => Some(Uuid::from_str(&s).map_err(|e| StoreError::BadUuid(e.to_string()))?),
             None => None,
         };
-        Ok(Self { conn, root_id })
+        Ok(Self {
+            conn,
+            root_id,
+            temporary: None,
+        })
     }
 
     // ----- writes -----
@@ -96,12 +98,11 @@ impl Store {
     /// `Loader` impls orchestrate that dance.
     pub fn bulk_load(&mut self, nodes: &[Node]) -> Result<(), StoreError> {
         let tx = self.conn.transaction()?;
-        for n in nodes {
-            let value_str = n.value.as_ref().map(serialize_value);
-            tx.execute(
-                "INSERT INTO nodes (id, parent_id, key, value, type, rank, path, is_expanded)
-                  VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)",
-                params![
+        {
+            let mut stmt = tx.prepare_cached("INSERT INTO nodes (id, parent_id, key, value, type, rank, path, is_expanded) VALUES (?1, ?2, ?3, ?4, ?5, ?6, ?7, ?8)")?;
+            for n in nodes {
+                let value_str = n.value.as_ref().map(serialize_value);
+                stmt.execute(params![
                     n.id.to_string(),
                     n.parent.map(|p| p.to_string()),
                     n.key,
@@ -110,8 +111,8 @@ impl Store {
                     n.rank,
                     n.path,
                     n.is_expanded as i64,
-                ],
-            )?;
+                ])?;
+            }
         }
         tx.commit()?;
         Ok(())
@@ -120,14 +121,8 @@ impl Store {
     /// Wipe all rows. Used by `--rebuild-db` and by loaders when the
     /// source file changed.
     pub fn clear(&mut self) -> Result<(), StoreError> {
-        // Two steps: drop everything in `nodes` (triggers cascade the
-        // deletion into the FTS mirror), then make sure no orphan FTS
-        // rows remain by issuing the contentless-style `'delete-all'`
-        // command against `nodes_search`.
-        self.conn.execute_batch(
-            "DELETE FROM nodes;
-             INSERT INTO nodes_search(nodes_search) VALUES('delete-all');",
-        )?;
+        self.conn.execute_batch("DELETE FROM nodes;")?;
+        self.root_id = None;
         Ok(())
     }
 
@@ -147,6 +142,22 @@ impl Store {
             .prepare_cached("SELECT * FROM nodes WHERE parent_id = ?1 ORDER BY rank")?;
         let rows = stmt.query_map([parent_id.to_string()], row_to_node)?;
         rows.collect::<Result<Vec<_>, _>>().map_err(Into::into)
+    }
+
+    pub fn get_children_page(
+        &self,
+        parent: Uuid,
+        offset: usize,
+        limit: usize,
+    ) -> Result<Vec<Node>, StoreError> {
+        let mut stmt = self.conn.prepare_cached(
+            "SELECT * FROM nodes WHERE parent_id=?1 ORDER BY rank LIMIT ?2 OFFSET ?3",
+        )?;
+        let rows = stmt.query_map(
+            params![parent.to_string(), limit as i64, offset as i64],
+            row_to_node,
+        )?;
+        Ok(rows.collect::<Result<Vec<_>, _>>()?)
     }
 
     pub fn get_children_count(&self, parent_id: Uuid) -> Result<i64, StoreError> {
@@ -171,81 +182,52 @@ impl Store {
 
     // ----- search / navigation -----
 
-    /// Global substring search ordered by `path`, mirroring the Python
-    /// `find_next_node` behavior including wrap-around.
-    ///
-    /// - `query` is matched as `%query%` against both `key` and `value`.
-    /// - `start_node_id` (if given) sets the boundary: forward search
-    ///   returns the first row whose path is strictly greater; backward
-    ///   returns the last row whose path is strictly less.
-    /// - When no match exists past the boundary the search wraps around
-    ///   to the first / last overall match.
+    /// Literal substring search in document order. ASCII is case-insensitive;
+    /// other Unicode characters match exactly, consistently with SQLite lower.
     pub fn find_next_node(
         &self,
         query: &str,
-        start_node_id: Option<Uuid>,
+        start: Option<Uuid>,
         direction: i32,
     ) -> Result<Option<Node>, StoreError> {
         let query = query.trim();
         if query.is_empty() {
             return Ok(None);
         }
-        let like = format!("%{query}%");
-
-        let start_path = match start_node_id {
-            Some(id) => self.get_node(id)?.map(|n| n.path),
+        let boundary: Option<i64> = match start {
+            Some(id) => self
+                .conn
+                .query_row(
+                    "SELECT rowid FROM nodes WHERE id=?1",
+                    [id.to_string()],
+                    |r| r.get(0),
+                )
+                .optional()?,
             None => None,
         };
-
-        if let Some(path) = start_path {
-            if direction > 0 {
-                let mut next = self.conn.prepare_cached(
-                    "SELECT * FROM nodes
-                     WHERE (key LIKE ?1 OR value LIKE ?1) AND path > ?2
-                     ORDER BY path ASC LIMIT 1",
-                )?;
-                if let Some(row) = next
-                    .query_row(params![&like, &path], row_to_node)
-                    .optional()?
-                {
-                    return Ok(Some(row));
-                }
-                let mut first = self.conn.prepare_cached(
-                    "SELECT * FROM nodes
-                     WHERE key LIKE ?1 OR value LIKE ?1
-                     ORDER BY path ASC LIMIT 1",
-                )?;
-                let row = first.query_row(params![&like], row_to_node).optional()?;
-                return Ok(row);
-            } else {
-                let mut prev = self.conn.prepare_cached(
-                    "SELECT * FROM nodes
-                     WHERE (key LIKE ?1 OR value LIKE ?1) AND path < ?2
-                     ORDER BY path DESC LIMIT 1",
-                )?;
-                if let Some(row) = prev
-                    .query_row(params![&like, &path], row_to_node)
-                    .optional()?
-                {
-                    return Ok(Some(row));
-                }
-                let mut last = self.conn.prepare_cached(
-                    "SELECT * FROM nodes
-                     WHERE key LIKE ?1 OR value LIKE ?1
-                     ORDER BY path DESC LIMIT 1",
-                )?;
-                let row = last.query_row(params![&like], row_to_node).optional()?;
-                return Ok(row);
+        let (op, order) = if direction < 0 {
+            ("<", "DESC")
+        } else {
+            (">", "ASC")
+        };
+        let predicate = "(instr(lower(key),lower(?1)) > 0 OR instr(lower(value),lower(?1)) > 0)";
+        if let Some(boundary) = boundary {
+            let sql = format!("SELECT * FROM nodes WHERE {predicate} AND rowid {op} ?2 ORDER BY rowid {order} LIMIT 1");
+            if let Some(node) = self
+                .conn
+                .prepare_cached(&sql)?
+                .query_row(params![query, boundary], row_to_node)
+                .optional()?
+            {
+                return Ok(Some(node));
             }
         }
-
-        let mut first = self.conn.prepare_cached(
-            "SELECT * FROM nodes
-             WHERE key LIKE ?1 OR value LIKE ?1
-             ORDER BY path ASC LIMIT 1",
-        )?;
-        let row = first.query_row(params![&like], row_to_node).optional()?;
-        Ok(row)
+        let sql = format!("SELECT * FROM nodes WHERE {predicate} ORDER BY rowid {order} LIMIT 1");
+        Ok(self
+            .conn
+            .prepare_cached(&sql)?
+            .query_row([query], row_to_node)
+            .optional()?)
     }
 
     /// Look up a node by jq-style materialized path.
@@ -276,7 +258,11 @@ impl Store {
 
         // Single-document YAML fallback.
         if let Some(stripped) = normalized.strip_prefix('.') {
-            let fallback = format!(".[0].{stripped}");
+            let fallback = if stripped.starts_with('[') {
+                format!(".[0]{stripped}")
+            } else {
+                format!(".[0].{stripped}")
+            };
             let row = exact
                 .query_row(params![&fallback], row_to_node)
                 .optional()?;
@@ -297,28 +283,70 @@ impl Store {
         if query.is_empty() {
             return Ok((0, 0));
         }
-        let like = format!("%{query}%");
         let total: i64 = self.conn.query_row(
-            "SELECT COUNT(*) FROM nodes WHERE key LIKE ?1 OR value LIKE ?1",
-            params![&like],
-            |row| row.get(0),
-        )?;
-        if total == 0 {
-            return Ok((0, 0));
-        }
-        let mut current = 0;
-        if let Some(id) = current_node_id {
-            if let Some(node) = self.get_node(id)? {
-                let idx: i64 = self.conn.query_row(
-                    "SELECT COUNT(*) FROM nodes
-                     WHERE (key LIKE ?1 OR value LIKE ?1) AND path <= ?2",
-                    params![&like, &node.path],
-                    |row| row.get(0),
-                )?;
-                current = idx;
-            }
-        }
+            "SELECT COUNT(*) FROM nodes WHERE instr(lower(key),lower(?1)) > 0 OR instr(lower(value),lower(?1)) > 0",
+            [query], |r| r.get(0))?;
+        let current = if let Some(id) = current_node_id {
+            self.conn.query_row(
+                "SELECT COUNT(*) FROM nodes WHERE
+                (instr(lower(key),lower(?1)) > 0 OR instr(lower(value),lower(?1)) > 0)
+                AND rowid <= (SELECT rowid FROM nodes WHERE id=?2)",
+                params![query, id.to_string()],
+                |r| r.get(0),
+            )?
+        } else {
+            0
+        };
         Ok((current, total))
+    }
+
+    /// Bounded inspector preview; not used by clipboard export.
+    pub fn preview_value(
+        &self,
+        id: Uuid,
+        depth: usize,
+        budget: &mut usize,
+    ) -> Result<Value, StoreError> {
+        if *budget == 0 {
+            return Ok(Value::String("…".into()));
+        }
+        *budget -= 1;
+        let Some(node) = self.get_node(id)? else {
+            return Ok(Value::Null);
+        };
+        if !node.is_container() {
+            return Ok(node.value.unwrap_or(Value::Null));
+        }
+        if depth == 0 {
+            return Ok(Value::String("…".into()));
+        }
+        let children = self.get_children_page(id, 0, (*budget).min(30))?;
+        if node.ty == DataType::Array {
+            let mut values = Vec::new();
+            for child in children {
+                values.push(self.preview_value(child.id, depth - 1, budget)?);
+            }
+            Ok(Value::Array(values))
+        } else {
+            let mut values = serde_json::Map::new();
+            for child in children {
+                values.insert(child.key, self.preview_value(child.id, depth - 1, budget)?);
+            }
+            Ok(Value::Object(values))
+        }
+    }
+
+    /// Export an entire selected subtree, or fail explicitly if it is too large
+    /// for an interactive clipboard operation. Never substitutes preview text.
+    pub fn export_value(&self, id: Uuid) -> anyhow::Result<Value> {
+        let count: i64 = self.conn.query_row("WITH RECURSIVE subtree(id) AS (
+            SELECT id FROM nodes WHERE id=?1 UNION ALL SELECT nodes.id FROM nodes JOIN subtree ON nodes.parent_id=subtree.id LIMIT 10001)
+            SELECT COUNT(*) FROM subtree", [id.to_string()], |r| r.get(0))?;
+        anyhow::ensure!(
+            count <= 10000,
+            "Selection exceeds 10,000 nodes; use --print to export the file"
+        );
+        Ok(self.reconstruct_value(id, 130)?)
     }
 
     /// Rebuild the native `serde_json::Value` tree rooted at `node_id`
@@ -430,6 +458,7 @@ fn deserialize_value(ty: DataType, raw: &str) -> Option<Value> {
         DataType::Integer => raw
             .parse::<i64>()
             .map(Value::from)
+            .or_else(|_| raw.parse::<u64>().map(Value::from))
             .unwrap_or(Value::String(raw.into())),
         DataType::Float => match raw.parse::<f64>() {
             Ok(f) if f.is_finite() => serde_json::Number::from_f64(f)
@@ -460,7 +489,7 @@ mod tests {
             value,
             ty,
             parent,
-            path: format!(".{}", key),
+            path: format!(".{key}"),
             is_expanded: false,
             rank,
         }

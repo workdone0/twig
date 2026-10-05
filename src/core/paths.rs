@@ -1,9 +1,9 @@
 //! Platform-specific locations for the SQLite cache and the JSON config.
 //!
-//! The behaviour mirrors `core/db.py::DatabaseManager._get_cache_dir` and
-//! `core/config.py::Config._get_config_dir` from the Python version:
+//! Locations use platform conventions. Unlike Python, macOS config uses
+//! Application Support rather than the XDG config directory:
 //!
-//! - **macOS**: `~/Library/Caches/twig` (cache), `~/.config/twig` (config)
+//! - **macOS**: `~/Library/Caches/twig` (cache), `~/Library/Application Support/twig` (config)
 //! - **Linux**: `$XDG_CACHE_HOME/twig` (cache, default `~/.cache/twig`),
 //!   `$XDG_CONFIG_HOME/twig` (config, default `~/.config/twig`)
 //! - **Windows**: `%LOCALAPPDATA%\twig` (cache), `%APPDATA%\twig` (config)
@@ -29,7 +29,7 @@ pub fn config_dir() -> std::io::Result<PathBuf> {
 fn base_dir(cache: bool) -> std::io::Result<PathBuf> {
     if cfg!(target_os = "macos") {
         // macOS always uses Library/Caches even though we don't read
-        // XDG-style vars there. Config follows the Unix branch.
+        // XDG-style vars there. Config uses dirs::config_dir below.
         if cache {
             let home = home_dir()?;
             return Ok(home.join("Library").join("Caches").join("twig"));
@@ -57,12 +57,11 @@ fn home_dir() -> std::io::Result<PathBuf> {
     })
 }
 
-/// Stable, deterministic cache filename for a given source file.
+/// Cache filename derived from the source path and basename.
 ///
-/// Mirrors `DatabaseManager.get_db_path`: take the basename, append an
-/// MD5 hash of the absolute path. We keep MD5 here purely as a filename
-/// uniquifier (no security implication); switching to a faster hash
-/// later is fine.
+/// Uses DefaultHasher on the canonical path when available. Unlike the
+/// Python implementation this is not MD5, and hash stability across Rust
+/// releases is not guaranteed. Source contents/mtime are not included.
 pub fn db_filename_for(source_path: &std::path::Path) -> String {
     use std::collections::hash_map::DefaultHasher;
     use std::hash::{Hash, Hasher};
@@ -87,8 +86,8 @@ mod tests {
 
     #[test]
     fn cache_dir_and_config_dir_are_distinct() {
-        let cache = cache_dir().unwrap();
-        let config = config_dir().unwrap();
+        let cache = base_dir(true).unwrap();
+        let config = base_dir(false).unwrap();
         assert_ne!(cache, config);
         assert!(cache.ends_with("twig"));
         assert!(config.ends_with("twig"));

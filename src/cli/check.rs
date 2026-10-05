@@ -16,6 +16,14 @@ use crate::adapters::loader::Loader;
 use crate::adapters::yaml_loader::YamlLoader;
 
 pub fn run(file: &Path, force_rebuild: bool) -> Result<()> {
+    run_with_options(file, force_rebuild, Default::default())
+}
+
+pub fn run_with_options(
+    file: &Path,
+    force_rebuild: bool,
+    options: crate::adapters::loader::LoadOptions,
+) -> Result<()> {
     let size = std::fs::metadata(file)
         .with_context(|| format!("stat {}", file.display()))?
         .len();
@@ -27,15 +35,15 @@ pub fn run(file: &Path, force_rebuild: bool) -> Result<()> {
         .map(|s| s.to_ascii_lowercase())
         .as_deref()
     {
-        Some("yaml") | Some("yml") => Box::new(YamlLoader::new()),
-        _ => Box::new(JsonLoader::new()),
+        Some("yaml") | Some("yml") => Box::new(YamlLoader::with_options(options.clone())),
+        _ => Box::new(JsonLoader::with_options(options)),
     };
     let store = loader
         .load(file, force_rebuild)
         .with_context(|| format!("loading {}", file.display()))?;
     let elapsed = started.elapsed();
 
-    let nodes = store.node_count().unwrap_or(0);
+    let nodes = store.node_count()?;
     let ms = elapsed.as_secs_f64() * 1000.0;
     let mb_per_s = if elapsed.as_secs_f64() > 0.0 {
         size as f64 / 1_048_576.0 / elapsed.as_secs_f64()
@@ -45,11 +53,11 @@ pub fn run(file: &Path, force_rebuild: bool) -> Result<()> {
 
     println!("file:        {}", file.display());
     println!(
-        "size:        {:.2} MB ({size} bytes)",
+        "size:        {:.2} MiB ({size} bytes)",
         size as f64 / 1_048_576.0
     );
     println!("nodes:       {nodes}");
     println!("elapsed:     {ms:.0} ms");
-    println!("throughput:  {mb_per_s:.2} MB/s");
+    println!("throughput:  {mb_per_s:.2} MiB/s");
     Ok(())
 }

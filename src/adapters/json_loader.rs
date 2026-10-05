@@ -1,283 +1,266 @@
-//! Streaming JSON ingestion into the SQLite store.
-//!
-//! Drives `serde_json::Deserializer::from_reader` over the input file,
-//! which yields one `serde_json::Value` at a time at the top of the
-//! stream, and walks that value recursively — same shape as the Python
-//! `ijson` event-based approach, but exploiting serde's slightly higher
-//! level API.
-//!
-//! Performance comes from the same "defer indexing" trick the Python
-//! loader used: drop FTS5 triggers and indexes, ingest all rows in
-//! bulk, then rebuild them once at the end.
-
-use std::fs::File;
-use std::io::BufReader;
-use std::path::Path;
-use std::sync::atomic::{AtomicBool, Ordering};
-
-use anyhow::{Context, Result};
+//! JSON node-event deserialization with bounded insertion batches.
+use crate::adapters::loader::{load_cached, LoadOptions, Loader};
+use crate::core::{
+    model::{DataType, Node},
+    store::Store,
+};
+use anyhow::Result;
+use serde::de::{self, DeserializeSeed, MapAccess, SeqAccess, Visitor};
 use serde_json::Value;
+use std::path::Path;
+use std::sync::{atomic::AtomicBool, Arc};
 use uuid::Uuid;
 
-use crate::adapters::loader::{
-    cache_path_for, drop_indexes, open_existing, rebuild_indexes, Loader,
-};
-use crate::core::model::{DataType, Node};
-
 pub struct JsonLoader {
-    pub cancelled: std::sync::Arc<AtomicBool>,
-    /// Override the default cache directory (used by tests so they
-    /// don't collide on the user's real cache path).
-    cache_dir_override: Option<std::path::PathBuf>,
+    pub cancelled: Arc<AtomicBool>,
+    options: LoadOptions,
 }
-
 impl Default for JsonLoader {
     fn default() -> Self {
         Self::new()
     }
 }
-
 impl JsonLoader {
     pub fn new() -> Self {
+        Self::with_options(LoadOptions::default())
+    }
+    pub fn with_options(options: LoadOptions) -> Self {
         Self {
-            cancelled: std::sync::Arc::new(AtomicBool::new(false)),
-            cache_dir_override: None,
+            cancelled: options.cancelled.clone(),
+            options,
         }
     }
-
-    /// Restrict the cache to a specific directory. Useful for tests.
     pub fn with_cache_dir(mut self, dir: std::path::PathBuf) -> Self {
-        self.cache_dir_override = Some(dir);
+        self.options.cache_dir = Some(dir);
         self
     }
-
-    fn cache_path(&self, file: &Path) -> Result<std::path::PathBuf> {
-        match &self.cache_dir_override {
-            Some(dir) => {
-                std::fs::create_dir_all(dir).context("creating test cache dir")?;
-                Ok(dir.join(crate::core::paths::db_filename_for(file)))
-            }
-            None => cache_path_for(file),
-        }
-    }
 }
-
 impl Loader for JsonLoader {
-    fn load(&self, file: &Path, force_rebuild: bool) -> Result<crate::core::store::Store> {
-        if !force_rebuild {
-            if let Ok(db_path) = self.cache_path(file) {
-                if let Some(store) = open_existing(&db_path)? {
-                    return Ok(store);
-                }
+    fn load(&self, file: &Path, force: bool) -> Result<Store> {
+        load_cached(file, force, &self.options, |reader, store| {
+            let mut sink = Sink::new(store, &self.options);
+            let mut de = serde_json::Deserializer::from_reader(std::io::BufReader::new(reader));
+            Seed {
+                sink: &mut sink,
+                parent: None,
+                key: "root".into(),
+                path: ".".into(),
+                rank: 0,
+                depth: 0,
             }
-        }
-
-        let db_path = self.cache_path(file)?;
-        if db_path.exists() {
-            std::fs::remove_file(&db_path).ok();
-        }
-        if db_path.with_extension("db-wal").exists() {
-            std::fs::remove_file(db_path.with_extension("db-wal")).ok();
-        }
-        if db_path.with_extension("db-shm").exists() {
-            std::fs::remove_file(db_path.with_extension("db-shm")).ok();
-        }
-
-        let mut store = crate::core::store::Store::open(&db_path)
-            .context("opening fresh sqlite database for json load")?;
-
-        // Bulk-load PRAGMAs. Mirrors the Python loader.
-        store.db_conn_mut().execute_batch(
-            "PRAGMA synchronous = OFF;
-             PRAGMA journal_mode = MEMORY;",
-        )?;
-        drop_indexes(&store)?;
-
-        let fh = File::open(file).with_context(|| format!("opening {}", file.display()))?;
-        let reader = BufReader::new(fh);
-        let stream = serde_json::Deserializer::from_reader(reader).into_iter::<Value>();
-
-        const BATCH: usize = 10_000;
-        let mut batch: Vec<Node> = Vec::with_capacity(BATCH);
-        let mut emitter = Emitter::new();
-
-        // Catch the empty-file case explicitly: a valid empty
-        // document would still yield one Value (Null), so an
-        // exhausted iterator without a single event means the file
-        // was literally empty (or only whitespace). Surface that as
-        // a clear error instead of silently producing an empty tree.
-        let mut received_any = false;
-
-        for top in stream {
-            if self.cancelled.load(Ordering::Relaxed) {
-                break;
-            }
-            let value = match top {
-                Ok(v) => {
-                    received_any = true;
-                    v
-                }
-                Err(e) => {
-                    return Err(anyhow::anyhow!(
-                        "Failed to parse JSON at line {}, column {}: {}",
-                        e.line(),
-                        e.column(),
-                        e
-                    ));
-                }
-            };
-            emitter.reset();
-            emitter.emit_value(None, "root", ".", &value, &mut batch);
-            if batch.len() >= BATCH {
-                let drained = std::mem::take(&mut batch);
-                store.bulk_load(&drained)?;
-                batch.reserve(BATCH);
-            }
-        }
-
-        if !batch.is_empty() {
-            store.bulk_load(&batch)?;
-        }
-
-        if !received_any {
-            return Err(anyhow::anyhow!(
-                "Failed to parse JSON: file is empty or contains only whitespace"
-            ));
-        }
-
-        rebuild_indexes(&store)?;
-        // Restore safe defaults after the bulk phase.
-        store.db_conn_mut().execute_batch(
-            "PRAGMA synchronous = NORMAL;
-             PRAGMA journal_mode = WAL;",
-        )?;
-
-        // Reload so root_id is populated from the now-non-empty DB.
-        let store = crate::core::store::Store::open(&db_path)?;
-        Ok(store)
+            .deserialize(&mut de)
+            .map_err(|e| {
+                anyhow::anyhow!(
+                    "Failed to parse JSON (empty input is invalid) at line {}, column {}: {e}",
+                    e.line(),
+                    e.column()
+                )
+            })?;
+            de.end().map_err(|e| {
+                anyhow::anyhow!("Failed to parse JSON: expected a single document: {e}")
+            })?;
+            sink.flush()?;
+            Ok(())
+        })
     }
 }
 
-pub struct Emitter {
-    stack: Vec<Frame>,
+pub(crate) struct Sink<'a> {
+    store: &'a mut Store,
+    options: &'a LoadOptions,
+    batch: Vec<Node>,
+}
+impl<'a> Sink<'a> {
+    pub fn new(store: &'a mut Store, options: &'a LoadOptions) -> Self {
+        Self {
+            store,
+            options,
+            batch: Vec::with_capacity(1024),
+        }
+    }
+    pub fn push(&mut self, node: Node) -> Result<()> {
+        self.options.check_cancelled()?;
+        self.batch.push(node);
+        self.options
+            .progress
+            .nodes
+            .fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+        if self.batch.len() >= 1024 {
+            self.flush()?;
+        }
+        Ok(())
+    }
+    pub fn flush(&mut self) -> Result<()> {
+        self.options.check_cancelled()?;
+        self.store.bulk_load(&self.batch)?;
+        self.batch.clear();
+        Ok(())
+    }
 }
 
-struct Frame {
-    /// Number of children already emitted under this frame.
-    count: i64,
+pub(crate) struct Seed<'a, 'b> {
+    pub sink: &'a mut Sink<'b>,
+    pub parent: Option<Uuid>,
+    pub key: String,
+    pub path: String,
+    pub rank: i64,
+    pub depth: usize,
 }
-
-impl Default for Emitter {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
-impl Emitter {
-    pub fn new() -> Self {
-        Self { stack: Vec::new() }
-    }
-
-    pub fn reset(&mut self) {
-        self.stack.clear();
-    }
-
-    fn push(&mut self) {
-        self.stack.push(Frame { count: 0 });
-    }
-
-    fn pop(&mut self) {
-        self.stack.pop();
-    }
-
-    fn current(&mut self) -> Option<&mut Frame> {
-        self.stack.last_mut()
-    }
-
-    pub fn emit_value(
-        &mut self,
-        parent: Option<Uuid>,
-        key: &str,
-        base_path: &str,
-        value: &Value,
-        out: &mut Vec<Node>,
-    ) {
-        let ty = DataType::from_value(value);
+impl Seed<'_, '_> {
+    fn node(&mut self, ty: DataType, value: Option<Value>) -> Result<Uuid> {
         let id = Uuid::new_v4();
+        self.sink.push(Node {
+            id,
+            parent: self.parent,
+            key: self.key.clone(),
+            path: self.path.clone(),
+            rank: self.rank,
+            ty,
+            value,
+            is_expanded: false,
+        })?;
+        Ok(id)
+    }
+    fn scalar<E: de::Error>(mut self, value: Value) -> std::result::Result<(), E> {
+        self.node(DataType::from_value(&value), Some(value))
+            .map_err(E::custom)?;
+        Ok(())
+    }
+}
+impl<'de> DeserializeSeed<'de> for Seed<'_, '_> {
+    type Value = ();
+    fn deserialize<D: de::Deserializer<'de>>(
+        self,
+        deserializer: D,
+    ) -> std::result::Result<(), D::Error> {
+        if self.depth > 128 {
+            return Err(de::Error::custom("maximum nesting depth of 128 exceeded"));
+        }
+        deserializer.deserialize_any(self)
+    }
+}
+impl<'de> Visitor<'de> for Seed<'_, '_> {
+    type Value = ();
+    fn expecting(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        f.write_str("a JSON-compatible value")
+    }
+    fn visit_bool<E: de::Error>(self, v: bool) -> std::result::Result<(), E> {
+        self.scalar(Value::Bool(v))
+    }
+    fn visit_i64<E: de::Error>(self, v: i64) -> std::result::Result<(), E> {
+        self.scalar(v.into())
+    }
+    fn visit_u64<E: de::Error>(self, v: u64) -> std::result::Result<(), E> {
+        self.scalar(v.into())
+    }
+    fn visit_f64<E: de::Error>(self, v: f64) -> std::result::Result<(), E> {
+        let n = serde_json::Number::from_f64(v)
+            .ok_or_else(|| E::custom("non-finite numbers are not supported"))?;
+        self.scalar(Value::Number(n))
+    }
+    fn visit_str<E: de::Error>(self, v: &str) -> std::result::Result<(), E> {
+        self.scalar(v.into())
+    }
+    fn visit_string<E: de::Error>(self, v: String) -> std::result::Result<(), E> {
+        self.scalar(v.into())
+    }
+    fn visit_unit<E: de::Error>(self) -> std::result::Result<(), E> {
+        self.scalar(Value::Null)
+    }
+    fn visit_none<E: de::Error>(self) -> std::result::Result<(), E> {
+        self.scalar(Value::Null)
+    }
+    fn visit_seq<A: SeqAccess<'de>>(mut self, mut seq: A) -> std::result::Result<(), A::Error> {
+        let id = self
+            .node(DataType::Array, None)
+            .map_err(de::Error::custom)?;
+        let mut rank = 0;
+        while seq
+            .next_element_seed(Seed {
+                sink: self.sink,
+                parent: Some(id),
+                key: rank.to_string(),
+                path: child_path(&self.path, true, &rank.to_string()),
+                rank,
+                depth: self.depth + 1,
+            })?
+            .is_some()
+        {
+            rank += 1;
+        }
+        Ok(())
+    }
+    fn visit_map<A: MapAccess<'de>>(mut self, mut map: A) -> std::result::Result<(), A::Error> {
+        let id = self
+            .node(DataType::Object, None)
+            .map_err(de::Error::custom)?;
+        let mut rank = 0;
+        while let Some(key) = map.next_key_seed(StringKey)? {
+            let path = child_path(&self.path, false, &key);
+            map.next_value_seed(Seed {
+                sink: self.sink,
+                parent: Some(id),
+                key,
+                path,
+                rank,
+                depth: self.depth + 1,
+            })?;
+            rank += 1;
+        }
+        Ok(())
+    }
+}
 
-        match &value {
-            Value::Object(map) => {
-                out.push(Node {
-                    id,
-                    key: key.to_string(),
-                    value: None,
-                    ty: DataType::Object,
-                    parent,
-                    path: base_path.to_string(),
-                    is_expanded: false,
-                    rank: 0,
-                });
-                self.push();
-                for (k, v) in map {
-                    let child_path = child_path(base_path, false, k);
-                    self.emit_value(Some(id), k, &child_path, v, out);
-                }
-                self.pop();
+struct StringKey;
+impl<'de> DeserializeSeed<'de> for StringKey {
+    type Value = String;
+    fn deserialize<D: de::Deserializer<'de>>(self, d: D) -> std::result::Result<String, D::Error> {
+        struct KeyVisitor;
+        impl Visitor<'_> for KeyVisitor {
+            type Value = String;
+            fn expecting(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+                f.write_str("a string mapping key")
             }
-            Value::Array(items) => {
-                out.push(Node {
-                    id,
-                    key: key.to_string(),
-                    value: None,
-                    ty: DataType::Array,
-                    parent,
-                    path: base_path.to_string(),
-                    is_expanded: false,
-                    rank: 0,
-                });
-                self.push();
-                for (idx, v) in items.iter().enumerate() {
-                    let child_path = child_path(base_path, true, &idx.to_string());
-                    self.emit_value(Some(id), &idx.to_string(), &child_path, v, out);
-                }
-                self.pop();
+            fn visit_str<E: de::Error>(self, v: &str) -> std::result::Result<String, E> {
+                Ok(v.into())
             }
-            _ => {
-                let rank = self
-                    .current()
-                    .map(|f| {
-                        let r = f.count;
-                        f.count += 1;
-                        r
-                    })
-                    .unwrap_or(0);
-                out.push(Node {
-                    id,
-                    key: key.to_string(),
-                    value: Some(value.clone()),
-                    ty,
-                    parent,
-                    path: base_path.to_string(),
-                    is_expanded: false,
-                    rank,
-                });
+            fn visit_string<E: de::Error>(self, v: String) -> std::result::Result<String, E> {
+                Ok(v)
             }
         }
+        d.deserialize_any(KeyVisitor)
     }
 }
 
-/// Build the jq-style child path under `parent_path`. `array_index` is
-/// true for items inside an array.
-pub fn child_path(parent_path: &str, array_index: bool, key: &str) -> String {
-    if array_index {
-        format!("{parent_path}[{key}]")
-    } else if parent_path == "." {
-        format!(".{key}")
+/// Unambiguous jq-like paths: identifier keys use dots, all other keys use
+/// JSON-quoted brackets. Root-array indices retain the conventional `.[0]`.
+///
+/// ```
+/// use twig::adapters::json_loader::child_path;
+/// assert_eq!(child_path(".", false, "a.b"), ".[\"a.b\"]");
+/// ```
+pub fn child_path(parent: &str, array: bool, key: &str) -> String {
+    if array {
+        return format!("{parent}[{key}]");
+    }
+    let identifier = !key.is_empty()
+        && key
+            .chars()
+            .enumerate()
+            .all(|(i, c)| c == '_' || c.is_ascii_alphabetic() || (i > 0 && c.is_ascii_digit()));
+    if identifier {
+        if parent == "." {
+            format!(".{key}")
+        } else {
+            format!("{parent}.{key}")
+        }
     } else {
-        format!("{parent_path}.{key}")
+        format!(
+            "{parent}[{}]",
+            serde_json::to_string(key).expect("string serializes")
+        )
     }
 }
-
 #[cfg(test)]
 mod tests {
     use super::*;
