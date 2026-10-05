@@ -1,0 +1,61 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Release evaluation — Twig</title><meta name="description" content="Twig release evaluation: practical documentation for the Rust terminal data explorer."><link rel="stylesheet" href="/style.css"><link rel="icon" href="/favicon.svg"><link rel="canonical" href="https://twig.wtf/guide/evaluation/"></head><body><a class="skip" href="#main">Skip to content</a><header class="site-header wrap"><a class="brand" href="/">twig.</a><nav aria-label="Main navigation"><a href="/guide/">Guide</a><a href="https://github.com/workdone0/twig">GitHub ↗</a></nav></header><div class="docs-grid wrap"><nav class="docs-sidebar" aria-label="Documentation"><strong>TWIG / DOCUMENTATION</strong><a href="/guide/">User guide</a><a href="/guide/contributing/">Contributing</a><a href="/guide/migration/">Migration</a><a href="/guide/architecture/">Architecture</a><a href="/guide/evaluation/">Release evaluation</a><a href="/guide/release-notes/">Release notes</a></nav><main id="main" class="prose"><h1 id="release-evaluation--twig-31">Release evaluation — Twig 3.1</h1>
+<p>The initial review covered Rust <code>f6718af</code> (3.0.0) and Python reference <code>cce3235</code>. It found data-integrity, resource-use, compatibility, installer, and release gaps despite the existing suite passing. This page tracks the implementation work for 3.1.0 on 2026-10-05, rather than leaving resolved issues labeled as open.</p>
+<h2 id="audit-resolution">Audit resolution</h2>
+<table>
+<tr><th>Finding</th><th>Resolution</th><th>Regression evidence</th></tr>
+<tr><td>Stale source caches</td><td>Snapshot + SHA-256 content key; validate completed schema and SQLite integrity</td><td>Changed/deleted input and corrupt-cache tests</td></tr>
+<tr><td>Partial caches accepted after failure</td><td>Private staging; publish only completed immutable databases</td><td>Failed trailing JSON, cancellation, concurrent builders</td></tr>
+<tr><td>Mixed arrays reordered</td><td>Rank every scalar/container in source order</td><td>Exact reconstructed mixed-array equality</td></tr>
+<tr><td>Large unsigned integers become strings</td><td>Restore signed or unsigned integer values</td><td><code>u64::MAX</code> and <code>i64::MIN</code> round trips</td></tr>
+<tr><td>Unicode rendering panics</td><td>Grapheme/display-width truncation; byte-stable ASCII folding for highlights</td><td>Emoji, CJK, dotted-I and tiny-terminal rendering</td></tr>
+<tr><td>Path collisions / hidden JSON roots</td><td>JSON-quoted bracket paths, unique path index, single-root validation</td><td>Special keys, duplicate keys, trailing documents</td></tr>
+<tr><td>Whole-tree JSON allocation</td><td>Serde node visitor with 1,024-node insertion batches</td><td>Large-file benchmark with time/RSS budgets</td></tr>
+<tr><td>All siblings allocated/rendered</td><td>256-row pages; deepest-column viewport; bounded inspector preview</td><td>1,000-item traversal, page-crossing jumps</td></tr>
+<tr><td>Unused FTS index and wildcard surprises</td><td>Remove unused FTS; literal substring search in source order</td><td><code>%_</code> literal and numeric array-order tests</td></tr>
+<tr><td>CLI flag and output inconsistencies</td><td>Composable fix/print, conflicting check rejected, shared output path, consistent JSON indentation</td><td>Real executable stdout/file/status tests</td></tr>
+<tr><td>YAML case/multi-document differences</td><td>Shared extension detection; stream-aware print mode</td><td>Uppercase extension and document-stream tests</td></tr>
+<tr><td>Silent truncated copying</td><td>Complete subtree export or explicit size error</td><td>Export depth/size contract; preview/export separation</td></tr>
+<tr><td>UI lifecycle gaps</td><td>Panic-safe terminal guard, worker cancellation/join, disconnect errors, synchronized focus and propagated draw errors</td><td>Injected-config tests and render/interaction regressions</td></tr>
+<tr><td>Scalar roots and missing controls</td><td>Selectable root, mouse controls, Vim movement and first/last keys</td><td>Scalar, navigation and key-event coverage</td></tr>
+<tr><td>Clipboard handle lifetime</td><td>Retain handle while application runs</td><td>Host-dependent persistence remains a manual check</td></tr>
+<tr><td>Real-profile test side effects</td><td>Temporary loader/config injection; remove ignored theme test and leaked test directories</td><td>Entire suite runs inside workspace sandbox</td></tr>
+<tr><td>Plaintext cache lifecycle undocumented</td><td>Private Unix permissions, retention, clear/no-cache modes and explicit docs</td><td>Ephemeral and cache contract tests</td></tr>
+<tr><td>macOS config migration missing</td><td>Import legacy config only when new config is absent</td><td>Explicit source contract; existing-config precedence</td></tr>
+<tr><td>Broken auto-release dispatch</td><td>Authenticated token, required permission, retry existing unpublished tag after successful CI</td><td>Workflow review and hosted CI/release run</td></tr>
+<tr><td>Wrong-ref release binaries</td><td>Resolve and validate tag/commit before verification/build jobs</td><td>Tag input validation and immutable checkout</td></tr>
+<tr><td>Installer failures</td><td>Bash help, checksum fallback/fail-closed policy, release pinning, destination handling, cleanup and atomic install</td><td>Offline installer contract suite</td></tr>
+<tr><td>Unsupported declared Rust minimum</td><td>Set 1.88 and test it alongside stable on three OSes</td><td>Local minimum-version tests and CI matrix</td></tr>
+<tr><td>Unsound/unmaintained YAML dependencies</td><td>Replace <code>serde_yml</code>/<code>libyml</code> with <code>serde_norway</code></td><td>RustSec audit and YAML regression suite</td></tr>
+<tr><td>Website/source drift</td><td>Rewrite website in main repo; generate guides and installer from canonical files</td><td>Static link/anchor checks and browser QA</td></tr>
+</table>
+<p>The YAML dependency decision follows <a href="https://rustsec.org/advisories/RUSTSEC-2025-0068">RustSec&#x27;s serde_yml advisory</a> and the <a href="https://github.com/cafkafk/serde-norway">serde_norway project</a>. Clipboard image support is disabled because Twig only copies text, reducing unnecessary dependencies. CI also checks licenses, advisory status, and dependency sources.</p>
+<h2 id="verification-commands">Verification commands</h2>
+<pre><code>cargo fmt --all -- --check
+cargo clippy --locked --all-targets -- -D warnings
+cargo test --locked --all-targets
+cargo test --locked --doc
+cargo +1.88.0 test --locked --all-targets
+cargo audit --deny warnings
+shellcheck install.sh
+python3 scripts/test_installer.py
+python3 scripts/build_site.py
+python3 scripts/check_site.py
+cargo build --release --locked
+python3 scripts/benchmark.py --binary target/release/twig</code></pre>
+<p>The release workflow is the authoritative record of platform results. Tests run without real user caches/config or a live clipboard. The benchmark&#x27;s Linux CI budget is 120 seconds and 512 MiB for 90,000 deterministic items; this is a regression ceiling, not a speed guarantee or a comparison against Python.</p>
+<h2 id="local-verification-results">Local verification results</h2>
+<p>On macOS, Rust 1.88.0 and the current installed toolchain passed 90 unit, integration, and regression tests with none ignored; the documentation test also passed. Formatting, Clippy, seven installer contract tests, site link checks, and the dependency audit passed. The audit reported no advisories or warnings. Browser checks covered desktop/mobile layouts, sample navigation, installation tabs, copying, and guide links.</p>
+<p>A release build ingested the deterministic 42,378,891-byte JSON fixture (900,001 nodes) in 12.24 seconds with 179.92 MiB peak RSS on the development Mac. These are local observations, not cross-platform performance guarantees. Hosted CI and release logs provide the platform-specific verification record.</p>
+<h2 id="deliberate-limits-and-external-requirements">Deliberate limits and external requirements</h2>
+<ul>
+<li>YAML parser memory is not bounded like the JSON node stream. Very large scalar strings and complete exports can allocate significant memory.</li>
+<li>Search remains a SQLite substring scan. Pagination bounds navigation data, not the cost of every possible search query.</li>
+<li>The TUI models JSON-compatible YAML. Formatting cannot preserve original comments, whitespace, aliases, or quoting. Non-finite values, tagged values, complex mapping keys, and JSON duplicate keys are not silently normalized.</li>
+<li>Clipboard export caps selections at 10,000 nodes and reports an error above the cap. Inspector previews are explicitly limited.</li>
+<li>Clipboard behavior after process exit, SSH integration, and native terminal restoration need manual checks on each supported desktop/terminal. Automated widget tests do not establish every platform integration.</li>
+<li>Caches and temporary snapshots are unencrypted. Normal cleanup and retention are not secure erasure; abrupt termination can leave temporary files.</li>
+<li>Native OS signing/notarization requires platform credentials and is not configured. Checksum/provenance verification does not replace OS signing.</li>
+<li>GitHub branch protection and private vulnerability reporting are repository settings. Maintainers should configure them separately from source changes.</li>
+<li>Watch mode and user-defined themes remain out of scope; documentation does not advertise them as existing features or promise a delivery version.</li>
+</ul>
+<p>These limits are documented in the user guide instead of being hidden behind claims of universal static binaries, constant memory, or complete Python parity.</p></main></div><footer class="wrap"><a href="https://github.com/workdone0/twig/blob/master/docs/EVALUATION.md">Edit this page on GitHub ↗</a><p>Generated from the repository documentation.</p></footer></body></html>

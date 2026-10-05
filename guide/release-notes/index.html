@@ -1,0 +1,31 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Release notes — Twig</title><meta name="description" content="Twig release notes: practical documentation for the Rust terminal data explorer."><link rel="stylesheet" href="/style.css"><link rel="icon" href="/favicon.svg"><link rel="canonical" href="https://twig.wtf/guide/release-notes/"></head><body><a class="skip" href="#main">Skip to content</a><header class="site-header wrap"><a class="brand" href="/">twig.</a><nav aria-label="Main navigation"><a href="/guide/">Guide</a><a href="https://github.com/workdone0/twig">GitHub ↗</a></nav></header><div class="docs-grid wrap"><nav class="docs-sidebar" aria-label="Documentation"><strong>TWIG / DOCUMENTATION</strong><a href="/guide/">User guide</a><a href="/guide/contributing/">Contributing</a><a href="/guide/migration/">Migration</a><a href="/guide/architecture/">Architecture</a><a href="/guide/evaluation/">Release evaluation</a><a href="/guide/release-notes/">Release notes</a></nav><main id="main" class="prose"><h1 id="twig-310--reliable-data-a-clearer-path">Twig 3.1.0 — Reliable data, a clearer path</h1>
+<p>This release hardens the Rust rewrite, improves everyday navigation, and brings the website and documentation into the same repository as the application.</p>
+<h2 id="correctness-and-privacy">Correctness and privacy</h2>
+<ul>
+<li>Source changes automatically select a new content-validated cache. Failed or cancelled imports never publish partial data; concurrent loads are isolated.</li>
+<li>Mixed arrays preserve order, large unsigned integers stay numeric, and quoted bracket paths distinguish punctuation-containing keys from nested keys.</li>
+<li>Unicode previews/highlights no longer slice through UTF-8. Terminal and worker guards restore state and cancel unfinished work on exit.</li>
+<li>Private cache permissions, automatic retention, <code>--no-cache</code>, and <code>--clear-cache</code> give local data a defined lifecycle.</li>
+<li>The RustSec-flagged YAML dependencies are replaced with <code>serde_norway</code>.</li>
+</ul>
+<h2 id="navigation-and-cli">Navigation and CLI</h2>
+<ul>
+<li>JSON node-event parsing uses bounded insertion batches. Navigation uses 256-row pages and keeps the deepest columns visible; inspector previews have explicit limits.</li>
+<li>Mouse selection/scrolling, Vim movement, Enter-to-open, Home/End, and <code>g/G</code>.</li>
+<li>Literal substring search in document order. <code>%</code> and <code>_</code> are literal characters.</li>
+<li>Copy complete selected values up to 10,000 nodes, or show an explicit size error; copied data is never silently depth-truncated.</li>
+<li><code>--fix --print</code> composes correctly, JSON indentation works with <code>-o</code>, YAML detection is case-insensitive, and YAML print supports document streams.</li>
+<li>JSON stdin for noninteractive modes, <code>-i</code> indentation, and the legacy <code>-v</code> version alias. Output-file replacement is atomic; CLI output is plain text.</li>
+<li>Automatic legacy macOS config import when the new config is absent.</li>
+</ul>
+<h2 id="distribution-and-documentation">Distribution and documentation</h2>
+<ul>
+<li>Fail-closed checksum verification with Linux/macOS tools, working piped help, pinned source installs, and destination-aware atomic installation.</li>
+<li>CI on stable and Rust 1.88 across Linux, macOS, and Windows, plus offline installer tests, dependency checks, and a cold-ingestion resource budget.</li>
+<li>Releases build the verified tag commit and publish checksums, provenance, build metadata, and these notes. Automatic releases wait for successful CI.</li>
+<li>A complete website rewrite with an interactive sample explorer, responsive layout, accessible controls, and guides generated from repository Markdown.</li>
+</ul>
+<h2 id="upgrade-notes">Upgrade notes</h2>
+<p>Install with <code>curl -fsSL https://twig.wtf/install.sh | bash</code>, or download the archive for your target. Source builds require Rust 1.88+ and a C compiler.</p>
+<p>Old caches are ignored; close Twig and use <code>twig --clear-cache</code> to remove them. Punctuation keys now use paths such as <code>.regions[&quot;us-east-1&quot;]</code>. JSON duplicate keys and multiple top-level values are rejected. Help is <code>?</code>; <code>h</code> moves back. See <a href="https://twig.wtf/guide/migration/">the migration guide</a>.</p>
+<p>YAML parser memory, large scalars, full exports, and substring scans still have input-dependent resource costs. TUI YAML supports JSON-compatible values. Clipboard persistence after exit depends on the desktop manager. Native binaries are not OS code-signed/notarized; Linux targets use GNU libc. See the guide for cache privacy and platform limitations.</p></main></div><footer class="wrap"><a href="https://github.com/workdone0/twig/blob/master/RELEASE_NOTES.md">Edit this page on GitHub ↗</a><p>Generated from the repository documentation.</p></footer></body></html>

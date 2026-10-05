@@ -1,0 +1,65 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Contributing — Twig</title><meta name="description" content="Twig contributing: practical documentation for the Rust terminal data explorer."><link rel="stylesheet" href="/style.css"><link rel="icon" href="/favicon.svg"><link rel="canonical" href="https://twig.wtf/guide/contributing/"></head><body><a class="skip" href="#main">Skip to content</a><header class="site-header wrap"><a class="brand" href="/">twig.</a><nav aria-label="Main navigation"><a href="/guide/">Guide</a><a href="https://github.com/workdone0/twig">GitHub ↗</a></nav></header><div class="docs-grid wrap"><nav class="docs-sidebar" aria-label="Documentation"><strong>TWIG / DOCUMENTATION</strong><a href="/guide/">User guide</a><a href="/guide/contributing/">Contributing</a><a href="/guide/migration/">Migration</a><a href="/guide/architecture/">Architecture</a><a href="/guide/evaluation/">Release evaluation</a><a href="/guide/release-notes/">Release notes</a></nav><main id="main" class="prose"><h1 id="contributing-to-twig">Contributing to Twig</h1>
+<p>Thanks for helping make a focused, reliable terminal tool. Bugs, documentation, accessibility improvements, and well-tested code changes are welcome. Please keep discussions constructive and explain the user problem before proposing a large feature or new dependency.</p>
+<h2 id="setup">Setup</h2>
+<p>The application is Rust; the website and tooling use Python&#x27;s standard library. Use Rust 1.88+ with Cargo, rustfmt, Clippy, a C compiler/linker for bundled SQLite, and Python 3.10+. ShellCheck checks the Bash installer. No Python application runtime, Node installation, or website package install is required.</p>
+<pre><code>git clone https://github.com/workdone0/twig.git
+cd twig
+cargo build --locked --all-targets
+cargo run --locked -- samples/cloud_infrastructure.json</code></pre>
+<h2 id="project-structure">Project structure</h2>
+<table>
+<tr><th>Location</th><th>Responsibility</th></tr>
+<tr><td><code>src/main.rs</code>, <code>src/cli/</code></td><td>CLI arguments, output, terminal lifecycle</td></tr>
+<tr><td><code>src/adapters/</code></td><td>Event parsing, immutable cache publication, cancellation</td></tr>
+<tr><td><code>src/core/</code></td><td>Node types, SQLite queries, paths, configuration, repair</td></tr>
+<tr><td><code>src/tui/</code></td><td>Event loop, themes, paginated navigation, inspector and modals</td></tr>
+<tr><td><code>schema.sql</code></td><td>Node table and navigation indexes</td></tr>
+<tr><td><code>tests/</code></td><td>Integration, process-level CLI, data and lifecycle regressions</td></tr>
+<tr><td><code>scripts/</code></td><td>Offline installer tests, benchmarks, static website build/checks</td></tr>
+<tr><td><code>website/</code></td><td>HTML/CSS/JS source; generated <code>dist/</code> is ignored</td></tr>
+<tr><td><code>docs/</code></td><td>Architecture, migration, audit resolution</td></tr>
+<tr><td><code>.github/workflows/</code></td><td>CI, release, website deployment</td></tr>
+</table>
+<p>See <a href="/guide/architecture/">architecture</a> before changing ingestion or storage. Keep widgets independent from parsing. Preserve scalar types, sibling order, source-path uniqueness, atomic publication, and cancellation checkpoints.</p>
+<h2 id="required-checks">Required checks</h2>
+<pre><code>cargo fmt --all -- --check
+cargo clippy --locked --all-targets -- -D warnings
+cargo test --locked --all-targets
+cargo test --locked --doc
+shellcheck install.sh
+bash -n install.sh
+python3 scripts/test_installer.py
+python3 scripts/build_site.py
+python3 scripts/check_site.py</code></pre>
+<p>CI runs stable and minimum-supported Rust on Linux, macOS, and Windows. Test caches and config must use <code>tempfile</code>, loader options/<code>with_cache_dir</code>, and <code>App::with_config</code>; never mutate a contributor&#x27;s profile. No test should require a real clipboard, GUI, network service, or existing configuration.</p>
+<p>For CLI changes, spawn the executable and assert stdout, stderr, exit status, and output-file contents. For storage changes, compare reconstructed values, including mixed containers/scalars, unsigned integers, duplicate/special keys, Unicode, cancellation, corrupted caches, and concurrent loads. Keep process and widget coverage: testing a loader is not a substitute for testing CLI dispatch.</p>
+<p>Manually verify JSON/HAR and multi-document YAML, scalar/empty roots, narrow and resized terminals, mouse/keyboard navigation, search/jump, copy failures, quitting during loading, and terminal restoration. Clipboard ownership after exit depends on the platform manager; test Linux desktop and SSH separately when changing it.</p>
+<h2 id="performance">Performance</h2>
+<pre><code>cargo build --release --locked
+python3 scripts/benchmark.py --binary target/release/twig</code></pre>
+<p>The deterministic benchmark reports cold wall time and peak RSS. CI checks a 120-second / 512-MiB budget on Ubuntu for 90,000 generated items. These are regression budgets, not product speed guarantees. Report hardware, Rust version, commit, bytes, nodes, cache state, and memory when comparing results.</p>
+<p>Ingestion batches and navigation pages must remain bounded. YAML parser state, large scalar strings, search scans, and complete exports have different resource profiles; do not claim constant memory for all operations.</p>
+<h2 id="website-and-documentation">Website and documentation</h2>
+<p>Edit <code>website/index.html</code>, <code>style.css</code>, and <code>app.js</code> for the landing page. User guides are generated directly from README, CONTRIBUTING, release notes, and <code>docs/</code>; edit those Markdown files rather than generated pages.</p>
+<pre><code>python3 scripts/build_site.py
+python3 scripts/check_site.py
+python3 -m http.server 4321 --directory website/dist --bind 127.0.0.1</code></pre>
+<p>Check desktop/mobile widths, keyboard navigation, readable contrast, sample data exploration, install tabs, copy feedback, and links. The site uses no tracking, external fonts, or framework runtime. <code>install.sh</code> is copied from the root at build time so it cannot silently diverge from application releases.</p>
+<p><code>master</code> is the source of truth for both app and website. The old <code>gh-pages</code> branch held Astro source; it is historical. Do not deploy from that branch. <code>twig-web</code> contains generated public files for the existing <code>twig.wtf</code> domain.</p>
+<h2 id="security-and-dependencies">Security and dependencies</h2>
+<p>Use <a href="https://github.com/workdone0/twig/security/advisories/new">GitHub private vulnerability reporting</a> for sensitive issues where available; do not attach real secrets or private input files to public issues. See <a href="https://github.com/workdone0/twig/blob/master/SECURITY.md">SECURITY.md</a>.</p>
+<p>Run <code>cargo audit --deny warnings</code> when changing dependencies. Audit results are point-in-time, not a security guarantee. The 3.1 work replaces the RustSec-flagged <code>serde_yml</code>/<code>libyml</code> stack with <code>serde_norway</code>. Avoid dependencies that add unused image/desktop functionality. Keep <code>Cargo.lock</code> updated and preserve license notices. CI checks dependencies with cargo-deny.</p>
+<h2 id="pull-requests">Pull requests</h2>
+<p>Create a focused branch and describe the concrete problem, final behavior, compatibility changes, and checks performed. Use conventional titles such as <code>fix: preserve mixed array order</code>. Include a regression test for bugs. Update README/help/migration docs when flags, keys, formats, cache/config paths, or serialization change. Screenshots help for TUI and website changes.</p>
+<h2 id="releasing">Releasing</h2>
+<p>The default branch is <strong>master</strong>, not main. A merge alone does not create a new version: update <code>Cargo.toml</code>, <code>Cargo.lock</code>, CHANGELOG, and RELEASE_NOTES together.</p>
+<ol>
+<li>Open a PR and complete all CI jobs and relevant manual checks.</li>
+<li>Merge the release commit into <code>master</code>.</li>
+<li>Successful <strong>CI</strong> on that exact push triggers <strong>Auto release after CI</strong>.</li>
+<li>Automation creates the missing <code>vX.Y.Z</code> tag and dispatches <strong>Release</strong> with an authenticated token. If a tag exists without a release at the same verified commit, dispatch is retried. Existing releases are not republished.</li>
+<li>Release resolves the tag once, verifies its package version, re-runs CI at that commit, builds all five targets, and publishes checksums, provenance, build metadata, and the checked-in release notes.</li>
+<li>Successful release completion triggers <strong>Website</strong>, which builds and validates the site from <code>master</code>, deploys generated files to <code>twig-web</code>, and explicitly requests a Pages build (token-authored pushes do not trigger it).</li>
+</ol>
+<p>For recovery, run Release manually with an existing <code>vX.Y.Z</code> tag. Builds always check out the resolved tag commit, independent of the dispatch ref. A tag/manifest mismatch fails before building. A conflicting tag must be investigated, not silently moved. For docs-only website changes, run Website manually after CI.</p>
+<p>Check that the published version, archive checksums, installer, website, and all target downloads match. OS signing/notarization requires maintainer credentials and is not configured; do not claim signed native binaries. Repository-level branch protection and private security reporting are maintainer settings, not properties enforced by these source files.</p></main></div><footer class="wrap"><a href="https://github.com/workdone0/twig/blob/master/CONTRIBUTING.md">Edit this page on GitHub ↗</a><p>Generated from the repository documentation.</p></footer></body></html>

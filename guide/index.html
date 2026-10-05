@@ -1,168 +1,123 @@
-<!DOCTYPE html><html lang="en" data-astro-cid-sckkx6r4> <head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"><meta name="theme-color" content="#11111b"><link rel="icon" href="/favicon.ico" sizes="any"><link rel="icon" type="image/svg+xml" href="/favicon.svg"><link rel="apple-touch-icon" href="/favicon-256x256.png"><link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png"><link rel="icon" type="image/png" sizes="48x48" href="/favicon-48x48.png"><meta name="generator" content="Astro v5.16.6"><title>Documentation | Twig — JSON, YAML &amp; Data Explorer</title><meta name="description" content="Explore large JSON and YAML files in the terminal. Twig is a fast, privacy-first TUI built for infra and backend engineers working with real production data."><!-- SEO --><link rel="canonical" href="https://twig.wtf/guide/"><meta name="keywords" content="json viewer, yaml viewer, terminal data explorer, tui, sqlite, large file viewer, developer tools, json explorer, yaml explorer, kubernetes log viewer, api response viewer"><meta property="og:type" content="website"><meta property="og:url" content="https://twig.wtf/guide/"><meta property="og:title" content="Documentation | Twig — JSON, YAML &#38; Data Explorer"><meta property="og:description" content="The modern terminal viewer for JSON &#38; YAML. Inspect, navigate, and search with IDE-like fluidity."><meta property="og:image" content="https://twig.wtf/asset/logo.png"><meta property="twitter:card" content="summary_large_image"><meta property="twitter:title" content="Documentation | Twig — JSON, YAML &#38; Data Explorer"><meta property="twitter:description" content="The modern terminal viewer for JSON &#38; YAML. Inspect, navigate, and search with IDE-like fluidity."><meta property="twitter:image" content="https://twig.wtf/asset/logo.png"><!-- Structured Data --><script type="application/ld+json">
-            {
-                "@context": "https://schema.org",
-                "@type": "SoftwareApplication",
-                "name": "Twig",
-                "operatingSystem": "macOS, Linux, Windows",
-                "applicationCategory": "DeveloperApplication",
-                "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" },
-                "description": "A high-performance terminal JSON & YAML viewer. Inspect, navigate, and search massive files interactively.",
-                "url": "https://twig.wtf",
-                "image": "https://twig.wtf/asset/logo.png",
-                "author": { "@type": "Person", "name": "Shubham Kumar", "url": "https://workdone0.dev" }
-            }
-        </script><!-- Theme loader: respects stored preference, falls back to system --><script>
-            (function () {
-                var stored = null;
-                try { stored = localStorage.getItem("theme"); } catch (_) {}
-                var theme =
-                    stored ||
-                    (window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark");
-                document.documentElement.setAttribute("data-theme", theme);
-            })();
-        </script><!-- Google tag (gtag.js) --><script async src="https://www.googletagmanager.com/gtag/js?id=G-L3F72TB67V"></script><script>
-            window.dataLayer = window.dataLayer || [];
-            function gtag() { dataLayer.push(arguments); }
-            gtag("js", new Date());
-            gtag("config", "G-L3F72TB67V");
-        </script><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"><link rel="stylesheet" href="/_astro/guide.B5LcuN22.css">
-<link rel="stylesheet" href="/_astro/guide.KSbi3CKm.css"></head> <body data-astro-cid-sckkx6r4> <header class="site-header" data-astro-cid-sckkx6r4> <div class="container header-inner" data-astro-cid-sckkx6r4> <a href="/" class="brand" aria-label="Twig home" data-astro-cid-sckkx6r4> <img src="https://raw.githubusercontent.com/workdone0/twig/master/asset/logo.png" alt="" width="36" height="36" data-astro-cid-sckkx6r4> <span class="brand-text" data-astro-cid-sckkx6r4>Twig</span> </a> <button class="nav-toggle" id="nav-toggle" aria-label="Toggle menu" aria-expanded="false" aria-controls="primary-nav" data-astro-cid-sckkx6r4> <span class="bar" data-astro-cid-sckkx6r4></span> <span class="bar" data-astro-cid-sckkx6r4></span> <span class="bar" data-astro-cid-sckkx6r4></span> </button> <nav class="primary-nav" id="primary-nav" aria-label="Primary" data-astro-cid-sckkx6r4> <a href="/guide" class="nav-link active" data-nav data-astro-cid-sckkx6r4>Guide</a> <a href="https://github.com/workdone0/twig" class="nav-link" data-nav rel="noopener" data-astro-cid-sckkx6r4>GitHub</a> <a href="https://github.com/workdone0/twig/releases/latest" class="nav-link" data-nav rel="noopener" data-astro-cid-sckkx6r4>Releases</a> <button id="theme-toggle" class="theme-btn" aria-label="Toggle color theme" data-astro-cid-sckkx6r4> <svg class="icon-sun" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" data-astro-cid-sckkx6r4> <circle cx="12" cy="12" r="4" data-astro-cid-sckkx6r4></circle> <path d="M12 2v2M12 20v2M4.93 4.93l1.41 1.41M17.66 17.66l1.41 1.41M2 12h2M20 12h2M4.93 19.07l1.41-1.41M17.66 6.34l1.41-1.41" data-astro-cid-sckkx6r4></path> </svg> <svg class="icon-moon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" data-astro-cid-sckkx6r4> <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" data-astro-cid-sckkx6r4></path> </svg> </button> </nav> </div> </header> <main class="site-main" data-astro-cid-sckkx6r4> <div class="container" data-astro-cid-sckkx6r4>  <div class="docs" data-astro-cid-5tcejxga> <details class="docs-toc-mobile" data-astro-cid-5tcejxga> <summary data-astro-cid-5tcejxga> <span data-astro-cid-5tcejxga>Contents</span> <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" data-astro-cid-5tcejxga> <polyline points="6 9 12 15 18 9" data-astro-cid-5tcejxga></polyline> </svg> </summary> <ul data-astro-cid-5tcejxga> <li data-astro-cid-5tcejxga><a href="#introduction" data-astro-cid-5tcejxga>Introduction</a></li> <li data-astro-cid-5tcejxga><a href="#installation" data-astro-cid-5tcejxga>Installation</a></li> <li data-astro-cid-5tcejxga><a href="#quickstart" data-astro-cid-5tcejxga>Quickstart</a></li> <li data-astro-cid-5tcejxga><a href="#keybindings" data-astro-cid-5tcejxga>Keyboard shortcuts</a></li> <li data-astro-cid-5tcejxga><a href="#cli" data-astro-cid-5tcejxga>CLI reference</a></li> <li data-astro-cid-5tcejxga><a href="#configuration" data-astro-cid-5tcejxga>Configuration</a></li> <li data-astro-cid-5tcejxga><a href="#troubleshooting" data-astro-cid-5tcejxga>Troubleshooting</a></li> </ul> </details> <aside class="docs-toc" data-astro-cid-5tcejxga> <p class="toc-label" data-astro-cid-5tcejxga>Contents</p> <ul data-astro-cid-5tcejxga> <li data-astro-cid-5tcejxga><a href="#introduction" data-astro-cid-5tcejxga>Introduction</a></li> <li data-astro-cid-5tcejxga><a href="#installation" data-astro-cid-5tcejxga>Installation</a></li> <li data-astro-cid-5tcejxga><a href="#quickstart" data-astro-cid-5tcejxga>Quickstart</a></li> <li data-astro-cid-5tcejxga><a href="#keybindings" data-astro-cid-5tcejxga>Keyboard shortcuts</a></li> <li data-astro-cid-5tcejxga><a href="#cli" data-astro-cid-5tcejxga>CLI reference</a></li> <li data-astro-cid-5tcejxga><a href="#configuration" data-astro-cid-5tcejxga>Configuration</a></li> <li data-astro-cid-5tcejxga><a href="#troubleshooting" data-astro-cid-5tcejxga>Troubleshooting</a></li> </ul> </aside> <article class="docs-content" data-astro-cid-5tcejxga> <header class="docs-header" data-astro-cid-5tcejxga> <p class="eyebrow" data-astro-cid-5tcejxga>Documentation</p> <h1 data-astro-cid-5tcejxga>Twig, end to end.</h1> <p class="lead" data-astro-cid-5tcejxga>
-A single-binary terminal UI for exploring
-<strong data-astro-cid-5tcejxga>JSON</strong> and <strong data-astro-cid-5tcejxga>YAML</strong>. This guide
-                    covers installation, the keymap, every CLI flag, and the
-                    things that go wrong.
-</p> </header> <section id="introduction" data-astro-cid-5tcejxga> <h2 data-astro-cid-5tcejxga>Introduction</h2> <p data-astro-cid-5tcejxga>
-Twig is a high-performance, terminal-based data explorer
-                    for <strong data-astro-cid-5tcejxga>JSON</strong> and <strong data-astro-cid-5tcejxga>YAML</strong>. It
-                    bridges the gap between simple text viewers (like
-<code data-astro-cid-5tcejxga>less</code>) and full-blown IDEs.
-</p> <p data-astro-cid-5tcejxga>
-Designed for developers who work with large datasets,
-                    Kubernetes manifests, log exports, and complex
-                    configuration files, Twig parses data into a navigable
-                    tree structure and lets you search, jump, and inspect
-                    without ever leaving the terminal.
-</p> <p data-astro-cid-5tcejxga>
-Since v3.0.0, Twig is a single ~4 MB static binary
-                    written in Rust. Drop it on any Linux, macOS, or Windows
-                    machine and it runs — no Python, no runtime.
-</p> </section> <section id="installation" data-astro-cid-5tcejxga> <h2 data-astro-cid-5tcejxga>Installation</h2> <p data-astro-cid-5tcejxga>
-The recommended way to install Twig is the one-line
-                    installer — it downloads the matching prebuilt binary
-                    from the latest GitHub release, verifies its SHA-256
-                    checksum against the published
-<code data-astro-cid-5tcejxga>*.sha256</code> file, and installs it to
-<code data-astro-cid-5tcejxga>~/.local/bin</code> (or <code data-astro-cid-5tcejxga>/usr/local/bin</code>
-when writable).
-</p> <h3 data-astro-cid-5tcejxga>One-line installer</h3> <pre data-astro-cid-5tcejxga><code data-astro-cid-5tcejxga>curl -fsSL https://twig.wtf/install.sh | sh</code></pre> <h3 data-astro-cid-5tcejxga>Useful flags</h3> <pre data-astro-cid-5tcejxga><code data-astro-cid-5tcejxga># Pin a specific release
-curl -fsSL https://twig.wtf/install.sh | sh -s -- --version v3.0.0
-
-# Install to a custom directory
-curl -fsSL https://twig.wtf/install.sh | sh -s -- --to /usr/local/bin
-
-# Build from source instead of downloading
-curl -fsSL https://twig.wtf/install.sh | sh -s -- --method build
-
-# Skip the install confirmation prompt
-curl -fsSL https://twig.wtf/install.sh | sh -s -- --yes</code></pre> <p data-astro-cid-5tcejxga>
-Run <code data-astro-cid-5tcejxga>curl -fsSL https://twig.wtf/install.sh | sh -s
-                    -- --help</code> for the full flag list.
-</p> <h3 data-astro-cid-5tcejxga>Cargo (from the GitHub repo)</h3> <p data-astro-cid-5tcejxga>
-The <code data-astro-cid-5tcejxga>twig</code> crate name on <a href="https://crates.io/crates/twig" rel="noopener" data-astro-cid-5tcejxga>crates.io</a> belongs to an unrelated Rust templating engine, so we
-                    don't publish our binary there. To build from source with
-                    Cargo, install directly from the GitHub repo:
-</p> <pre data-astro-cid-5tcejxga><code data-astro-cid-5tcejxga>cargo install --git https://github.com/workdone0/twig twig --locked</code></pre> <h3 data-astro-cid-5tcejxga>Manual download</h3> <p data-astro-cid-5tcejxga>
-Prebuilt <code data-astro-cid-5tcejxga>.tar.gz</code> archives with matching
-<code data-astro-cid-5tcejxga>*.sha256</code> checksum files are on the
-<a href="https://github.com/workdone0/twig/releases/latest" rel="noopener" data-astro-cid-5tcejxga>Releases page</a>.
-</p> <ul data-astro-cid-5tcejxga> <li data-astro-cid-5tcejxga>Linux: <code data-astro-cid-5tcejxga>x86_64-unknown-linux-gnu</code>, <code data-astro-cid-5tcejxga>aarch64-unknown-linux-gnu</code></li> <li data-astro-cid-5tcejxga>
-macOS: <code data-astro-cid-5tcejxga>x86_64-apple-darwin</code> (Intel),
-<code data-astro-cid-5tcejxga>aarch64-apple-darwin</code> (Apple Silicon)
-</li> <li data-astro-cid-5tcejxga>Windows: <code data-astro-cid-5tcejxga>x86_64-pc-windows-msvc</code></li> </ul> <h3 data-astro-cid-5tcejxga>Build from source</h3> <p data-astro-cid-5tcejxga>Requires Rust 1.75 or later.</p> <pre data-astro-cid-5tcejxga><code data-astro-cid-5tcejxga>git clone https://github.com/workdone0/twig.git
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>User guide — Twig</title><meta name="description" content="Twig user guide: practical documentation for the Rust terminal data explorer."><link rel="stylesheet" href="/style.css"><link rel="icon" href="/favicon.svg"><link rel="canonical" href="https://twig.wtf/guide/"></head><body><a class="skip" href="#main">Skip to content</a><header class="site-header wrap"><a class="brand" href="/">twig.</a><nav aria-label="Main navigation"><a href="/guide/">Guide</a><a href="https://github.com/workdone0/twig">GitHub ↗</a></nav></header><div class="docs-grid wrap"><nav class="docs-sidebar" aria-label="Documentation"><strong>TWIG / DOCUMENTATION</strong><a href="/guide/">User guide</a><a href="/guide/contributing/">Contributing</a><a href="/guide/migration/">Migration</a><a href="/guide/architecture/">Architecture</a><a href="/guide/evaluation/">Release evaluation</a><a href="/guide/release-notes/">Release notes</a></nav><main id="main" class="prose"><h1 id="twig">Twig 🌿</h1>
+<p><strong>Inspect. Navigate. Understand.</strong> A local terminal explorer for JSON, YAML, and JSON-based HAR files, written in Rust.</p>
+<p>Explore nested data with Miller columns, search keys and values, jump to paths, and inspect values without a browser. The TUI never edits your input. Separate CLI modes format data and repair JSON.</p>
+<p><a href="https://twig.wtf">Website</a> · <a href="https://twig.wtf/guide/">Guide</a> · <a href="https://github.com/workdone0/twig/releases">Releases</a> · <a href="/guide/contributing/">Contributing</a></p>
+<h2 id="installation">Installation</h2>
+<h3 id="linux-and-macos">Linux and macOS</h3>
+<pre><code>curl -fsSL https://twig.wtf/install.sh | bash</code></pre>
+<p>The Bash installer downloads the latest published release, requires a matching SHA-256 checksum, and installs to <code>~/.local/bin</code>. It supports <code>sha256sum</code> or macOS&#x27;s <code>shasum -a 256</code>. Add the destination to your <code>PATH</code> if needed.</p>
+<p>To inspect the script first or choose a version/directory:</p>
+<pre><code>curl -fsSL https://twig.wtf/install.sh -o install.sh
+bash install.sh --help
+bash install.sh --version v3.1.0 --to &quot;$HOME/.local/bin&quot; --yes</code></pre>
+<p>Use <code>--method build</code> to compile the selected release with Cargo; it honors the same destination. Interactive invocations ask before installing unless <code>--yes</code> is supplied. Piped invocations run noninteractively. Re-running upgrades an existing installation through an atomic executable replacement.</p>
+<h3 id="manual-download-and-windows">Manual download and Windows</h3>
+<p>Download <code>twig-&lt;target&gt;.tar.gz</code> and its separate <code>.tar.gz.sha256</code> file from <a href="https://github.com/workdone0/twig/releases/latest">Releases</a>.</p>
+<table>
+<tr><th>OS</th><th>Targets</th></tr>
+<tr><td>Linux (GNU libc)</td><td><code>x86_64-unknown-linux-gnu</code>, <code>aarch64-unknown-linux-gnu</code></td></tr>
+<tr><td>macOS</td><td><code>x86_64-apple-darwin</code>, <code>aarch64-apple-darwin</code></td></tr>
+<tr><td>Windows</td><td><code>x86_64-pc-windows-msvc</code></td></tr>
+</table>
+<p>Verify the archive with <code>sha256sum -c &lt;checksum-file&gt;</code> (Linux), <code>shasum -a 256 -c &lt;checksum-file&gt;</code> (macOS), or compare PowerShell&#x27;s <code>Get-FileHash &lt;archive&gt; -Algorithm SHA256</code> against the checksum file (Windows). Extract it with <code>tar -xzf &lt;archive&gt;</code>. Archives contain <code>twig</code>/<code>twig.exe</code> and LICENSE. Put the executable on <code>PATH</code>.</p>
+<p>These are native executables, not universal static binaries. Linux builds use GNU libc; macOS targets a deployment minimum of 11.0. Release <code>.build.txt</code> assets record the source commit, compiler, size, and available linkage diagnostics. Clipboard support depends on the host desktop; SSH sessions may not provide it. Binaries are not OS code-signed/notarized. Release archives have checksums and GitHub build provenance attestations.</p>
+<h3 id="build-from-source">Build from source</h3>
+<p>Requires Rust 1.88 or newer, Cargo, and a C compiler/linker for bundled SQLite.</p>
+<pre><code>git clone https://github.com/workdone0/twig.git
 cd twig
-cargo build --release
-./target/release/twig --help</code></pre> <h3 data-astro-cid-5tcejxga>Legacy Python (≤ v2.1.4)</h3> <p data-astro-cid-5tcejxga>
-Older releases shipped to PyPI as <code data-astro-cid-5tcejxga>twg</code>. That
-                    implementation is preserved on the
-<a href="https://github.com/workdone0/twig/tree/legacy-python" rel="noopener" data-astro-cid-5tcejxga><code data-astro-cid-5tcejxga>legacy-python</code></a> branch for reference. New development happens on
-<code data-astro-cid-5tcejxga>master</code>. To migrate:
-</p> <pre data-astro-cid-5tcejxga><code data-astro-cid-5tcejxga>uv tool uninstall twg                       # remove old
-curl -fsSL https://twig.wtf/install.sh | sh # install new</code></pre> </section> <section id="quickstart" data-astro-cid-5tcejxga> <h2 data-astro-cid-5tcejxga>Quickstart</h2> <h3 data-astro-cid-5tcejxga>Open a file</h3> <p data-astro-cid-5tcejxga>
-Pass a JSON or YAML file as the argument. Format is
-                    auto-detected from the extension.
-</p> <pre data-astro-cid-5tcejxga><code data-astro-cid-5tcejxga>twig data.json     # or twig config.yaml</code></pre> <h3 data-astro-cid-5tcejxga>Repair malformed JSON</h3> <p data-astro-cid-5tcejxga> <code data-astro-cid-5tcejxga>--fix</code> attempts to repair common
-                    malformations — trailing commas, unquoted keys,
-                    single quotes, <code data-astro-cid-5tcejxga>NaN</code>/<code data-astro-cid-5tcejxga>Infinity</code> —
-                    and writes a clean, round-trippable copy.
-</p> <pre data-astro-cid-5tcejxga><code data-astro-cid-5tcejxga>twig --fix bad.json -o clean.json</code></pre> <h3 data-astro-cid-5tcejxga>Pretty-print to stdout</h3> <p data-astro-cid-5tcejxga>
-Non-TUI mode that emits a colored, indented copy of
-                    the file.
-</p> <pre data-astro-cid-5tcejxga><code data-astro-cid-5tcejxga>twig -p large.json &gt; pretty.json</code></pre> <h3 data-astro-cid-5tcejxga>Benchmark streaming ingestion</h3> <p data-astro-cid-5tcejxga> <code data-astro-cid-5tcejxga>--check</code> loads the file through the same
-                    streaming pipeline the TUI uses and prints size, node
-                    count, elapsed time, and throughput. Non-TUI. Useful
-                    in CI and ad-hoc perf checks.
-</p> <pre data-astro-cid-5tcejxga><code data-astro-cid-5tcejxga>twig --check huge.json</code></pre> </section> <section id="keybindings" data-astro-cid-5tcejxga> <h2 data-astro-cid-5tcejxga>Keyboard shortcuts</h2> <p data-astro-cid-5tcejxga>Twig is designed for keyboard-centric workflows.</p> <div class="table-wrapper" data-astro-cid-5tcejxga> <table data-astro-cid-5tcejxga> <thead data-astro-cid-5tcejxga> <tr data-astro-cid-5tcejxga> <th data-astro-cid-5tcejxga>Context</th> <th data-astro-cid-5tcejxga>Action</th> <th data-astro-cid-5tcejxga>Key</th> </tr> </thead> <tbody data-astro-cid-5tcejxga> <tr data-astro-cid-5tcejxga> <td data-astro-cid-5tcejxga><strong data-astro-cid-5tcejxga>General</strong></td> <td data-astro-cid-5tcejxga>Help / cheatsheet</td> <td data-astro-cid-5tcejxga><code data-astro-cid-5tcejxga>?</code></td> </tr> <tr data-astro-cid-5tcejxga> <td data-astro-cid-5tcejxga></td> <td data-astro-cid-5tcejxga>Quit</td> <td data-astro-cid-5tcejxga><code data-astro-cid-5tcejxga>q</code></td> </tr> <tr data-astro-cid-5tcejxga> <td data-astro-cid-5tcejxga></td> <td data-astro-cid-5tcejxga>Toggle theme</td> <td data-astro-cid-5tcejxga><code data-astro-cid-5tcejxga>t</code></td> </tr> <tr data-astro-cid-5tcejxga> <td data-astro-cid-5tcejxga><strong data-astro-cid-5tcejxga>Navigation</strong></td> <td data-astro-cid-5tcejxga>Move selection</td> <td data-astro-cid-5tcejxga><code data-astro-cid-5tcejxga>↑ ↓ ← →</code></td> </tr> <tr data-astro-cid-5tcejxga> <td data-astro-cid-5tcejxga></td> <td data-astro-cid-5tcejxga>Drill in / expand</td> <td data-astro-cid-5tcejxga><code data-astro-cid-5tcejxga>→</code> / <code data-astro-cid-5tcejxga>Enter</code> / <code data-astro-cid-5tcejxga>l</code></td> </tr> <tr data-astro-cid-5tcejxga> <td data-astro-cid-5tcejxga></td> <td data-astro-cid-5tcejxga>Step back / collapse</td> <td data-astro-cid-5tcejxga><code data-astro-cid-5tcejxga>←</code> / <code data-astro-cid-5tcejxga>Esc</code> / <code data-astro-cid-5tcejxga>h</code></td> </tr> <tr data-astro-cid-5tcejxga> <td data-astro-cid-5tcejxga></td> <td data-astro-cid-5tcejxga>Jump to top / bottom</td> <td data-astro-cid-5tcejxga><code data-astro-cid-5tcejxga>g</code> / <code data-astro-cid-5tcejxga>G</code></td> </tr> <tr data-astro-cid-5tcejxga> <td data-astro-cid-5tcejxga></td> <td data-astro-cid-5tcejxga>Smart jump to path</td> <td data-astro-cid-5tcejxga><code data-astro-cid-5tcejxga>:</code></td> </tr> <tr data-astro-cid-5tcejxga> <td data-astro-cid-5tcejxga><strong data-astro-cid-5tcejxga>Search</strong></td> <td data-astro-cid-5tcejxga>Global search</td> <td data-astro-cid-5tcejxga><code data-astro-cid-5tcejxga>/</code></td> </tr> <tr data-astro-cid-5tcejxga> <td data-astro-cid-5tcejxga></td> <td data-astro-cid-5tcejxga>Next match</td> <td data-astro-cid-5tcejxga><code data-astro-cid-5tcejxga>n</code></td> </tr> <tr data-astro-cid-5tcejxga> <td data-astro-cid-5tcejxga></td> <td data-astro-cid-5tcejxga>Previous match</td> <td data-astro-cid-5tcejxga><code data-astro-cid-5tcejxga>N</code></td> </tr> <tr data-astro-cid-5tcejxga> <td data-astro-cid-5tcejxga><strong data-astro-cid-5tcejxga>Actions</strong></td> <td data-astro-cid-5tcejxga>Copy path</td> <td data-astro-cid-5tcejxga><code data-astro-cid-5tcejxga>c</code></td> </tr> <tr data-astro-cid-5tcejxga> <td data-astro-cid-5tcejxga></td> <td data-astro-cid-5tcejxga>Copy source slice</td> <td data-astro-cid-5tcejxga><code data-astro-cid-5tcejxga>y</code></td> </tr> </tbody> </table> </div> </section> <section id="cli" data-astro-cid-5tcejxga> <h2 data-astro-cid-5tcejxga>CLI reference</h2> <pre data-astro-cid-5tcejxga><code data-astro-cid-5tcejxga>twig [OPTIONS] &lt;FILE&gt;</code></pre> <h3 data-astro-cid-5tcejxga>Arguments</h3> <ul data-astro-cid-5tcejxga> <li data-astro-cid-5tcejxga> <code data-astro-cid-5tcejxga>&lt;FILE&gt;</code> — path to a JSON or YAML file
-</li> </ul> <h3 data-astro-cid-5tcejxga>Options</h3> <ul data-astro-cid-5tcejxga> <li data-astro-cid-5tcejxga> <code data-astro-cid-5tcejxga>-p</code>, <code data-astro-cid-5tcejxga>--print</code> — print
-                        pretty-printed output to stdout (non-TUI)
-</li> <li data-astro-cid-5tcejxga> <code data-astro-cid-5tcejxga>-o</code>, <code data-astro-cid-5tcejxga>--output &lt;FILE&gt;</code> —
-                        write to <code data-astro-cid-5tcejxga>FILE</code> instead of stdout (with
-<code data-astro-cid-5tcejxga>--print</code> or <code data-astro-cid-5tcejxga>--fix</code>)
-</li> <li data-astro-cid-5tcejxga> <code data-astro-cid-5tcejxga>-i</code>, <code data-astro-cid-5tcejxga>--indent &lt;N&gt;</code> —
-                        indent width for pretty-printed or fixed output
-                        (default: 2)
-</li> <li data-astro-cid-5tcejxga> <code data-astro-cid-5tcejxga>--fix</code> — attempt to repair malformed
-                        JSON and write a clean copy
-</li> <li data-astro-cid-5tcejxga> <code data-astro-cid-5tcejxga>--check</code> — load and print size, node
-                        count, elapsed, throughput (non-TUI)
-</li> <li data-astro-cid-5tcejxga> <code data-astro-cid-5tcejxga>--rebuild-db</code> — drop the on-disk
-                        SQLite cache before loading
-</li> <li data-astro-cid-5tcejxga><code data-astro-cid-5tcejxga>--version</code> — print version and exit</li> <li data-astro-cid-5tcejxga><code data-astro-cid-5tcejxga>--help</code> — print help and exit</li> </ul> </section> <section id="configuration" data-astro-cid-5tcejxga> <h2 data-astro-cid-5tcejxga>Configuration</h2> <p data-astro-cid-5tcejxga>
-Twig is zero-config by default. It persists your
-                    settings between sessions.
-</p> <ul data-astro-cid-5tcejxga> <li data-astro-cid-5tcejxga> <strong data-astro-cid-5tcejxga>Theme</strong> — <strong data-astro-cid-5tcejxga>Catppuccin Mocha</strong> (default) and
-<strong data-astro-cid-5tcejxga>Solarized Dark</strong> ship in the box.
-                        Cycle with <code data-astro-cid-5tcejxga>t</code>. Your choice is saved
-                        and restored on the next launch.
-</li> <li data-astro-cid-5tcejxga> <strong data-astro-cid-5tcejxga>Config file</strong> — stored at
-<code data-astro-cid-5tcejxga>~/.config/twig/config.json</code> (or the
-                        platform equivalent). Shared with the legacy
-                        Python implementation, so theme preference carries
-                        over when upgrading from <code data-astro-cid-5tcejxga>twg</code>.
-</li> <li data-astro-cid-5tcejxga> <strong data-astro-cid-5tcejxga>Cache</strong> — a SQLite file with an
-                        FTS5 virtual table, stored under the platform's
-                        cache directory. Safe to delete at any time;
-                        rebuilt on the next launch.
-</li> </ul> </section> <section id="troubleshooting" data-astro-cid-5tcejxga> <h2 data-astro-cid-5tcejxga>Troubleshooting</h2> <h3 data-astro-cid-5tcejxga>Loader errors</h3> <p data-astro-cid-5tcejxga>
-If Twig can't parse a file, it shows the error in-app
-                    (press any key to exit) and prints a colored message
-                    with a <code data-astro-cid-5tcejxga>--fix</code> hint to stderr with exit
-                    code 1. Shell pipelines see the failure immediately
-                    without having to inspect TUI screenshots.
-</p> <h3 data-astro-cid-5tcejxga>"Database is locked" error</h3> <p data-astro-cid-5tcejxga>
-If Twig crashes or is killed forcefully, the SQLite
-                    lock might remain. Run with
-<code data-astro-cid-5tcejxga>--rebuild-db</code> to reset.
-</p> <h3 data-astro-cid-5tcejxga>Clipboard not working</h3> <p data-astro-cid-5tcejxga>
-On Linux headless servers without a clipboard daemon,
-                    the copy actions (<code data-astro-cid-5tcejxga>c</code>, <code data-astro-cid-5tcejxga>y</code>) fall
-                    back to writing the payload to a temporary file and
-                    printing its path. The TUI shows a hint when this
-                    fallback fires.
-</p> <h3 data-astro-cid-5tcejxga>Cross-compile issues when building from source</h3> <p data-astro-cid-5tcejxga>
-The <code data-astro-cid-5tcejxga>Cargo.toml</code> in the repo points the
-<code data-astro-cid-5tcejxga>aarch64-unknown-linux-gnu</code> linker at
-<code data-astro-cid-5tcejxga>aarch64-linux-gnu-gcc</code>. To cross-compile
-                    locally on Debian/Ubuntu, install the cross tools:
-</p> <pre data-astro-cid-5tcejxga><code data-astro-cid-5tcejxga>sudo apt-get install -y gcc-aarch64-linux-gnu libc6-dev-arm64-cross</code></pre> <p data-astro-cid-5tcejxga>
-The CI uses <a href="https://github.com/cross-rs/cross" rel="noopener" data-astro-cid-5tcejxga><code data-astro-cid-5tcejxga>cargo-cross</code></a>, which pulls a Docker image with the right
-                    toolchain preinstalled.
-</p> </section> <footer class="docs-footer" data-astro-cid-5tcejxga> <p data-astro-cid-5tcejxga>
-Found a bug or have a feature request?
-<a href="https://github.com/workdone0/twig/issues" rel="noopener" data-astro-cid-5tcejxga>Open an issue on GitHub</a>.
-</p> </footer> </article> </div>  </div> </main> <footer class="site-footer" data-astro-cid-sckkx6r4> <div class="container" data-astro-cid-sckkx6r4> <div class="footer-grid" data-astro-cid-sckkx6r4> <div class="footer-brand" data-astro-cid-sckkx6r4> <a href="/" class="brand" data-astro-cid-sckkx6r4> <img src="https://raw.githubusercontent.com/workdone0/twig/master/asset/logo.png" alt="" width="32" height="32" data-astro-cid-sckkx6r4> <span class="brand-text" data-astro-cid-sckkx6r4>Twig</span> </a> <p data-astro-cid-sckkx6r4>The modern terminal UI for JSON &amp; YAML.</p> </div> <div class="footer-col" data-astro-cid-sckkx6r4> <strong data-astro-cid-sckkx6r4>Project</strong> <a href="/guide" data-astro-cid-sckkx6r4>Documentation</a> <a href="https://github.com/workdone0/twig/releases/latest" rel="noopener" data-astro-cid-sckkx6r4>Latest release</a> <a href="https://github.com/workdone0/twig" rel="noopener" data-astro-cid-sckkx6r4>Source code</a> <a href="https://github.com/workdone0/twig/tree/legacy-python" rel="noopener" data-astro-cid-sckkx6r4>Legacy Python</a> </div> <div class="footer-col" data-astro-cid-sckkx6r4> <strong data-astro-cid-sckkx6r4>Resources</strong> <a href="https://github.com/workdone0/twig/blob/master/CHANGELOG.md" rel="noopener" data-astro-cid-sckkx6r4>Changelog</a> <a href="https://github.com/workdone0/twig/blob/master/install.sh" rel="noopener" data-astro-cid-sckkx6r4>install.sh</a> <a href="https://github.com/workdone0/twig/issues" rel="noopener" data-astro-cid-sckkx6r4>Report an issue</a> <a href="https://buymeacoffee.com/workdone0" rel="noopener" data-astro-cid-sckkx6r4>Support development</a> </div> </div> <div class="footer-bottom" data-astro-cid-sckkx6r4> <p data-astro-cid-sckkx6r4>
-© 2026 Shubham Kumar · MIT Licensed
-</p> <p class="built-with" data-astro-cid-sckkx6r4>
-Built with
-<a href="https://www.rust-lang.org" rel="noopener" data-astro-cid-sckkx6r4>Rust</a>
-+
-<a href="https://github.com/ratatui/ratatui" rel="noopener" data-astro-cid-sckkx6r4>ratatui</a> </p> </div> </div> </footer> <script type="module">const t=document.getElementById("nav-toggle"),n=document.getElementById("primary-nav");function c(){n?.classList.remove("open"),t?.setAttribute("aria-expanded","false")}t?.addEventListener("click",()=>{const e=n?.classList.toggle("open");t.setAttribute("aria-expanded",e?"true":"false")});n?.querySelectorAll("[data-nav]").forEach(e=>e.addEventListener("click",c));const o=document.getElementById("theme-toggle");o?.addEventListener("click",()=>{const a=document.documentElement.getAttribute("data-theme")==="light"?"dark":"light";document.documentElement.setAttribute("data-theme",a);try{localStorage.setItem("theme",a)}catch{}});</script> </body> </html>  
+cargo build --release --locked
+./target/release/twig --help</code></pre>
+<p>Or install directly from the Git release:</p>
+<pre><code>cargo install --locked --git https://github.com/workdone0/twig --tag v3.1.0 twig</code></pre>
+<p>Use the Git source explicitly: the <code>twig</code> package on crates.io is unrelated. Python is not needed to run the application.</p>
+<h2 id="usage">Usage</h2>
+<pre><code>twig samples/cloud_infrastructure.json
+twig samples/k8s_manifest.yaml
+twig samples/browser_navigation.har
+
+# Format JSON to stdout or an output file
+twig --print data.json --indent 4
+twig --print data.json --indent 4 -o formatted.json
+
+# Repair JSON, then format the repaired value
+twig --fix --print broken.json -o repaired.json
+
+# Validate/load without a terminal; force parsing for a cold benchmark
+twig --check --rebuild-db data.json
+
+# Keep no persistent cache
+twig --no-cache secrets.json
+
+# JSON stdin is available for non-interactive modes
+cat response.json | twig --print -</code></pre>
+<p>Output is plain JSON/YAML, suitable for piping. <code>-o</code> writes atomically after successful parsing and can replace an existing file, including the input. Prefer a separate output when reviewing repairs. Never redirect stdout to the input path: the shell truncates that file before Twig reads it.</p>
+<h3 id="cli-reference">CLI reference</h3>
+<table>
+<tr><th>Option</th><th>Behavior</th></tr>
+<tr><td><code>&lt;FILE&gt;</code></td><td>Positional JSON, YAML, or HAR path; <code>-</code> means JSON stdin in CLI modes</td></tr>
+<tr><td><code>-p</code>, <code>--print</code></td><td>Format JSON or a YAML document stream</td></tr>
+<tr><td><code>--fix</code></td><td>Repair JSON and format it; may combine with <code>--print</code></td></tr>
+<tr><td><code>-o</code>, <code>--output &lt;PATH&gt;</code></td><td>Write formatted output atomically; requires print/fix</td></tr>
+<tr><td><code>-i</code>, <code>--indent &lt;N&gt;</code></td><td>JSON indentation, 0–16 spaces, default 2; YAML uses its formatter</td></tr>
+<tr><td><code>--check</code></td><td>Report validation/load time, size, nodes, throughput; conflicts with print/fix</td></tr>
+<tr><td><code>--rebuild-db</code></td><td>Parse again even if a matching completed cache exists</td></tr>
+<tr><td><code>--no-cache</code></td><td>Use a private temporary SQLite database</td></tr>
+<tr><td><code>--clear-cache</code></td><td>Remove stored cache files and exit; takes no input file</td></tr>
+<tr><td><code>-h</code>, <code>--help</code></td><td>Show help</td></tr>
+<tr><td><code>-V</code>, <code>-v</code>, <code>--version</code></td><td>Show version; <code>-v</code> preserves the Python alias</td></tr>
+</table>
+<p>Format detection is case-insensitive: <code>.yaml</code>/<code>.yml</code> use YAML, other extensions use JSON. HAR is ordinary JSON. There is no <code>--file</code> flag or live watch mode. The TUI requires stdin and stdout attached to a terminal.</p>
+<h3 id="keyboard-controls">Keyboard controls</h3>
+<table>
+<tr><th>Action</th><th>Controls</th></tr>
+<tr><td>Move up / down</td><td><code>↑</code> / <code>↓</code>, <code>k</code> / <code>j</code></td></tr>
+<tr><td>Open selected container</td><td><code>→</code>, <code>l</code>, <code>Enter</code></td></tr>
+<tr><td>Return to parent</td><td><code>←</code>, <code>h</code>, <code>Esc</code></td></tr>
+<tr><td>First / last sibling</td><td><code>g</code> / <code>G</code>, <code>Home</code> / <code>End</code></td></tr>
+<tr><td>Search keys and values</td><td><code>/</code>, query, <code>Enter</code></td></tr>
+<tr><td>Next / previous match</td><td><code>n</code> / <code>N</code></td></tr>
+<tr><td>Jump to a path</td><td><code>:</code>, path, <code>Enter</code></td></tr>
+<tr><td>Copy path / entire selected value</td><td><code>c</code> / <code>y</code></td></tr>
+<tr><td>Cycle theme</td><td><code>t</code></td></tr>
+<tr><td>Open help</td><td><code>?</code></td></tr>
+<tr><td>Dismiss search/jump</td><td><code>Esc</code></td></tr>
+<tr><td>Dismiss help</td><td><code>Esc</code>, <code>?</code>, <code>h</code>, or <code>Enter</code></td></tr>
+<tr><td>Quit</td><td><code>q</code> in normal/loading mode; <code>Ctrl+C</code> in any mode</td></tr>
+</table>
+<p>Mouse wheel moves selection. Click a row to select it; click the selected row to open its container. Right-click returns to the parent. Clipboard ownership is kept while Twig runs; persistence after exit depends on the desktop clipboard manager. Failures are shown in the status message.</p>
+<p>Paths look like <code>.users[0].name</code>; root arrays use <code>.[0]</code>. Keys containing punctuation, spaces, or empty strings use JSON-quoted brackets, such as <code>.regions[&quot;us-east-1&quot;]</code> or <code>.[&quot;a.b&quot;]</code>. This is a path lookup syntax, not a full jq or JSONPath query language. YAML documents are wrapped in an array: <code>.[0].kind</code> addresses the first document, and <code>.kind</code> is a shorthand fallback.</p>
+<p>Search is a literal substring match, with ASCII case-insensitivity; <code>%</code> and <code>_</code> are ordinary characters. Matches cycle in source traversal order, including numeric array order. Non-ASCII characters match exactly.</p>
+<p>The inspector shows a limited preview. Clipboard <code>y</code> exports the <strong>complete selected value</strong>, preserving scalar types and order, up to 10,000 nodes; larger selections give an explicit error directing you to <code>--print</code>. Serialization does not preserve original whitespace, comments, anchors, or quoting.</p>
+<h2 id="configuration-and-local-data">Configuration and local data</h2>
+<p>Themes: <code>catppuccin-mocha</code> (default) and <code>solarized-dark</code>. Press <code>t</code> to save. Unknown config keys are preserved. Unknown theme names fall back to the default; custom theme definitions are not supported.</p>
+<pre><code>{&quot;theme&quot;: &quot;catppuccin-mocha&quot;}</code></pre>
+<table>
+<tr><th>Platform</th><th>Config directory (<code>config.json</code>)</th><th>Cache directory</th></tr>
+<tr><td>Linux</td><td><code>$XDG_CONFIG_HOME/twig</code> or <code>~/.config/twig</code></td><td><code>$XDG_CACHE_HOME/twig</code> or <code>~/.cache/twig</code></td></tr>
+<tr><td>macOS</td><td><code>~/Library/Application Support/twig</code></td><td><code>~/Library/Caches/twig</code></td></tr>
+<tr><td>Windows</td><td><code>%APPDATA%\twig</code></td><td><code>%LOCALAPPDATA%\twig</code></td></tr>
+</table>
+<p>On macOS, when the new config is missing, Twig imports the legacy Python config from <code>$XDG_CONFIG_HOME/twig/config.json</code> or <code>~/.config/twig/config.json</code>. An existing new config is never overwritten by migration.</p>
+<p>The explorer makes no network requests or telemetry calls. Parsed values are stored <strong>unencrypted</strong> in private SQLite cache files. Unix cache directories are restricted to mode 0700 and published files to 0600; Windows uses profile ACLs.</p>
+<p>Every load snapshots and hashes the input. Only completed caches matching the source contents and schema version can be reused. Failed/cancelled builds are never published. Concurrent loads use independent staging databases and publish immutable generations. A source change automatically selects a new generation.</p>
+<p>New-format caches are pruned on load after seven days, or oldest-first when the existing cache exceeds 512 MiB. A newly built cache may exceed that budget until a subsequent load. Close other Twig processes and run <code>twig --clear-cache</code> to remove caches, including older versions. Configuration is preserved.</p>
+<p><code>--no-cache</code> uses temporary disk storage, not an in-memory database. Normal exit cleans up temporary data; abrupt OS/process termination may leave temporary files. Sensitive data is not encrypted in either mode.</p>
+<h2 id="performance-and-supported-data">Performance and supported data</h2>
+<p>JSON is parsed into node events and inserted in batches of 1,024. It does not materialize the whole document tree. Memory still depends on the largest scalar, nesting/path lengths, SQLite working space, and requested exports. YAML parsing can buffer document state; bounded parser memory is not guaranteed.</p>
+<p>Navigation fetches pages of at most 256 siblings, with a horizontal viewport for deep trees. Inspector previews have depth/node limits. Search is a SQLite substring scan; broad searches on very large files can take time.</p>
+<p>JSON input must contain a single document. Duplicate object keys and ambiguous stored paths are rejected. Maximum supported nesting is 128 levels (the JSON parser may reject at its own recursion boundary). YAML&#x27;s TUI model supports JSON-compatible scalar types, sequences, and string-keyed mappings; non-finite numbers, tagged values, and complex mapping keys are not supported. <code>--print</code> uses the YAML value serializer and supports a wider YAML value model.</p>
+<p>Measure cold ingestion explicitly:</p>
+<pre><code>cargo build --release --locked
+python3 scripts/benchmark.py --binary target/release/twig</code></pre>
+<p>The benchmark generates a deterministic file and reports wall time and peak RSS. <code>--check</code> uses MiB units. Cached loads still read/hash the source to verify it; they are not evidence of parsing throughput. No universal latency or fixed binary-size claim is made.</p>
+<h2 id="development">Development</h2>
+<ul>
+<li><a href="/guide/contributing/">Contributing</a>: setup, tests, review, release workflow.</li>
+<li><a href="/guide/architecture/">Architecture</a>: data flow and implementation boundaries.</li>
+<li><a href="/guide/migration/">Migration</a>: Python 2.x and Rust 3.0 upgrade differences.</li>
+<li><a href="/guide/evaluation/">Release evaluation</a>: audit findings and their resolution.</li>
+<li><a href="https://github.com/workdone0/twig/blob/master/CHANGELOG.md">Changelog</a> and <a href="/guide/release-notes/">release notes</a>.</li>
+</ul>
+<p>Website source lives in <code>website/</code>. Its guides are generated from these Markdown files, and the deployed installer is copied from this repository&#x27;s <code>install.sh</code>. The Python source remains on <a href="https://github.com/workdone0/twig/tree/legacy-python">legacy-python</a>.</p>
+<h2 id="license">License</h2>
+<p>MIT — see <a href="https://github.com/workdone0/twig/blob/master/LICENSE">LICENSE</a>.</p></main></div><footer class="wrap"><a href="https://github.com/workdone0/twig/blob/master/README.md">Edit this page on GitHub ↗</a><p>Generated from the repository documentation.</p></footer></body></html>
