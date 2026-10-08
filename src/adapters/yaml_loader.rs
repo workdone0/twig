@@ -1,18 +1,9 @@
 //! YAML document stream to JSON-compatible SQLite nodes.
 //! The YAML library may buffer document/parser state; unlike JSON, bounded
 //! parser memory is not guaranteed. Emitted node batches are bounded.
-use crate::adapters::{
-    json_loader::{Seed, Sink},
-    loader::{load_cached, LoadOptions, Loader},
-};
-use crate::core::{
-    model::{DataType, Node},
-    store::Store,
-};
+use crate::adapters::loader::{load_cached, LoadOptions, Loader};
+use crate::core::store::Store;
 use anyhow::Result;
-use serde::de::DeserializeSeed;
-#[cfg(test)]
-use serde_json::Value;
 use std::path::Path;
 
 pub struct YamlLoader {
@@ -38,38 +29,14 @@ impl YamlLoader {
 impl Loader for YamlLoader {
     fn load(&self, file: &Path, force: bool) -> Result<Store> {
         load_cached(file, force, &self.options, |reader, store| {
-            let mut sink = Sink::new(store, &self.options);
-            let root = uuid::Uuid::new_v4();
-            sink.push(Node {
-                id: root,
-                parent: None,
-                key: "root".into(),
-                path: ".".into(),
-                ty: DataType::Array,
-                value: None,
-                rank: 0,
-                is_expanded: false,
-            })?;
-            for (rank, doc) in serde_norway::Deserializer::from_reader(reader).enumerate() {
-                Seed {
-                    sink: &mut sink,
-                    parent: Some(root),
-                    key: rank.to_string(),
-                    path: format!(".[{rank}]"),
-                    rank: rank as i64,
-                    depth: 0,
-                }
-                .deserialize(doc)
-                .map_err(|e| anyhow::anyhow!("YAML parse error: {e}"))?;
-            }
-            sink.flush()?;
-            Ok(())
+            twig_core::parser::parse_yaml(reader, store, &self.options)
         })
     }
 }
 #[cfg(test)]
 mod tests {
     use super::*;
+    use serde_json::Value;
     use std::path::PathBuf;
 
     fn sample() -> PathBuf {

@@ -3,6 +3,9 @@
 **Inspect. Navigate. Understand.** A local terminal explorer for JSON, YAML, and
 JSON-based HAR files, written in Rust.
 
+Try the browser explorer at [twig.wtf](https://twig.wtf), or install the terminal
+app below. Both interfaces use the same Rust parsing and exploration core.
+
 Explore nested data with Miller columns, search keys and values, jump to paths,
 and inspect values without a browser. The TUI never edits your input. Separate
 CLI modes format data and repair JSON.
@@ -10,6 +13,34 @@ CLI modes format data and repair JSON.
 [Website](https://twig.wtf) · [Guide](https://twig.wtf/guide/) ·
 [Releases](https://github.com/workdone0/twig/releases) ·
 [Contributing](CONTRIBUTING.md)
+
+## Browser explorer
+
+Open [twig.wtf](https://twig.wtf) to select or drop JSON, YAML, or HAR files, paste
+data, or explore bundled examples. Files are processed in your browser and are
+not uploaded. Documents stay in the current tab's memory; closing, replacing,
+or reloading clears them. Only your Dark/Light theme preference is saved in
+browser local storage. No accounts, tracking, or document persistence.
+
+The browser accepts inputs up to **20 MiB**, with additional limits of 250,000
+nodes and 128 MiB of estimated retained data. Actual memory use is higher and
+device-dependent. Dense or deeply nested files can hit these limits earlier.
+Use the installed TUI for larger files, offline use, and terminal workflows.
+
+Click to inspect a row and click a selected container again to open it. Search
+keys/values, jump to paths, and copy paths or complete selected values. Arrow
+keys, `j`/`k`, `h`/`l`, Home/End, `/`, `:`, `n`/`N`, `c`, and `y` work while the
+explorer has focus. Press `t` for Dark/Light, `?` for help, and `q` to close
+the document (the TUI quits). Enter after search or jump returns focus to
+navigation; Esc cancels entry or returns to the parent. Browser shortcuts are
+left intact. On narrow screens the
+current column is shown; breadcrumbs return to ancestors.
+
+Previews are limited to four levels, 200 nodes, 30 children per container and
+64K displayed characters. **Copy value** exports the complete selection, up to
+10,000 nodes and 4 MiB. Clipboard access requires browser permission. Formatting
+and repair remain CLI features. The browser downloads application code from the
+site; install Twig when you need to work without loading a website.
 
 ## Installation
 
@@ -54,7 +85,7 @@ twig 'C:\path\to\data.json'
 Choose a version or directory, or skip PATH changes:
 
 ```powershell
-powershell -NoProfile -ExecutionPolicy Bypass -File .\install.ps1 -Version v3.1.0 -InstallDir "$env:LOCALAPPDATA\Programs\Twig\bin"
+powershell -NoProfile -ExecutionPolicy Bypass -File .\install.ps1 -Version v3.2.0 -InstallDir "$env:LOCALAPPDATA\Programs\Twig\bin"
 powershell -NoProfile -ExecutionPolicy Bypass -File .\install.ps1 -NoPath
 powershell -NoProfile -ExecutionPolicy Bypass -File .\install.ps1 -Help
 ```
@@ -69,7 +100,7 @@ intact. Temporary downloads are cleaned up on success and failure.
 If scripts are restricted, download and verify the release in PowerShell:
 
 ```powershell
-$version = 'v3.1.0'
+$version = 'v3.2.0'
 $asset = 'twig-x86_64-pc-windows-msvc.tar.gz'
 $base = "https://github.com/workdone0/twig/releases/download/$version"
 Invoke-WebRequest -UseBasicParsing "$base/$asset" -OutFile $asset
@@ -130,7 +161,7 @@ To inspect the script first or choose a version/directory:
 ```bash
 curl -fsSL https://twig.wtf/install.sh -o install.sh
 bash install.sh --help
-bash install.sh --version v3.1.0 --to "$HOME/.local/bin" --yes
+bash install.sh --version v3.2.0 --to "$HOME/.local/bin" --yes
 ```
 
 If `twig` is not found, add `export PATH="$HOME/.local/bin:$PATH"` to your shell
@@ -173,7 +204,7 @@ Windows SDK; on macOS, install Xcode Command Line Tools; on Linux, use your
 distribution's C build toolchain.
 
 ```bash
-cargo install --locked --git https://github.com/workdone0/twig --tag v3.1.0 twig
+cargo install --locked --git https://github.com/workdone0/twig --tag v3.2.0 twig
 ```
 
 Cargo installs into its own bin directory, usually `~/.cargo/bin` on Unix or
@@ -272,12 +303,14 @@ not preserve original whitespace, comments, anchors, or quoting.
 
 ## Configuration and local data
 
-Themes: `catppuccin-mocha` (default) and `solarized-dark`. Press `t` to save.
+Themes: `dark` (default) and `light`, with the same colors in the TUI and web
+explorer. Press `t` to toggle and save your preference. Legacy
+`catppuccin-mocha` and `solarized-dark` settings both resolve to `dark`.
 Unknown config keys are preserved. Unknown theme names fall back to the default;
 custom theme definitions are not supported.
 
 ```json
-{"theme": "catppuccin-mocha"}
+{"theme": "dark"}
 ```
 
 | Platform | Config directory (`config.json`) | Cache directory |
@@ -346,7 +379,8 @@ binary-size claim is made.
 - [Release evaluation](docs/EVALUATION.md): audit findings and their resolution.
 - [Changelog](CHANGELOG.md) and [release notes](RELEASE_NOTES.md).
 
-Website source lives in `website/`. Its guides are generated from these Markdown
+Browser UI source lives in `web/`; the shared engine is in `crates/twig-core`.
+Installation and documentation templates live in `website/`. Its guides are generated from these Markdown
 files, and both deployed installers are copied from this repository's `install.sh` and
 `install.ps1`.
 The Python source remains on

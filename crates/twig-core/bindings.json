@@ -1,0 +1,17 @@
+[
+  {"action":"move_down","keys":["ArrowDown","j"],"label":"Move down"},
+  {"action":"move_up","keys":["ArrowUp","k"],"label":"Move up"},
+  {"action":"open","keys":["ArrowRight","l","Enter"],"label":"Open container"},
+  {"action":"back","keys":["ArrowLeft","h","Escape"],"label":"Return to parent"},
+  {"action":"first","keys":["Home","g"],"label":"First sibling"},
+  {"action":"last","keys":["End","G"],"label":"Last sibling"},
+  {"action":"search","keys":["/"],"label":"Search keys and values"},
+  {"action":"jump","keys":[":"],"label":"Jump to path"},
+  {"action":"next_match","keys":["n"],"label":"Next match"},
+  {"action":"previous_match","keys":["N"],"label":"Previous match"},
+  {"action":"copy_path","keys":["c"],"label":"Copy path"},
+  {"action":"copy_value","keys":["y"],"label":"Copy complete value"},
+  {"action":"toggle_theme","keys":["t"],"label":"Toggle Dark / Light"},
+  {"action":"help","keys":["?"],"label":"Keyboard help"},
+  {"action":"quit","keys":["q"],"label":"Close document / quit TUI"}
+]

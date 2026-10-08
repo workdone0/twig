@@ -84,7 +84,7 @@ impl Column {
             return;
         }
         if position < self.offset || position >= self.offset + self.children.len() {
-            self.offset = (position / 256) * 256;
+            self.offset = twig_core::storage::page_offset(position);
             self.children = store
                 .get_children_page(self.parent_id, self.offset, 256)
                 .unwrap_or_default();

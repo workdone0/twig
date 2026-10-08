@@ -28,9 +28,9 @@ jobs:
           components: rustfmt, clippy
       - uses: Swatinem/rust-cache@v2
       - run: cargo fmt --all -- --check
-      - run: cargo clippy --locked --all-targets -- -D warnings
-      - run: cargo test --locked --all-targets
-      - run: cargo test --locked --doc
+      - run: cargo clippy --locked --workspace --all-targets -- -D warnings
+      - run: cargo test --locked --workspace --all-targets
+      - run: cargo test --locked --workspace --doc
       - name: Windows PowerShell 5.1 installer contracts
         if: matrix.os == 'windows-latest' && matrix.rust == 'stable'
         shell: powershell
@@ -47,8 +47,32 @@ jobs:
           ref: ${{ inputs.ref || github.sha }}
       - run: shellcheck install.sh
       - run: python3 scripts/test_installer.py
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+      - uses: Swatinem/rust-cache@v2
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: wasm-bindgen-cli@0.2.105
+      - run: npm ci --prefix web
+      - run: python3 scripts/build_wasm.py
+      - run: node web/tests/wasm-gate.mjs
+      - run: npm run build --prefix web
       - run: python3 scripts/build_site.py
       - run: python3 scripts/check_site.py
+      - run: npx --prefix web playwright install --with-deps chromium firefox webkit
+      - run: npm test --prefix web
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: browser-test-results
+          path: web/test-results/
+
   bench:
     runs-on: ubuntu-22.04
     steps:

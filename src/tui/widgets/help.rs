@@ -22,7 +22,7 @@ const KEYBINDINGS: &[(&str, &str)] = &[
     (":", "Jump to path"),
     ("c", "Copy path"),
     ("y", "Copy source"),
-    ("t", "Toggle theme"),
+    ("t", "Dark / Light"),
     ("q", "Quit"),
 ];
 

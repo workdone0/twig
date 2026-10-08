@@ -254,3 +254,12 @@ pub fn rebuild_indexes(store: &Store) -> Result<()> {
     )?;
     Ok(())
 }
+
+impl twig_core::parser::ParseControl for LoadOptions {
+    fn check_cancelled(&self) -> Result<()> {
+        self.check_cancelled()
+    }
+    fn node_emitted(&self) {
+        self.progress.nodes.fetch_add(1, Ordering::Relaxed);
+    }
+}

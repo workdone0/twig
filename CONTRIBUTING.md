@@ -7,11 +7,10 @@ large feature or new dependency.
 
 ## Setup
 
-The application is Rust; the website and tooling use Python's standard library.
-Use Rust 1.88+ with Cargo, rustfmt, Clippy, a C compiler/linker for bundled SQLite,
-and Python 3.10+. ShellCheck checks the Bash installer. Windows installer contracts run with
-Windows PowerShell 5.1 and PowerShell 7 on the Windows stable CI job. No Python application
-runtime, Node installation, or website package install is required.
+The native application uses Rust 1.88+, Cargo, rustfmt, Clippy and a C compiler
+for bundled SQLite. Website assembly uses Python 3.10+. Building the browser
+explorer additionally requires Node 22.12+ and the matching wasm-bindgen CLI.
+ShellCheck and PowerShell are used for installer checks.
 
 ```bash
 git clone https://github.com/workdone0/twig.git
@@ -25,7 +24,10 @@ cargo run --locked -- samples/cloud_infrastructure.json
 | Location | Responsibility |
 | --- | --- |
 | `src/main.rs`, `src/cli/` | CLI arguments, output, terminal lifecycle |
-| `src/adapters/` | Event parsing, immutable cache publication, cancellation |
+| `src/adapters/` | Native file loading, immutable cache publication, cancellation |
+| `crates/twig-core/` | Shared parsers, node model, exploration algorithms and memory store |
+| `crates/twig-wasm/` | Browser document bridge |
+| `web/` | React/TypeScript explorer, worker protocol and browser tests |
 | `src/core/` | Node types, SQLite queries, paths, configuration, repair |
 | `src/tui/` | Event loop, themes, paginated navigation, inspector and modals |
 | `schema.sql` | Node table and navigation indexes |
@@ -43,12 +45,13 @@ source-path uniqueness, atomic publication, and cancellation checkpoints.
 
 ```bash
 cargo fmt --all -- --check
-cargo clippy --locked --all-targets -- -D warnings
-cargo test --locked --all-targets
-cargo test --locked --doc
+cargo clippy --locked --workspace --all-targets -- -D warnings
+cargo test --locked --workspace --all-targets
+cargo test --locked --workspace --doc
 shellcheck install.sh
 bash -n install.sh
 python3 scripts/test_installer.py
+# After building the web bundle as described below:
 python3 scripts/build_site.py
 python3 scripts/check_site.py
 ```
@@ -92,20 +95,35 @@ profiles; do not claim constant memory for all operations.
 
 ## Website and documentation
 
-Edit `website/index.html`, `style.css`, and `app.js` for the landing page.
-User guides are generated directly from README, CONTRIBUTING, release notes,
-and `docs/`; edit those Markdown files rather than generated pages.
+Edit `web/src/` for the explorer. Installation templates and guide styling live
+in `website/`. Guides are generated from the repository Markdown files.
 
 ```bash
+rustup target add wasm32-unknown-unknown
+cargo install wasm-bindgen-cli --version 0.2.105 --locked
+npm ci --prefix web
+python3 scripts/build_wasm.py
+node web/tests/wasm-gate.mjs
+npm run build --prefix web
 python3 scripts/build_site.py
 python3 scripts/check_site.py
+npx --prefix web playwright install chromium firefox webkit
+npm test --prefix web
 python3 -m http.server 4321 --directory website/dist --bind 127.0.0.1
 ```
 
-Check desktop/mobile widths, keyboard navigation, readable contrast, sample data
-exploration, install tabs, copy feedback, and links. The site uses no tracking,
-external fonts, or framework runtime. `install.sh` and `install.ps1` are copied from the root at
-build time so it cannot silently diverge from application releases.
+Use `npm run dev --prefix web` after generating the WASM bridge for interface
+iteration. The assembled static site is the production test target. Browser
+tests cover Chromium, Firefox, and WebKit; WebKit is automated engine coverage,
+not a claim of testing every released Safari/iOS version. Manually check Safari
+clipboard permissions and real mobile devices before publishing a release.
+
+Verify desktop/mobile layouts, keyboard and mouse navigation, malformed files,
+20 MiB inputs, cancellation/replacement, clipboard failures, and installer links.
+No document content should appear in network requests or persistent browser
+storage. Shared-store tests compare native SQLite and browser memory semantics.
+Generated WASM bindings, bundles, dependencies, and test output are ignored;
+commit both dependency lockfiles. Installers are copied from repository sources.
 
 `master` is the source of truth for both app and website. The old `gh-pages`
 branch held Astro source; it is historical. Do not deploy from that branch.

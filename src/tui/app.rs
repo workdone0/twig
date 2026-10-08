@@ -24,6 +24,23 @@ use crate::core::store::Store;
 use crate::tui::theme::{Theme, ALL_THEMES};
 use crate::tui::widgets::navigator::ColumnNavigator;
 
+use twig_core::presentation::{action_for, Action};
+fn normal_action(code: KeyCode) -> Option<Action> {
+    let key = match code {
+        KeyCode::Char(c) => c.to_string(),
+        KeyCode::Down => "ArrowDown".into(),
+        KeyCode::Up => "ArrowUp".into(),
+        KeyCode::Left => "ArrowLeft".into(),
+        KeyCode::Right => "ArrowRight".into(),
+        KeyCode::Enter => "Enter".into(),
+        KeyCode::Esc => "Escape".into(),
+        KeyCode::Home => "Home".into(),
+        KeyCode::End => "End".into(),
+        _ => return None,
+    };
+    action_for(&key)
+}
+
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum AppMode {
     Loading,
@@ -78,10 +95,12 @@ impl App {
         config_path: Option<std::path::PathBuf>,
     ) -> Self {
         // Pick the theme from config; fall back to the registered
-        // default (Catppuccin Mocha) if config has none or refers to
+        // default (Dark Mocha) if config has none or refers to
         // an unknown theme. The `ALL_THEMES[0]` lookup ensures the
         // registered default and the fallback can't drift.
-        let configured = config.get_string("theme");
+        let configured = config
+            .get_string("theme")
+            .map(crate::tui::theme::canonical_theme);
         let theme = configured
             .and_then(|name| ALL_THEMES.iter().find(|t| t.name == name).copied())
             .unwrap_or(ALL_THEMES[0])
@@ -132,7 +151,7 @@ impl App {
 
     pub fn cycle_theme(&mut self) {
         // Cycle through ALL_THEMES in declaration order. Default
-        // (Catppuccin Mocha, at index 0) is reachable from any other
+        // (Dark Mocha, at index 0) is reachable from any other
         // theme by cycling enough times.
         let names: Vec<&'static str> = ALL_THEMES.iter().map(|t| t.name).collect();
         let current = names
@@ -275,50 +294,50 @@ impl App {
                     self.mode = AppMode::Exiting;
                 }
             }
-            AppMode::Normal => match key.code {
-                KeyCode::Char('q') => self.mode = AppMode::Exiting,
-                KeyCode::Char('t') => self.cycle_theme(),
-                KeyCode::Char('?') => {
+            AppMode::Normal => match normal_action(key.code) {
+                Some(Action::Quit) => self.mode = AppMode::Exiting,
+                Some(Action::ToggleTheme) => self.cycle_theme(),
+                Some(Action::Help) => {
                     self.mode = AppMode::Help;
                 }
-                KeyCode::Char('/') => {
+                Some(Action::Search) => {
                     self.modal_input.clear();
                     self.mode = AppMode::Search;
                 }
-                KeyCode::Char(':') => {
+                Some(Action::Jump) => {
                     self.modal_input.clear();
                     self.mode = AppMode::Jump;
                 }
-                KeyCode::Char('n') => self.next_match(1),
-                KeyCode::Char('N') => self.next_match(-1),
-                KeyCode::Char('c') => self.copy_path(),
-                KeyCode::Char('y') => self.copy_source(),
-                KeyCode::Char('g') | KeyCode::Home => {
+                Some(Action::NextMatch) => self.next_match(1),
+                Some(Action::PreviousMatch) => self.next_match(-1),
+                Some(Action::CopyPath) => self.copy_path(),
+                Some(Action::CopyValue) => self.copy_source(),
+                Some(Action::First) => {
                     if let Some(n) = &mut self.navigator {
                         n.first();
                     }
                 }
-                KeyCode::Char('G') | KeyCode::End => {
+                Some(Action::Last) => {
                     if let Some(n) = &mut self.navigator {
                         n.last();
                     }
                 }
-                KeyCode::Down | KeyCode::Char('j') => {
+                Some(Action::MoveDown) => {
                     if let Some(n) = self.navigator.as_mut() {
                         n.move_down();
                     }
                 }
-                KeyCode::Up | KeyCode::Char('k') => {
+                Some(Action::MoveUp) => {
                     if let Some(n) = self.navigator.as_mut() {
                         n.move_up();
                     }
                 }
-                KeyCode::Right | KeyCode::Enter | KeyCode::Char('l') => {
+                Some(Action::Open) => {
                     if let Some(n) = self.navigator.as_mut() {
                         n.drill();
                     }
                 }
-                KeyCode::Left | KeyCode::Esc | KeyCode::Char('h') => {
+                Some(Action::Back) => {
                     if let Some(n) = self.navigator.as_mut() {
                         n.step_back();
                     }
@@ -650,9 +669,37 @@ mod tests {
         terminal.draw(|f| render(f, &mut { app })).unwrap();
     }
 
+    #[test]
+    fn legacy_names_resolve_to_dark_and_light_renders_and_persists() {
+        for name in ["catppuccin-mocha", "solarized-dark", "unknown"] {
+            let mut config = Config::default();
+            config.set_memory("theme", serde_json::Value::from(name));
+            let app = App::with_config(Path::new("x.json"), false, config, None);
+            assert_eq!(app.theme.name, "dark");
+        }
+        let dir = tempfile::tempdir().unwrap();
+        let config_file = dir.path().join("config.json");
+        let mut app = App::with_config(
+            Path::new("x.json"),
+            false,
+            Config::default(),
+            Some(config_file.clone()),
+        );
+        app.cycle_theme();
+        let saved = Config::load_from(&config_file);
+        let mut restored = App::with_config(Path::new("x.json"), false, saved, None);
+        assert_eq!(restored.theme.name, "light");
+        let mut terminal = Terminal::new(TestBackend::new(100, 30)).unwrap();
+        terminal.draw(|frame| render(frame, &mut restored)).unwrap();
+        assert_eq!(
+            terminal.backend().buffer()[(0, 0)].bg,
+            crate::tui::theme::LIGHT.surface
+        );
+    }
+
     // Injected config keeps theme persistence independent of the user profile.
     #[test]
-    fn default_theme_is_catppuccin_and_cycle_round_trips() {
+    fn default_theme_is_dark_and_cycle_round_trips() {
         let dir = tempfile::tempdir().unwrap();
         let mut app = App::with_config(
             std::path::Path::new("x.json"),
@@ -660,11 +707,11 @@ mod tests {
             Config::default(),
             Some(dir.path().join("config.json")),
         );
-        assert_eq!(app.theme.name, "catppuccin-mocha");
+        assert_eq!(app.theme.name, "dark");
         app.cycle_theme();
-        assert_ne!(app.theme.name, "catppuccin-mocha");
+        assert_eq!(app.theme.name, "light");
         app.cycle_theme();
-        assert_eq!(app.theme.name, "catppuccin-mocha");
+        assert_eq!(app.theme.name, "dark");
     }
 }
 

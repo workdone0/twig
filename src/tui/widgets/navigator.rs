@@ -125,18 +125,11 @@ impl ColumnNavigator {
     }
 
     fn lineage(&self, target: Uuid) -> Vec<Uuid> {
-        let mut path = Vec::new();
-        let mut current = Some(target);
-        while let Some(id) = current {
-            path.push(id);
-            let node = match self.store.get_node(id).ok().flatten() {
-                Some(n) => n,
-                None => break,
-            };
-            current = node.parent;
-        }
-        path.reverse();
-        path
+        twig_core::storage::lineage(&self.store, target)
+            .unwrap_or_default()
+            .into_iter()
+            .map(|node| node.id)
+            .collect()
     }
 
     pub fn find_next(&self, query: &str, direction: i32) -> Option<Node> {

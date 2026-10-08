@@ -15,7 +15,7 @@ pub fn muted(theme: &Theme) -> Style {
 pub fn highlighted(theme: &Theme) -> Style {
     Style::default()
         .bg(theme.surface)
-        .fg(theme.fg)
+        .fg(theme.primary)
         .add_modifier(Modifier::BOLD)
 }
 

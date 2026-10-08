@@ -54,7 +54,9 @@ the [current controls](../README.md#keyboard-controls).
 
 ## Configuration
 
-Supported themes remain `catppuccin-mocha` and `solarized-dark`. Unknown JSON
+Themes are now `dark` and `light`, shared with the browser explorer. Both old
+`catppuccin-mocha` and `solarized-dark` preferences resolve to `dark`; toggling
+with `t` saves a canonical name. Unknown JSON
 keys are retained; unknown theme names fall back to Catppuccin.
 
 Linux and Windows keep their normal platform config locations. Rust uses
