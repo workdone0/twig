@@ -1,4 +1,4 @@
-"""Dependency-free static site build. Guides use the repository Markdown source."""
+"""Assemble the prebuilt web explorer, installers, and generated Markdown guides."""
 from pathlib import Path
 import html
 import re
@@ -66,6 +66,10 @@ def markdown(source):
     return '\n'.join(out)
 
 def build():
+    web_dist = ROOT/'web/dist'
+    if not (web_dist/'index.html').exists():
+        raise SystemExit('Build the explorer first: cd web && npm ci && npm run wasm && npm run build')
+    if OUT.exists(): shutil.rmtree(OUT)
     OUT.mkdir(parents=True,exist_ok=True)
     for name in ['index.html','style.css','app.js','favicon.svg']:shutil.copyfile(ROOT/'website'/name,OUT/name)
     for installer in ['install.sh', 'install.ps1']:
@@ -81,8 +85,16 @@ def build():
         page_nav=nav.replace(f'href="{current}"',f'aria-current="page" href="{current}"')
         document=f'''<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{title} — Twig</title><meta name="description" content="Twig {title.lower()}: practical documentation for the Rust terminal data explorer."><link rel="stylesheet" href="/style.css"><script src="/app.js" defer></script><link rel="icon" href="/favicon.svg"><link rel="canonical" href="https://twig.wtf/guide/{route+'/' if route else ''}"></head><body><a class="skip" href="#main">Skip to content</a>{header}<div class="docs-grid wrap"><nav class="docs-sidebar" aria-label="Documentation"><strong>TWIG / DOCUMENTATION</strong>{page_nav}</nav><main id="main" class="prose">{markdown(ROOT/file)}<p class="edit-page"><a href="https://github.com/workdone0/twig/blob/master/{file}">Edit this page on GitHub ↗</a></p></main></div>{footer}</body></html>'''
         (destination/'index.html').write_text(document)
+    installation = OUT/'install'
+    installation.mkdir(exist_ok=True)
+    # Keep the installation page and its platform chooser; the explorer owns /.
+    install_page = homepage.replace('https://twig.wtf/"', 'https://twig.wtf/install/"')
+    install_page = install_page.replace('<title>Twig', '<title>Install Twig')
+    install_page = install_page.replace('href="#explore"', 'href="/"')
+    (installation/'index.html').write_text(install_page)
+    shutil.copytree(web_dist, OUT, dirs_exist_ok=True)
     (OUT/'robots.txt').write_text('User-agent: *\nAllow: /\nSitemap: https://twig.wtf/sitemap.xml\n')
-    routes=['/']+['/guide/'+(route+'/' if route else '') for route,_ in PAGES.values()]
+    routes=['/', '/install/']+['/guide/'+(route+'/' if route else '') for route,_ in PAGES.values()]
     (OUT/'sitemap.xml').write_text('<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'+''.join('<url><loc>https://twig.wtf'+r+'</loc></url>' for r in routes)+'</urlset>')
     print(f'Built {len(routes)} pages in {OUT}')
 if __name__=='__main__':build()

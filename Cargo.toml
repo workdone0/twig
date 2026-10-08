@@ -1,6 +1,10 @@
+[workspace]
+members = ["crates/twig-core", "crates/twig-wasm"]
+resolver = "2"
+
 [package]
 name = "twig"
-version = "3.1.0"
+version = "3.2.0"
 description = "Terminal-based JSON & YAML viewer (TUI) for exploring and searching large files — fast, interactive, and privacy-first."
 readme = "README.md"
 authors = ["Shubham Kumar"]
@@ -20,6 +24,7 @@ name = "twig"
 path = "src/lib.rs"
 
 [dependencies]
+twig-core = { path = "crates/twig-core" }
 ratatui = "0.30"
 crossterm = "0.28"
 rusqlite = { version = "0.32", features = ["bundled"] }

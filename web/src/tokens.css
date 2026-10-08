@@ -1,0 +1,3 @@
+/* First-paint Dark values; both palettes are read from twig-core/themes.json. */
+:root{--bg:#15171b;--fg:#e0e3e8;--primary:#a4b8f5;--secondary:#929baa;--accent:#e9ae7e;--success:#9cc9a2;--warning:#e4c583;--error:#f18b91;--surface:#2b3549;--panel:#1c1f25;--border:#353b45;--mono:'SFMono-Regular',Consolas,'Liberation Mono',monospace;color-scheme:dark}
+:root[data-theme=light]{color-scheme:light}

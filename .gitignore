@@ -23,3 +23,8 @@ Thumbs.db
 # Generated website and Python tooling
 /website/dist/
 __pycache__/
+/web/node_modules/
+/web/dist/
+/web/src/wasm/
+/web/test-results/
+/web/playwright-report/

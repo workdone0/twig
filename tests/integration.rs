@@ -131,7 +131,7 @@ fn help_screen_renders_into_test_backend() {
         "Jump to path",
         "Copy path",
         "Copy source",
-        "Toggle theme",
+        "Dark / Light",
         "Quit",
     ] {
         assert!(flat.contains(key), "help screen missing binding {key}");

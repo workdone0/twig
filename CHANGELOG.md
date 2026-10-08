@@ -5,6 +5,19 @@ earlier are the Python implementation.
 
 ## [Unreleased]
 
+## [3.2.0] — 2026-10-08
+
+- Add a full-page browser explorer backed by the same portable Rust core as the
+  TUI, using WebAssembly in a dedicated worker with session-only documents.
+- Support local JSON, YAML and HAR files, pasted input, Miller columns, search,
+  path jumps, previews and precise exports without uploading file contents.
+- Limit browser inputs to 20 MiB with node/allocation budgets and worker cancellation.
+- Share Dark/Light palettes and normal navigation key bindings between web and TUI.
+  Legacy theme names resolve to Dark; press `t` to switch themes.
+- Preserve native SQLite caching and optimized queries, and keep installation and
+  documentation available alongside the web explorer at `/install/` and `/guide/`.
+- Add storage parity, WebAssembly resource gates and cross-browser regression tests.
+
 - Add a per-user Windows PowerShell installer with checksum/version verification,
   PATH setup, staged upgrades, cleanup, and native PowerShell 5.1/7 tests.
 - Clarify platform installation, manual verification, troubleshooting, upgrades,
@@ -87,8 +100,10 @@ Source is retained on the
 [`legacy-python`](https://github.com/workdone0/twig/tree/legacy-python) branch.
 The Python package name was `twg`; it installed both `twig` and `twg` commands.
 
-[Unreleased]: https://github.com/workdone0/twig/compare/v3.1.0...HEAD
+[Unreleased]: https://github.com/workdone0/twig/compare/v3.2.0...HEAD
 [3.0.0]: https://github.com/workdone0/twig/releases/tag/v3.0.0
 [2.1.4]: https://github.com/workdone0/twig/tree/legacy-python
 
 [3.1.0]: https://github.com/workdone0/twig/releases/tag/v3.1.0
+
+[3.2.0]: https://github.com/workdone0/twig/releases/tag/v3.2.0

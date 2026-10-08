@@ -11,7 +11,7 @@ use std::path::{Path, PathBuf};
 use serde::{Deserialize, Serialize};
 
 use crate::core::paths::config_dir;
-use crate::tui::theme::DEFAULT_THEME_NAME;
+use twig_core::presentation::DEFAULT_THEME as DEFAULT_THEME_NAME;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 pub struct Config(BTreeMap<String, serde_json::Value>);
@@ -113,7 +113,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn default_config_has_catppuccin_theme() {
+    fn default_config_has_dark_theme() {
         let cfg = Config::default();
         assert_eq!(cfg.get_string("theme"), Some(DEFAULT_THEME_NAME));
     }

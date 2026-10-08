@@ -132,7 +132,7 @@ pub fn render(
         .border_style(Style::default().add_modifier(Modifier::DIM));
     let source_inner = source_block.inner(rows[4]);
     f.render_widget(source_block, rows[4]);
-    let source_lines = build_source(node, store, format);
+    let source_lines = build_source(node, store, format, theme);
     f.render_widget(
         Paragraph::new(source_lines).wrap(Wrap { trim: false }),
         source_inner,
@@ -326,7 +326,7 @@ fn build_preview(node: &Node, store: &Store) -> Vec<Line<'static>> {
     lines
 }
 
-fn build_source(node: &Node, store: &Store, format: &str) -> Vec<Line<'static>> {
+fn build_source(node: &Node, store: &Store, format: &str, theme: &Theme) -> Vec<Line<'static>> {
     let cap = 500;
     let children_count = if node.is_container() {
         store.get_children_count(node.id).unwrap_or(0)
@@ -344,7 +344,7 @@ fn build_source(node: &Node, store: &Store, format: &str) -> Vec<Line<'static>> 
         Err(_) => {
             return vec![Line::from(Span::styled(
                 "Failed to load source.",
-                Style::default().fg(theme_fg_error()),
+                Style::default().fg(theme.error),
             ))]
         }
     };
@@ -353,14 +353,10 @@ fn build_source(node: &Node, store: &Store, format: &str) -> Vec<Line<'static>> 
     } else {
         serde_json::to_string_pretty(&value).unwrap_or_default()
     };
-    colorize_source(&serialized, format)
+    colorize_source(&serialized, format, theme)
 }
 
-fn theme_fg_error() -> ratatui::style::Color {
-    ratatui::style::Color::Red
-}
-
-fn colorize_source(text: &str, format: &str) -> Vec<Line<'static>> {
+fn colorize_source(text: &str, format: &str, theme: &Theme) -> Vec<Line<'static>> {
     if format == "yaml" {
         return text.lines().map(|l| Line::from(l.to_string())).collect();
     }
@@ -378,10 +374,7 @@ fn colorize_source(text: &str, format: &str) -> Vec<Line<'static>> {
                             break;
                         }
                     }
-                    spans.push(Span::styled(
-                        s,
-                        Style::default().fg(ratatui::style::Color::Green),
-                    ));
+                    spans.push(Span::styled(s, Style::default().fg(theme.success)));
                 }
                 '-' | '0'..='9' => {
                     let mut s = String::from(c);
@@ -398,10 +391,7 @@ fn colorize_source(text: &str, format: &str) -> Vec<Line<'static>> {
                             break;
                         }
                     }
-                    spans.push(Span::styled(
-                        s,
-                        Style::default().fg(ratatui::style::Color::Yellow),
-                    ));
+                    spans.push(Span::styled(s, Style::default().fg(theme.warning)));
                 }
                 't' | 'f' | 'n' => {
                     let mut s = String::from(c);
@@ -413,10 +403,7 @@ fn colorize_source(text: &str, format: &str) -> Vec<Line<'static>> {
                         }
                     }
                     if s == "true" || s == "false" || s == "null" {
-                        spans.push(Span::styled(
-                            s,
-                            Style::default().fg(ratatui::style::Color::Magenta),
-                        ));
+                        spans.push(Span::styled(s, Style::default().fg(theme.primary)));
                     } else {
                         spans.push(Span::raw(s));
                     }

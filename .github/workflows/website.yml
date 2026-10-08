@@ -12,6 +12,22 @@ jobs:
     runs-on: ubuntu-22.04
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+      - uses: Swatinem/rust-cache@v2
+      - uses: taiki-e/install-action@v2
+        with:
+          tool: wasm-bindgen-cli@0.2.105
+      - run: npm ci --prefix web
+      - run: python3 scripts/build_wasm.py
+      - run: node web/tests/wasm-gate.mjs
+      - run: npm run build --prefix web
       - run: python3 scripts/build_site.py
       - run: python3 scripts/check_site.py
       - uses: peaceiris/actions-gh-pages@v4

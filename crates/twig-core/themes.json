@@ -1,0 +1,12 @@
+{
+  "dark": {
+    "bg": "#15171b", "fg": "#e0e3e8", "primary": "#a4b8f5", "secondary": "#929baa",
+    "accent": "#e9ae7e", "success": "#9cc9a2", "warning": "#e4c583", "error": "#f18b91",
+    "surface": "#2b3549", "panel": "#1c1f25", "border": "#353b45"
+  },
+  "light": {
+    "bg": "#fafbfc", "fg": "#252a34", "primary": "#3456a6", "secondary": "#626c7b",
+    "accent": "#98531e", "success": "#347346", "warning": "#82601b", "error": "#b02f40",
+    "surface": "#e0e8f8", "panel": "#f0f2f5", "border": "#cbd1da"
+  }
+}

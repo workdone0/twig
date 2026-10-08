@@ -236,40 +236,7 @@ impl Store {
     /// underlying path is actually `.[0].kind`; we transparently fall
     /// back to that prefix when the exact match fails.
     pub fn resolve_path(&self, path: &str) -> Result<Option<Node>, StoreError> {
-        let path = path.trim();
-        if path.is_empty() {
-            return Ok(None);
-        }
-        let normalized = if path.starts_with('.') {
-            path.to_string()
-        } else {
-            format!(".{path}")
-        };
-
-        let mut exact = self
-            .conn
-            .prepare_cached("SELECT * FROM nodes WHERE path = ?1")?;
-        if let Some(row) = exact
-            .query_row(params![&normalized], row_to_node)
-            .optional()?
-        {
-            return Ok(Some(row));
-        }
-
-        // Single-document YAML fallback.
-        if let Some(stripped) = normalized.strip_prefix('.') {
-            let fallback = if stripped.starts_with('[') {
-                format!(".[0]{stripped}")
-            } else {
-                format!(".[0].{stripped}")
-            };
-            let row = exact
-                .query_row(params![&fallback], row_to_node)
-                .optional()?;
-            return Ok(row);
-        }
-
-        Ok(None)
+        twig_core::storage::resolve_path(self, path)
     }
 
     /// Returns `(current_index, total_matches)` for the current match.
@@ -307,96 +274,13 @@ impl Store {
         depth: usize,
         budget: &mut usize,
     ) -> Result<Value, StoreError> {
-        if *budget == 0 {
-            return Ok(Value::String("…".into()));
-        }
-        *budget -= 1;
-        let Some(node) = self.get_node(id)? else {
-            return Ok(Value::Null);
-        };
-        if !node.is_container() {
-            return Ok(node.value.unwrap_or(Value::Null));
-        }
-        if depth == 0 {
-            return Ok(Value::String("…".into()));
-        }
-        let children = self.get_children_page(id, 0, (*budget).min(30))?;
-        if node.ty == DataType::Array {
-            let mut values = Vec::new();
-            for child in children {
-                values.push(self.preview_value(child.id, depth - 1, budget)?);
-            }
-            Ok(Value::Array(values))
-        } else {
-            let mut values = serde_json::Map::new();
-            for child in children {
-                values.insert(child.key, self.preview_value(child.id, depth - 1, budget)?);
-            }
-            Ok(Value::Object(values))
-        }
+        twig_core::storage::preview_value(self, id, depth, budget)
     }
-
-    /// Export an entire selected subtree, or fail explicitly if it is too large
-    /// for an interactive clipboard operation. Never substitutes preview text.
     pub fn export_value(&self, id: Uuid) -> anyhow::Result<Value> {
-        let count: i64 = self.conn.query_row("WITH RECURSIVE subtree(id) AS (
-            SELECT id FROM nodes WHERE id=?1 UNION ALL SELECT nodes.id FROM nodes JOIN subtree ON nodes.parent_id=subtree.id LIMIT 10001)
-            SELECT COUNT(*) FROM subtree", [id.to_string()], |r| r.get(0))?;
-        anyhow::ensure!(
-            count <= 10000,
-            "Selection exceeds 10,000 nodes; use --print to export the file"
-        );
-        Ok(self.reconstruct_value(id, 130)?)
+        twig_core::storage::export_value(self, id)
     }
-
-    /// Rebuild the native `serde_json::Value` tree rooted at `node_id`
-    /// up to `max_depth`. Children beyond the depth limit collapse to
-    /// the string `"..."` to keep large containers responsive.
-    pub fn reconstruct_value(&self, node_id: Uuid, max_depth: usize) -> Result<Value, StoreError> {
-        let mut current_depth = 0;
-        self.reconstruct_value_inner(node_id, max_depth, &mut current_depth)
-    }
-
-    fn reconstruct_value_inner(
-        &self,
-        node_id: Uuid,
-        max_depth: usize,
-        current_depth: &mut usize,
-    ) -> Result<Value, StoreError> {
-        let node = match self.get_node(node_id)? {
-            Some(n) => n,
-            None => return Ok(Value::Null),
-        };
-        if !node.is_container() {
-            return Ok(node.value.unwrap_or(Value::Null));
-        }
-        if *current_depth >= max_depth {
-            return Ok(Value::String("...".to_string()));
-        }
-        *current_depth += 1;
-        let children = self.get_children(node_id)?;
-        let value = match node.ty {
-            DataType::Object => {
-                let mut map = serde_json::Map::new();
-                for child in children {
-                    map.insert(
-                        child.key.clone(),
-                        self.reconstruct_value_inner(child.id, max_depth, current_depth)?,
-                    );
-                }
-                Value::Object(map)
-            }
-            DataType::Array => {
-                let mut arr = Vec::with_capacity(children.len());
-                for child in children {
-                    arr.push(self.reconstruct_value_inner(child.id, max_depth, current_depth)?);
-                }
-                Value::Array(arr)
-            }
-            _ => unreachable!("non-container branch handled above"),
-        };
-        *current_depth -= 1;
-        Ok(value)
+    pub fn reconstruct_value(&self, id: Uuid, max_depth: usize) -> Result<Value, StoreError> {
+        twig_core::storage::reconstruct_value(self, id, max_depth)
     }
 }
 
@@ -469,6 +353,39 @@ fn deserialize_value(ty: DataType, raw: &str) -> Option<Value> {
         DataType::String => Value::String(raw.to_string()),
         DataType::Object | DataType::Array => return None,
     })
+}
+
+impl twig_core::storage::NodeSink for Store {
+    fn insert_batch(&mut self, nodes: &[Node]) -> anyhow::Result<()> {
+        Ok(self.bulk_load(nodes)?)
+    }
+}
+impl twig_core::storage::NodeStore for Store {
+    type Error = StoreError;
+    fn node(&self, id: Uuid) -> Result<Option<Node>, StoreError> {
+        self.get_node(id)
+    }
+    fn children(&self, id: Uuid, offset: usize, limit: usize) -> Result<Vec<Node>, StoreError> {
+        self.get_children_page(id, offset, limit.min(i64::MAX as usize))
+    }
+    fn child_count(&self, id: Uuid) -> Result<usize, StoreError> {
+        Ok(self.get_children_count(id)? as usize)
+    }
+    fn exact_path(&self, path: &str) -> Result<Option<Node>, StoreError> {
+        Ok(self
+            .conn
+            .prepare_cached("SELECT * FROM nodes WHERE path=?1")?
+            .query_row([path], row_to_node)
+            .optional()?)
+    }
+    fn search(
+        &self,
+        query: &str,
+        start: Option<Uuid>,
+        direction: i32,
+    ) -> Result<Option<Node>, StoreError> {
+        self.find_next_node(query, start, direction)
+    }
 }
 
 #[cfg(test)]
