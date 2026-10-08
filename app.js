@@ -36,8 +36,8 @@ document.querySelector('#copy-install')?.addEventListener('click', async () => {
   const status = document.querySelector('#copy-status');
   try {
     await navigator.clipboard.writeText(document.querySelector('#install-command').textContent);
-    status.textContent = 'Copied. Paste into your terminal when ready.';
-  } catch { status.textContent = 'Select the commands above and copy them manually.'; }
+    status.textContent = 'Commands copied. Paste them into your terminal.';
+  } catch { status.textContent = 'Could not access the clipboard. Select and copy the commands above.'; }
 });
 
 // Guides use the same copy interaction as the installation panel.
