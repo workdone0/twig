@@ -1,9 +1,14 @@
-# Release evaluation — Twig 3.1
+# Release evaluation — Twig 3.1 (archive)
 
 The initial review covered Rust `f6718af` (3.0.0) and Python reference `cce3235`.
 It found data-integrity, resource-use, compatibility, installer, and release gaps
 despite the existing suite passing. This page tracks the implementation work
 for 3.1.0 on 2026-10-05, rather than leaving resolved issues labeled as open.
+
+This is a historical audit record, not a validation report for the current
+release. For current behavior, see the [user guide](../README.md),
+[browser guide](BROWSER.md), and [release notes](../RELEASE_NOTES.md).
+The commands and observations below describe the 3.1 checkout.
 
 ## Audit resolution
 

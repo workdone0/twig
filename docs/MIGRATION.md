@@ -1,8 +1,26 @@
-# Migrating to Twig 3.1
+# Upgrading to Twig 3.2
 
 The current application is Rust. Python 2.1.4 source remains on
 [legacy-python](https://github.com/workdone0/twig/tree/legacy-python).
 Use the [installation guide](../README.md#installation) for the latest release.
+
+## From Rust 3.1
+
+The CLI commands, native cache locations, and file-opening workflow stay the
+same. Reinstall or upgrade using the [installation guide](../README.md#installation).
+
+- The web explorer is now available at [twig.wtf](https://twig.wtf/). It uses the
+  same Rust parsing and exploration core, with a browser memory store instead
+  of native SQLite. No account or file upload is needed.
+- Themes are **Dark** and **Light** in both interfaces. Existing
+  `catppuccin-mocha` and `solarized-dark` settings select Dark. Press `t` to switch.
+- Navigation shortcuts are shared. In the browser, `q` closes the document and
+  leaves the tab open; in the TUI it exits Twig.
+- Browser documents are session-only and capped at 20 MiB, with additional
+  resource limits. Opening the same file in the TUI is a separate session;
+  selected paths and preferences do not transfer automatically.
+
+See the [browser guide](BROWSER.md) for loading, copying, limits, and privacy.
 
 ## From Python 2.x
 
@@ -11,7 +29,7 @@ only. Uninstall the old package using its original manager (`uv tool uninstall
 twg`, `pipx uninstall twg`, or your environment's pip). Check which executable
 your shell resolves if both installations coexist.
 
-| Workflow | Twig 3.1 |
+| Workflow | Current Twig |
 | --- | --- |
 | `twig <file>` | Same interactive entry point |
 | `twg <file>` | Use `twig`; the alias is not installed |
@@ -57,7 +75,7 @@ the [current controls](../README.md#keyboard-controls).
 Themes are now `dark` and `light`, shared with the browser explorer. Both old
 `catppuccin-mocha` and `solarized-dark` preferences resolve to `dark`; toggling
 with `t` saves a canonical name. Unknown JSON
-keys are retained; unknown theme names fall back to Catppuccin.
+keys are retained; unknown theme names fall back to Dark.
 
 Linux and Windows keep their normal platform config locations. Rust uses
 `~/Library/Application Support/twig/config.json` on macOS. Python used
@@ -67,7 +85,7 @@ precedence. A save failure is reported rather than silently treated as success.
 
 ## Data and resource contracts
 
-Both implementations use SQLite, not a Python flat-file cache. New caches are
+Both the Python and Rust terminal apps use SQLite. The web explorer uses memory. New caches are
 private but unencrypted, with retention and cleanup controls. `--no-cache` still
 uses temporary disk storage. See [local data](../README.md#configuration-and-local-data).
 
@@ -77,5 +95,4 @@ keys, non-finite numbers, and tagged values are outside the TUI data model.
 JSON has bounded node batches; YAML parser memory can still scale with input.
 Clipboard/export and large scalar values can also allocate significant memory.
 
-Live watch mode and custom theme definitions are not implemented. These are
-explicit non-goals for this release, not promised compatibility features.
+Live watch mode and custom theme definitions are not implemented. Use the existing file-opening workflow and built-in Dark/Light palettes.

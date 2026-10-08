@@ -1,18 +1,42 @@
 # Twig
 
-**Inspect. Navigate. Understand.** A local terminal explorer for JSON, YAML, and
-JSON-based HAR files, written in Rust.
+**Explore nested data in your browser or terminal.**
 
-Try the browser explorer at [twig.wtf](https://twig.wtf), or install the terminal
-app below. Both interfaces use the same Rust parsing and exploration core.
+Twig is a local JSON, YAML, and HAR explorer. Follow a branch, search keys and
+values, jump to a path, and copy the value you need without losing your place.
+The web app and terminal interface share one Rust engine, familiar keyboard
+controls, and two themes: Dark and Light.
 
-Explore nested data with Miller columns, search keys and values, jump to paths,
-and inspect values without a browser. The TUI never edits your input. Separate
-CLI modes format data and repair JSON.
+[Open the web explorer](https://twig.wtf/) · [Install the terminal app](https://twig.wtf/install/) ·
+[User guide](https://twig.wtf/guide/) · [Releases](https://github.com/workdone0/twig/releases)
 
-[Website](https://twig.wtf) · [Guide](https://twig.wtf/guide/) ·
-[Releases](https://github.com/workdone0/twig/releases) ·
-[Contributing](CONTRIBUTING.md)
+## Start exploring
+
+In the browser, open [twig.wtf](https://twig.wtf/), then drop a file, choose
+**Open file**, or select **Paste data**. A bundled example is ready to explore
+before you open anything. Files are processed in your browser and are not uploaded.
+
+In the terminal, [install Twig](#installation) and open a file:
+
+```bash
+twig data.json
+twig config.yaml
+twig network.har
+```
+
+Select a row to inspect it. Press `Enter` to open a container, `Esc` to go back,
+`/` to search, and `?` to see the shortcuts. Both explorers leave the original
+file unchanged. Formatting and JSON repair are separate CLI commands.
+
+| Choose | When it fits | Where document data lives |
+| --- | --- | --- |
+| Web explorer | Open a file without installing; inputs up to 20 MiB, subject to resource limits | Memory in the current tab; cleared on close, replacement, or reload |
+| Terminal app | Work offline, explore larger files, or use shell workflows | Local SQLite cache by default; `--no-cache` uses temporary disk storage |
+| CLI commands | Format, repair JSON, or validate without an interactive interface | Local processing; output goes to stdout or the file you choose |
+
+The two interfaces share behavior, not sessions. Files, selected paths, and theme
+preferences do not sync between them. See the [browser guide](docs/BROWSER.md)
+for a walkthrough, or the [CLI reference](#cli-reference) for commands.
 
 ## Browser explorer
 
@@ -33,12 +57,11 @@ keys, `j`/`k`, `h`/`l`, Home/End, `/`, `:`, `n`/`N`, `c`, and `y` work while the
 explorer has focus. Press `t` for Dark/Light, `?` for help, and `q` to close
 the document (the TUI quits). Enter after search or jump returns focus to
 navigation; Esc cancels entry or returns to the parent. Browser shortcuts are
-left intact. On narrow screens the
-current column is shown; breadcrumbs return to ancestors.
+left intact. On narrow screens the current column is shown; breadcrumbs return to ancestors.
 
 Previews are limited to four levels, 200 nodes, 30 children per container and
 64K displayed characters. **Copy value** exports the complete selection, up to
-10,000 nodes and 4 MiB. Clipboard access requires browser permission. Formatting
+10,000 nodes and 4 MiB. Clipboard access depends on browser permissions. Formatting
 and repair remain CLI features. The browser downloads application code from the
 site; install Twig when you need to work without loading a website.
 
@@ -263,6 +286,9 @@ The TUI requires stdin and stdout attached to a terminal.
 
 ### Keyboard controls
 
+These navigation keys work in both explorers when focus is outside a text field.
+Search and path entry accept text until you press Enter or Esc.
+
 | Action | Controls |
 | --- | --- |
 | Move up / down | `↑` / `↓`, `k` / `j` |
@@ -273,14 +299,15 @@ The TUI requires stdin and stdout attached to a terminal.
 | Next / previous match | `n` / `N` |
 | Jump to a path | `:`, path, `Enter` |
 | Copy path / entire selected value | `c` / `y` |
-| Cycle theme | `t` |
+| Switch Dark / Light | `t` |
 | Open help | `?` |
 | Dismiss search/jump | `Esc` |
 | Dismiss help | `Esc`, `?`, `h`, or `Enter` |
-| Quit | `q` in normal/loading mode; `Ctrl+C` in any mode |
+| Close document / quit | `q` closes the web document or quits the TUI; `Ctrl+C` quits the TUI in any mode |
 
-Mouse wheel moves selection. Click a row to select it; click the selected row to
-open its container. Right-click returns to the parent. Clipboard ownership is
+Click a row to select it; click the selected container again to open it.
+Right-click in the columns returns to the parent. The TUI mouse wheel moves
+selection; the browser wheel scrolls the pane. In the TUI, clipboard ownership is
 kept while Twig runs; persistence after exit depends on the desktop clipboard
 manager. Failures are shown in the status message.
 
@@ -295,6 +322,9 @@ are ordinary characters. Matches cycle in source traversal order, including
 numeric array order. Non-ASCII characters match exactly.
 
 ### Copying and preview limits
+
+Both interfaces separate a short preview from a complete export. The browser
+also limits exported text to 4 MiB; see the [browser guide](docs/BROWSER.md#limits).
 
 The inspector shows a limited preview. Clipboard `y` exports the **complete
 selected value**, preserving scalar types and order, up to 10,000 nodes; larger
@@ -323,7 +353,7 @@ On macOS, when the new config is missing, Twig imports the legacy Python config
 from `$XDG_CONFIG_HOME/twig/config.json` or `~/.config/twig/config.json`. An
 existing new config is never overwritten by migration.
 
-The explorer makes no network requests or telemetry calls. Parsed values are
+The installed terminal app makes no network requests or telemetry calls. Parsed values are
 stored **unencrypted** in private SQLite cache files. Unix cache directories are
 restricted to mode 0700 and published files to 0600; Windows uses profile ACLs.
 
@@ -349,13 +379,13 @@ scalar, nesting/path lengths, SQLite working space, and requested exports.
 YAML parsing can buffer document state; bounded parser memory is not guaranteed.
 
 Navigation fetches pages of at most 256 siblings, with a horizontal viewport for
-deep trees. Inspector previews have depth/node limits. Search is a SQLite
+deep trees. Inspector previews have depth/node limits. Native search is a SQLite
 substring scan; broad searches on very large files can take time.
 
 JSON input must contain a single document. Duplicate object keys and ambiguous
 stored paths are rejected. Maximum supported nesting is 128 levels (the JSON
-parser may reject at its own recursion boundary). YAML's TUI model supports
-JSON-compatible scalar types, sequences, and string-keyed mappings; non-finite
+parser may reject at its own recursion boundary). The shared explorer model
+supports YAML with JSON-compatible scalar types, sequences, and string-keyed mappings; non-finite
 numbers, tagged values, and complex mapping keys are not supported. `--print`
 uses the YAML value serializer and supports a wider YAML value model.
 
@@ -368,22 +398,22 @@ python3 scripts/benchmark.py --binary target/release/twig
 
 The benchmark generates a deterministic file and reports wall time and peak RSS.
 `--check` uses MiB units. Cached loads still read/hash the source to verify it;
-they are not evidence of parsing throughput. No universal latency or fixed
-binary-size claim is made.
+they are not evidence of parsing throughput. Performance depends on the file,
+operation, and machine.
 
 ## Development
 
 - [Contributing](CONTRIBUTING.md): setup, tests, review, release workflow.
 - [Architecture](docs/ARCHITECTURE.md): data flow and implementation boundaries.
-- [Migration](docs/MIGRATION.md): Python 2.x and Rust 3.0 upgrade differences.
-- [Release evaluation](docs/EVALUATION.md): audit findings and their resolution.
+- [Migration](docs/MIGRATION.md): upgrading from Python 2.x, Rust 3.0, or 3.1.
+- [Privacy and security](SECURITY.md): browser memory, native caches, and reporting issues.
+- [3.1 audit archive](docs/EVALUATION.md): historical findings and their resolution.
 - [Changelog](CHANGELOG.md) and [release notes](RELEASE_NOTES.md).
 
 Browser UI source lives in `web/`; the shared engine is in `crates/twig-core`.
-Installation and documentation templates live in `website/`. Its guides are generated from these Markdown
-files, and both deployed installers are copied from this repository's `install.sh` and
-`install.ps1`.
-The Python source remains on
+Installation templates and guide styling live in `website/`. The site generates
+its guides from these Markdown files and copies both installers from the
+repository. The Python source remains on
 [legacy-python](https://github.com/workdone0/twig/tree/legacy-python).
 
 ## License

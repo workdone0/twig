@@ -178,7 +178,7 @@ function App() {
   function jump() {
     void run(async (worker, valid) => {
       const row = await worker.request('resolve', { path });
-      if (!row) throw new Error('That path was not found. Try .environments.production');
+      if (!row) throw new Error('Path not found. Check the keys and array indexes, for example .users[0].name.');
       await reveal(worker, row, valid);
       if (valid()) focusExplorer();
     });
@@ -196,7 +196,7 @@ function App() {
         await navigator.clipboard.write([new ClipboardItem({ 'text/plain': text.then(value => new Blob([value], { type: 'text/plain' })) })]);
       } else {
         const value = await text;
-        if (!navigator.clipboard?.writeText) throw new Error('Clipboard is unavailable. Select and copy the inspector text, or use the terminal app.');
+        if (!navigator.clipboard?.writeText) throw new Error('Clipboard access is unavailable. Check browser permissions or use the terminal app. Manually copied preview text may be incomplete.');
         await navigator.clipboard.writeText(value);
       }
       } catch (clipboardError) {
@@ -244,7 +244,7 @@ function App() {
       <nav aria-label="Application controls">
         <button className="theme-toggle" onClick={toggleTheme} aria-label={`Switch to ${theme === 'dark' ? 'light' : 'dark'} theme`} title="Toggle theme (t)">{theme === 'dark' ? '◐' : '◑'} <span>{theme === 'dark' ? 'Dark' : 'Light'}</span><kbd>t</kbd></button>
         <button onClick={() => setHelp(true)} aria-label="Keyboard shortcuts" title="Keyboard shortcuts (?)">?<span className="control-label"> Shortcuts</span></button>
-        <a href="/guide/">Guide</a><a className="install-link" href="/install/">&gt;_ <span>Install the terminal app</span></a>
+        <a href="/guide/browser/">Guide</a><a className="install-link" href="/install/">&gt;_ <span>Install the terminal app</span></a>
       </nav>
     </header>
     <main>
@@ -253,7 +253,7 @@ function App() {
         {pasteOpen && <WorkspaceDialog title="Paste data" onClose={() => { setPasteOpen(false); focusExplorer(); }}><form className="paste-panel" onSubmit={e => { e.preventDefault(); void load(pasted, `pasted.${pasteFormat}`, pasteFormat); }}><label htmlFor="paste">Paste your data</label><textarea id="paste" value={pasted} onChange={e => setPasted(e.target.value)} placeholder={'{"hello": "world"}'} autoFocus/><div><select aria-label="Pasted data format" value={pasteFormat} onChange={e => setPasteFormat(e.target.value as Format)}><option value="json">JSON</option><option value="yaml">YAML</option><option value="har">HAR</option></select><button className="primary" type="submit">Explore data</button><button type="button" onClick={() => setPasteOpen(false)}>Dismiss</button></div></form></WorkspaceDialog>}
         <div className="toolbar"><form onSubmit={e => { e.preventDefault(); search(); }}><span aria-hidden="true">⌕</span><input ref={searchInput} aria-label="Search keys and values" value={query} onChange={e => setQuery(e.target.value)} placeholder="Search keys and values"/><button disabled={!info || busy || !query.trim()} aria-label="Previous match" type="button" onClick={() => search(-1)}>↑</button><button disabled={!info || busy || !query.trim()} aria-label="Next match">↓</button></form><form onSubmit={e => { e.preventDefault(); jump(); }}><span className="path-symbol">.</span><input ref={pathInput} aria-label="Jump to path" value={path} onChange={e => setPath(e.target.value)} placeholder="Jump to a path"/><button disabled={!info || busy} aria-label="Go to path">↵</button></form></div>
         {help && <WorkspaceDialog title="Keyboard shortcuts" onClose={() => { setHelp(false); focusExplorer(); }}>
-          <p className="dialog-note">The same navigation in your browser and terminal.</p>
+          <p className="dialog-note">Use the same keys in the web explorer and terminal app.</p>
           <dl className="shortcut-list">{bindings.map(binding => <div key={binding.action}><dt>{binding.keys.map(key => <kbd key={key}>{keyLabel(key)}</kbd>)}</dt><dd>{binding.label}</dd></div>)}</dl>
           <p className="dialog-note">Esc returns from search and path entry. In the browser, q closes the document; your tab stays open.</p>
         </WorkspaceDialog>}
@@ -267,7 +267,7 @@ function App() {
               {!col.total && <p className="empty-container">Empty {col.parent.kind}</p>}
             </div>{col.total > 256 && <div className="pagination"><button disabled={busy || ci !== columns.length - 1 || !col.offset} aria-label="Previous page" onClick={() => move(col.offset - 256)}>←</button><span>{col.offset + 1}–{Math.min(col.offset + 256, col.total)} / {col.total}</span><button disabled={busy || ci !== columns.length - 1 || col.offset + 256 >= col.total} aria-label="Next page" onClick={() => move(col.offset + 256)}>→</button></div>}</section>)}
           </div>
-          <aside className="inspector"><div className="inspector-top"><span className="eyebrow">Inspector</span><span className="tag">{focused?.kind ?? '—'}</span></div>{focused ? <><h2>{focused.key || '""'}</h2><p className="inspector-path">{focused.path}</p><div className="copy-actions"><button disabled={busy} onClick={() => copy('path')}>Copy path</button><button disabled={busy} onClick={() => copy('export')}>Copy value</button></div><div className="preview-label">Source preview <span>4 levels · 200 nodes · 64K chars</span></div><pre tabIndex={0} aria-label="Value preview">{preview}</pre><p className="inspector-note">Copy value exports the complete selection, up to 10,000 nodes and 4 MiB.</p></> : <p className="inspector-note">Select a value to take a closer look.</p>}</aside>
+          <aside className="inspector"><div className="inspector-top"><span className="eyebrow">Inspector</span><span className="tag">{focused?.kind ?? '—'}</span></div>{focused ? <><h2>{focused.key || '""'}</h2><p className="inspector-path">{focused.path}</p><div className="copy-actions"><button disabled={busy} onClick={() => copy('path')}>Copy path</button><button disabled={busy} onClick={() => copy('export')}>Copy value</button></div><div className="preview-label">Source preview <span>4 levels · 200 nodes · 64K chars</span></div><pre tabIndex={0} aria-label="Value preview">{preview}</pre><p className="inspector-note">Preview may be shortened. Copy value exports the complete selection, up to 10,000 nodes and 4 MiB.</p></> : <p className="inspector-note">Select a row to see its path and source preview.</p>}</aside>
         </div>
         <div className="keybar" aria-label="Navigation shortcuts">
           <span><kbd>↑↓</kbd><kbd>j k</kbd> select</span><span><kbd>→</kbd><kbd>Enter</kbd> open</span><span><kbd>←</kbd><kbd>Esc</kbd> back</span>
