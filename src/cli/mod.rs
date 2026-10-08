@@ -13,7 +13,7 @@ use std::path::{Path, PathBuf};
     name = "twig",
     version,
     disable_version_flag = true,
-    about = "Inspect. Navigate. Understand. A terminal explorer for JSON and YAML."
+    about = "Explore JSON, YAML, and HAR locally in your terminal."
 )]
 pub struct Cli {
     /// JSON, YAML, or HAR file. Use '-' for stdin in non-interactive modes.

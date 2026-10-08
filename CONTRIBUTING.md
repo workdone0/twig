@@ -1,6 +1,6 @@
 # Contributing to Twig
 
-Thanks for helping make a focused, reliable terminal tool. Bugs, documentation,
+Help make Twig a reliable data explorer in the browser and terminal. Bugs, documentation,
 accessibility improvements, and well-tested code changes are welcome. Please
 keep discussions constructive and explain the user problem before proposing a
 large feature or new dependency.
@@ -28,12 +28,12 @@ cargo run --locked -- samples/cloud_infrastructure.json
 | `crates/twig-core/` | Shared parsers, node model, exploration algorithms and memory store |
 | `crates/twig-wasm/` | Browser document bridge |
 | `web/` | React/TypeScript explorer, worker protocol and browser tests |
-| `src/core/` | Node types, SQLite queries, paths, configuration, repair |
+| `src/core/` | Native SQLite adapter, cache/config paths, configuration, repair |
 | `src/tui/` | Event loop, themes, paginated navigation, inspector and modals |
 | `schema.sql` | Node table and navigation indexes |
 | `tests/` | Integration, process-level CLI, data and lifecycle regressions |
 | `scripts/` | Offline installer tests, benchmarks, static website build/checks |
-| `website/` | HTML/CSS/JS source; generated `dist/` is ignored |
+| `website/` | Installation template and guide styling; generated `dist/` is ignored |
 | `docs/` | Architecture, migration, audit resolution |
 | `.github/workflows/` | CI, release, website deployment |
 
@@ -58,8 +58,9 @@ python3 scripts/check_site.py
 
 CI runs stable and minimum-supported Rust on Linux, macOS, and Windows. Test
 caches and config must use `tempfile`, loader options/`with_cache_dir`, and
-`App::with_config`; never mutate a contributor's profile. No test should require
-a real clipboard, GUI, network service, or existing configuration.
+`App::with_config`; never mutate a contributor's profile. Native tests must not require a real clipboard, GUI, network service, or existing
+configuration. Browser tests use Playwright with a local static server and
+isolated browser contexts.
 
 For CLI changes, spawn the executable and assert stdout, stderr, exit status,
 and output-file contents. For storage changes, compare reconstructed values,
@@ -136,10 +137,29 @@ for sensitive issues where available; do not attach real secrets or private
 input files to public issues. See [SECURITY.md](SECURITY.md).
 
 Run `cargo audit --deny warnings` when changing dependencies. Audit results are
-point-in-time, not a security guarantee. The 3.1 work replaces the RustSec-flagged
-`serde_yml`/`libyml` stack with `serde_norway`. Avoid dependencies that add unused
+point-in-time, not a security guarantee. The YAML parser uses `serde_norway`; do not reintroduce the retired
+`serde_yml`/`libyml` dependencies. Avoid dependencies that add unused
 image/desktop functionality. Keep `Cargo.lock` updated and preserve license
 notices. CI checks dependencies with cargo-deny.
+
+## Writing and maintaining copy
+
+Describe Twig as a local data explorer for **browser and terminal**. Explain
+what the user can do before naming the implementation. Use **web explorer**,
+**terminal app** (or **TUI** in technical docs), and **CLI commands** consistently.
+Dark and Light are the only themes. Keep privacy claims specific: files are
+processed in the browser and are not uploaded, but the site still downloads its
+application assets. Native caches are local and unencrypted.
+
+Keep commands executable, limits explicit, and errors actionable. Do not describe
+a preview as a complete export or promise unlimited file size. Preserve existing
+guide routes and anchors when editing headings. Historical changelog entries and
+audit results should stay clearly dated, not be rewritten as current guarantees.
+
+User documentation lives in README, `docs/BROWSER.md`, `docs/MIGRATION.md`, and
+SECURITY. `scripts/build_site.py` maps those files to public guide routes. Update
+the Markdown source, then build and validate the generated site. Review visible
+copy in `web/src/main.tsx`, installation copy in `website/`, and metadata too.
 
 ## Pull requests
 

@@ -6,7 +6,7 @@ import shutil
 
 ROOT=Path(__file__).resolve().parents[1]
 OUT=ROOT/'website/dist'
-PAGES={'README.md':('', 'User guide'), 'CONTRIBUTING.md':('contributing','Contributing'), 'docs/MIGRATION.md':('migration','Migration'), 'docs/ARCHITECTURE.md':('architecture','Architecture'), 'docs/EVALUATION.md':('evaluation','Release evaluation'), 'RELEASE_NOTES.md':('release-notes','Release notes')}
+PAGES={'README.md':('', 'User guide'), 'docs/BROWSER.md':('browser','Browser guide'), 'SECURITY.md':('privacy','Privacy and security'), 'CONTRIBUTING.md':('contributing','Contributing'), 'docs/MIGRATION.md':('migration','Migration'), 'docs/ARCHITECTURE.md':('architecture','Architecture'), 'docs/EVALUATION.md':('evaluation','3.1 audit archive'), 'RELEASE_NOTES.md':('release-notes','Release notes')}
 
 def slug(s): return re.sub(r'[^\w\s-]','',s.lower()).strip().replace(' ','-')
 def url(target, source):
@@ -83,7 +83,7 @@ def build():
         destination=OUT/'guide'/route;destination.mkdir(parents=True,exist_ok=True)
         current='/guide/'+(route+'/' if route else '')
         page_nav=nav.replace(f'href="{current}"',f'aria-current="page" href="{current}"')
-        document=f'''<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{title} — Twig</title><meta name="description" content="Twig {title.lower()}: practical documentation for the Rust terminal data explorer."><link rel="stylesheet" href="/style.css"><script src="/app.js" defer></script><link rel="icon" href="/favicon.svg"><link rel="canonical" href="https://twig.wtf/guide/{route+'/' if route else ''}"></head><body><a class="skip" href="#main">Skip to content</a>{header}<div class="docs-grid wrap"><nav class="docs-sidebar" aria-label="Documentation"><strong>TWIG / DOCUMENTATION</strong>{page_nav}</nav><main id="main" class="prose">{markdown(ROOT/file)}<p class="edit-page"><a href="https://github.com/workdone0/twig/blob/master/{file}">Edit this page on GitHub ↗</a></p></main></div>{footer}</body></html>'''
+        document=f'''<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>{title} — Twig</title><meta name="description" content="Twig {title.lower()}: documentation for exploring JSON, YAML, and HAR in your browser or terminal."><link rel="stylesheet" href="/style.css"><script src="/app.js" defer></script><link rel="icon" href="/favicon.svg"><link rel="canonical" href="https://twig.wtf/guide/{route+'/' if route else ''}"></head><body><a class="skip" href="#main">Skip to content</a>{header}<div class="docs-grid wrap"><nav class="docs-sidebar" aria-label="Documentation"><strong>TWIG / DOCUMENTATION</strong>{page_nav}</nav><main id="main" class="prose">{markdown(ROOT/file)}<p class="edit-page"><a href="https://github.com/workdone0/twig/blob/master/{file}">Edit this page on GitHub ↗</a></p></main></div>{footer}</body></html>'''
         (destination/'index.html').write_text(document)
     installation = OUT/'install'
     installation.mkdir(exist_ok=True)

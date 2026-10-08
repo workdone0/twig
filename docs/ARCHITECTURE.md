@@ -1,6 +1,68 @@
-# Rust architecture
+# Architecture: one Rust core, two interfaces
 
-## Entry points
+Twig has two interactive front ends: a native terminal app and a browser explorer.
+Parsing and exploration live in Rust; each interface owns its input, storage,
+rendering, and platform integration. CLI formatting and repair remain native.
+
+## Shared core and browser explorer
+
+`crates/twig-core` contains the JSON/YAML node-event parsers, model, storage
+contracts, path resolution, lineage, preview and export algorithms. The native
+crate re-exports its model and parser entry points for compatibility. SQL search
+and indexed child/path lookup remain native optimizations behind `NodeStore`.
+`NodeSink` accepts document-order events; IDs are local to a document. Native
+loading retains cancellation, 1,024-node SQL batches, snapshots and cache publication.
+
+`MemoryStore` is the browser storage adapter, written in Rust. It checks every
+node before retaining it, with limits of 250,000 nodes and 128 MiB of estimated
+retained allocations. The estimate includes index/path duplication and per-node
+overhead; it is not a hard process-memory ceiling. Input buffers, parser state,
+temporary strings, exports and the WebAssembly allocator consume additional
+memory. YAML buffering remains a parser limitation. Limits can reject a file
+smaller than the 20 MiB input cap, and a constrained device may fail earlier.
+
+`crates/twig-wasm` exposes a small `wasm-bindgen` document API. The web worker owns
+the Rust document. Messages carry commands and bounded results, never the full
+tree. Scalar values cross the bridge as formatted strings so unsigned 64-bit
+numbers retain their precision. Lists contain at most 256 nodes, with clipped
+row labels. Previews retain native depth/node/child limits and additionally cap
+browser display at 64K characters. Complete clipboard exports retain the
+10,000-node limit and add a 4 MiB browser limit; copying a path uses its full
+stored value, not the clipped display label.
+
+`web/` contains the TypeScript/React interface. Each open document gets its own
+worker. Replacement, closing and cancellation terminate that worker; a generation
+counter discards stale file reads and replies. Queries are serialized. Only the
+theme preference is saved; there is no server processing, document persistence, telemetry, service worker or third-party
+runtime request. Bundled examples need no data fetch. Browser files are never
+included in URLs, logs or request bodies. The page downloads its own scripts and
+WASM, so the installed TUI remains useful for fully offline workflows.
+
+Build the WASM bridge, run its engine gate, build the Vite application, then run
+`build_site.py`. The assembler places the explorer at `/`, installation at
+`/install/`, and preserves `/guide/`, `/install.sh` and `/install.ps1`. A missing
+web bundle fails the build. Deployment remains on GitHub Pages with the existing
+domain; no API hosting or DNS migration is needed.
+
+## Shared presentation contract
+
+`crates/twig-core/themes.json` defines exactly two palettes, Dark and Light.
+Ratatui converts these colors to RGB and the web interface consumes the same
+file as CSS variables. Dark is the default on both surfaces. Native legacy
+theme names resolve to Dark, and theme toggles save `dark`/`light`. The browser
+persists only `twig.theme`, handling unavailable local storage without blocking
+the application. Documents and selected paths are never persisted or synced.
+
+`crates/twig-core/bindings.json` defines normal-mode key bindings for both
+interfaces. Each adapter translates the shared actions into interface events.
+Search and jump accept Enter then return focus to navigation; Esc dismisses
+entry/help before navigating back. Browser modifier shortcuts remain native.
+The browser maps `q` to closing its document; the TUI exits. The web layout fills
+the viewport with independently scrolling columns and inspector, shows the
+deepest complete columns that fit like the TUI, and keeps shortcuts/status
+pinned at the bottom. Installation and guides are compact header links.
+
+## Native entry points
 
 `main` parses `cli::Cli` and selects cache management, formatting/repair,
 noninteractive validation, or the TUI. Clap rejects incompatible modes.
@@ -55,7 +117,7 @@ Maximum nesting is 128; the parser's own recursion boundary also applies.
 YAML uses `serde_norway` document deserializers with the same visitor and bounded
 node buffer. Documents become children of a virtual array, in source order.
 The YAML parser may buffer document state, so its memory is not guaranteed to be
-bounded. The TUI model intentionally supports JSON-compatible values, not all
+bounded. The shared explorer model supports JSON-compatible values, not all
 YAML tags or complex mapping keys. YAML print mode uses the YAML value model.
 
 ## Store and search
@@ -115,61 +177,3 @@ installation templates in `website/`, and both canonical installers
 follows a successful release or a maintainer's manual dispatch, publishing to
 `twig-web` for the existing `twig.wtf` GitHub Pages domain. Old Astro source on
 `gh-pages` is no longer the maintained source.
-
-## Shared core and browser explorer
-
-`crates/twig-core` contains the JSON/YAML node-event parsers, model, storage
-contracts, path resolution, lineage, preview and export algorithms. The native
-crate re-exports its model and parser entry points for compatibility. SQL search
-and indexed child/path lookup remain native optimizations behind `NodeStore`.
-`NodeSink` accepts document-order events; IDs are local to a document. Native
-loading retains cancellation, 1,024-node SQL batches, snapshots and cache publication.
-
-`MemoryStore` is the browser storage adapter, written in Rust. It checks every
-node before retaining it, with limits of 250,000 nodes and 128 MiB of estimated
-retained allocations. The estimate includes index/path duplication and per-node
-overhead; it is not a hard process-memory ceiling. Input buffers, parser state,
-temporary strings, exports and the WebAssembly allocator consume additional
-memory. YAML buffering remains a parser limitation. Limits can reject a file
-smaller than the 20 MiB input cap, and a constrained device may fail earlier.
-
-`crates/twig-wasm` exposes a small `wasm-bindgen` document API. The web worker owns
-the Rust document. Messages carry commands and bounded results, never the full
-tree. Scalar values cross the bridge as formatted strings so unsigned 64-bit
-numbers retain their precision. Lists contain at most 256 nodes, with clipped
-row labels. Previews retain native depth/node/child limits and additionally cap
-browser display at 64K characters. Complete clipboard exports retain the
-10,000-node limit and add a 4 MiB browser limit; copying a path uses its full
-stored value, not the clipped display label.
-
-`web/` contains the TypeScript/React interface. Each open document gets its own
-worker. Replacement, closing and cancellation terminate that worker; a generation
-counter discards stale file reads and replies. Queries are serialized. Only the theme preference is saved; there is
-no server processing, document persistence, telemetry, service worker or third-party
-runtime request. Bundled examples need no data fetch. Browser files are never
-included in URLs, logs or request bodies. The page downloads its own scripts and
-WASM, so the installed TUI remains useful for fully offline workflows.
-
-Build the WASM bridge, run its engine gate, build the Vite application, then run
-`build_site.py`. The assembler places the explorer at `/`, installation at
-`/install/`, and preserves `/guide/`, `/install.sh` and `/install.ps1`. A missing
-web bundle fails the build. Deployment remains on GitHub Pages with the existing
-domain; no API hosting or DNS migration is needed.
-
-## Shared presentation contract
-
-`crates/twig-core/themes.json` defines exactly two palettes, Dark and Light.
-Ratatui converts these colors to RGB and the web interface consumes the same
-file as CSS variables. Dark is the default on both surfaces. Native legacy
-theme names resolve to Dark, and theme toggles save `dark`/`light`. The browser
-persists only `twig.theme`, handling unavailable local storage without blocking
-the application. Documents and selected paths are never persisted or synced.
-
-`crates/twig-core/bindings.json` defines normal-mode key bindings for both
-interfaces. Each adapter translates the shared actions into interface events.
-Search and jump accept Enter then return focus to navigation; Esc dismisses
-entry/help before navigating back. Browser modifier shortcuts remain native.
-The browser maps `q` to closing its document; the TUI exits. The web layout fills
-the viewport with independently scrolling columns and inspector, shows the
-deepest complete columns that fit like the TUI, and keeps shortcuts/status
-pinned at the bottom. Installation and guides are compact header links.

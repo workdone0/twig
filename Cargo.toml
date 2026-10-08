@@ -5,7 +5,7 @@ resolver = "2"
 [package]
 name = "twig"
 version = "3.2.0"
-description = "Terminal-based JSON & YAML viewer (TUI) for exploring and searching large files — fast, interactive, and privacy-first."
+description = "Explore JSON, YAML, and HAR locally in your terminal, with a Rust core shared by the Twig web explorer."
 readme = "README.md"
 authors = ["Shubham Kumar"]
 license = "MIT"

@@ -5,6 +5,9 @@ earlier are the Python implementation.
 
 ## [Unreleased]
 
+- Update website and repository guidance for the shared web and terminal experience,
+  including a browser walkthrough, privacy details, and 3.2 migration notes.
+
 ## [3.2.0] — 2026-10-08
 
 - Add a full-page browser explorer backed by the same portable Rust core as the
