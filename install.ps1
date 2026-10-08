@@ -3,7 +3,7 @@
 .SYNOPSIS
 Install a verified Twig release for the current Windows user. No admin required.
 .EXAMPLE
-.\install.ps1 -Version v3.1.0 -InstallDir "$env:LOCALAPPDATA\Programs\Twig\bin"
+.\install.ps1 -Version v3.2.0 -InstallDir "$env:LOCALAPPDATA\Programs\Twig\bin"
 .EXAMPLE
 .\install.ps1 -NoPath
 #>

@@ -4,7 +4,7 @@
 </header><div class="docs-grid wrap"><nav class="docs-sidebar" aria-label="Documentation"><strong>TWIG / DOCUMENTATION</strong><a href="/guide/">User guide</a><a aria-current="page" href="/guide/contributing/">Contributing</a><a href="/guide/migration/">Migration</a><a href="/guide/architecture/">Architecture</a><a href="/guide/evaluation/">Release evaluation</a><a href="/guide/release-notes/">Release notes</a></nav><main id="main" class="prose"><h1 id="contributing-to-twig">Contributing to Twig</h1>
 <p>Thanks for helping make a focused, reliable terminal tool. Bugs, documentation, accessibility improvements, and well-tested code changes are welcome. Please keep discussions constructive and explain the user problem before proposing a large feature or new dependency.</p>
 <h2 id="setup">Setup</h2>
-<p>The application is Rust; the website and tooling use Python&#x27;s standard library. Use Rust 1.88+ with Cargo, rustfmt, Clippy, a C compiler/linker for bundled SQLite, and Python 3.10+. ShellCheck checks the Bash installer. Windows installer contracts run with Windows PowerShell 5.1 and PowerShell 7 on the Windows stable CI job. No Python application runtime, Node installation, or website package install is required.</p>
+<p>The native application uses Rust 1.88+, Cargo, rustfmt, Clippy and a C compiler for bundled SQLite. Website assembly uses Python 3.10+. Building the browser explorer additionally requires Node 22.12+ and the matching wasm-bindgen CLI. ShellCheck and PowerShell are used for installer checks.</p>
 <div class="code-block"><div class="code-toolbar"><span>Bash / zsh</span><button type="button" class="copy-code" aria-label="Copy Bash / zsh example">Copy</button><span class="copy-feedback" role="status"></span></div><pre tabindex="0"><code>git clone https://github.com/workdone0/twig.git
 cd twig
 cargo build --locked --all-targets
@@ -13,7 +13,10 @@ cargo run --locked -- samples/cloud_infrastructure.json</code></pre></div>
 <table>
 <tr><th>Location</th><th>Responsibility</th></tr>
 <tr><td><code>src/main.rs</code>, <code>src/cli/</code></td><td>CLI arguments, output, terminal lifecycle</td></tr>
-<tr><td><code>src/adapters/</code></td><td>Event parsing, immutable cache publication, cancellation</td></tr>
+<tr><td><code>src/adapters/</code></td><td>Native file loading, immutable cache publication, cancellation</td></tr>
+<tr><td><code>crates/twig-core/</code></td><td>Shared parsers, node model, exploration algorithms and memory store</td></tr>
+<tr><td><code>crates/twig-wasm/</code></td><td>Browser document bridge</td></tr>
+<tr><td><code>web/</code></td><td>React/TypeScript explorer, worker protocol and browser tests</td></tr>
 <tr><td><code>src/core/</code></td><td>Node types, SQLite queries, paths, configuration, repair</td></tr>
 <tr><td><code>src/tui/</code></td><td>Event loop, themes, paginated navigation, inspector and modals</td></tr>
 <tr><td><code>schema.sql</code></td><td>Node table and navigation indexes</td></tr>
@@ -26,12 +29,13 @@ cargo run --locked -- samples/cloud_infrastructure.json</code></pre></div>
 <p>See <a href="/guide/architecture/">architecture</a> before changing ingestion or storage. Keep widgets independent from parsing. Preserve scalar types, sibling order, source-path uniqueness, atomic publication, and cancellation checkpoints.</p>
 <h2 id="required-checks">Required checks</h2>
 <div class="code-block"><div class="code-toolbar"><span>Bash / zsh</span><button type="button" class="copy-code" aria-label="Copy Bash / zsh example">Copy</button><span class="copy-feedback" role="status"></span></div><pre tabindex="0"><code>cargo fmt --all -- --check
-cargo clippy --locked --all-targets -- -D warnings
-cargo test --locked --all-targets
-cargo test --locked --doc
+cargo clippy --locked --workspace --all-targets -- -D warnings
+cargo test --locked --workspace --all-targets
+cargo test --locked --workspace --doc
 shellcheck install.sh
 bash -n install.sh
 python3 scripts/test_installer.py
+# After building the web bundle as described below:
 python3 scripts/build_site.py
 python3 scripts/check_site.py</code></pre></div>
 <p>CI runs stable and minimum-supported Rust on Linux, macOS, and Windows. Test caches and config must use <code>tempfile</code>, loader options/<code>with_cache_dir</code>, and <code>App::with_config</code>; never mutate a contributor&#x27;s profile. No test should require a real clipboard, GUI, network service, or existing configuration.</p>
@@ -44,11 +48,20 @@ python3 scripts/benchmark.py --binary target/release/twig</code></pre></div>
 <p>The deterministic benchmark reports cold wall time and peak RSS. CI checks a 120-second / 512-MiB budget on Ubuntu for 90,000 generated items. These are regression budgets, not product speed guarantees. Report hardware, Rust version, commit, bytes, nodes, cache state, and memory when comparing results.</p>
 <p>Ingestion batches and navigation pages must remain bounded. YAML parser state, large scalar strings, search scans, and complete exports have different resource profiles; do not claim constant memory for all operations.</p>
 <h2 id="website-and-documentation">Website and documentation</h2>
-<p>Edit <code>website/index.html</code>, <code>style.css</code>, and <code>app.js</code> for the landing page. User guides are generated directly from README, CONTRIBUTING, release notes, and <code>docs/</code>; edit those Markdown files rather than generated pages.</p>
-<div class="code-block"><div class="code-toolbar"><span>Bash / zsh</span><button type="button" class="copy-code" aria-label="Copy Bash / zsh example">Copy</button><span class="copy-feedback" role="status"></span></div><pre tabindex="0"><code>python3 scripts/build_site.py
+<p>Edit <code>web/src/</code> for the explorer. Installation templates and guide styling live in <code>website/</code>. Guides are generated from the repository Markdown files.</p>
+<div class="code-block"><div class="code-toolbar"><span>Bash / zsh</span><button type="button" class="copy-code" aria-label="Copy Bash / zsh example">Copy</button><span class="copy-feedback" role="status"></span></div><pre tabindex="0"><code>rustup target add wasm32-unknown-unknown
+cargo install wasm-bindgen-cli --version 0.2.105 --locked
+npm ci --prefix web
+python3 scripts/build_wasm.py
+node web/tests/wasm-gate.mjs
+npm run build --prefix web
+python3 scripts/build_site.py
 python3 scripts/check_site.py
+npx --prefix web playwright install chromium firefox webkit
+npm test --prefix web
 python3 -m http.server 4321 --directory website/dist --bind 127.0.0.1</code></pre></div>
-<p>Check desktop/mobile widths, keyboard navigation, readable contrast, sample data exploration, install tabs, copy feedback, and links. The site uses no tracking, external fonts, or framework runtime. <code>install.sh</code> and <code>install.ps1</code> are copied from the root at build time so it cannot silently diverge from application releases.</p>
+<p>Use <code>npm run dev --prefix web</code> after generating the WASM bridge for interface iteration. The assembled static site is the production test target. Browser tests cover Chromium, Firefox, and WebKit; WebKit is automated engine coverage, not a claim of testing every released Safari/iOS version. Manually check Safari clipboard permissions and real mobile devices before publishing a release.</p>
+<p>Verify desktop/mobile layouts, keyboard and mouse navigation, malformed files, 20 MiB inputs, cancellation/replacement, clipboard failures, and installer links. No document content should appear in network requests or persistent browser storage. Shared-store tests compare native SQLite and browser memory semantics. Generated WASM bindings, bundles, dependencies, and test output are ignored; commit both dependency lockfiles. Installers are copied from repository sources.</p>
 <p><code>master</code> is the source of truth for both app and website. The old <code>gh-pages</code> branch held Astro source; it is historical. Do not deploy from that branch. <code>twig-web</code> contains generated public files for the existing <code>twig.wtf</code> domain.</p>
 <h2 id="security-and-dependencies">Security and dependencies</h2>
 <p>Use <a href="https://github.com/workdone0/twig/security/advisories/new">GitHub private vulnerability reporting</a> for sensitive issues where available; do not attach real secrets or private input files to public issues. See <a href="https://github.com/workdone0/twig/blob/master/SECURITY.md">SECURITY.md</a>.</p>

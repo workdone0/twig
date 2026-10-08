@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Install Twig — Make sense of nested data.</title>
+  <meta name="description" content="Explore JSON, YAML, and HAR in your terminal. Follow nested data, search values, and copy paths. Open source, written in Rust, and entirely local.">
+  <meta name="theme-color" content="#f6f1eb">
+  <link rel="canonical" href="https://twig.wtf/install/">
+  <link rel="icon" href="/favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="/style.css">
+  <script src="/app.js" defer></script>
+</head>
+<body>
+<a class="skip" href="#main">Skip to content</a>
+<header class="site-header wrap">
+  <a class="brand" href="/" aria-label="Twig home"><svg width="29" height="34" viewBox="0 0 29 34" aria-hidden="true"><path d="M14 31V3m0 18L3 10m11 4L25 3m-11 24L25 16" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>twig<span class="brand-dot">.</span></a>
+  <nav aria-label="Main navigation"><a href="/guide/">Guide</a><a href="/guide/contributing/">Contribute</a><a class="github-link" href="https://github.com/workdone0/twig">GitHub <span aria-hidden="true">↗</span></a></nav>
+</header>
+<main id="main">
+  <section class="hero wrap">
+    <div class="hero-copy">
+      <span class="eyebrow">A TERMINAL EXPLORER · WRITTEN IN RUST</span>
+      <h1>Twig, in<br>your <em>terminal.</em></h1>
+      <p class="lede">Make sense of nested JSON, YAML, and HAR. Follow a branch, find a value, and keep the surrounding context in view.</p>
+      <div class="hero-actions"><a class="button primary" href="#install">Install Twig <span aria-hidden="true">↓</span></a><a class="text-link" href="/">Open the web explorer <span aria-hidden="true">↗</span></a></div>
+      <p class="fine">Linux · macOS · Windows x64<br>Free, open source, and entirely local.</p>
+    </div>
+    <div class="hero-art" aria-label="A path through a JSON file: regions, array item zero, then status">
+      <div class="art-label">FROM THE WHOLE FILE TO ONE VALUE</div>
+      <div class="branch-rail"></div>
+      <div class="branch-node root-node"><span>{ }</span> infrastructure.json <small>object</small></div>
+      <div class="branch-node"><span>↳</span> regions <small>array</small></div>
+      <div class="branch-node"><span>↳</span> [0] <small>eu-west-1</small></div>
+      <div class="branch-node selected-node"><span>↳</span> status <strong>"healthy"</strong></div>
+      <div class="art-path">.regions[0].status <span>YOUR NEXT CLUE.</span></div>
+      <div class="art-caption">Keep the context.<br>Follow what matters.</div>
+    </div>
+  </section>
+  <section id="install" class="install wrap section">
+    <div><span class="eyebrow">INSTALL TWIG</span><h2>At home<br>in your terminal.</h2><p>Choose your platform below. The installers download a published binary and verify its checksum before installation.</p><p class="install-requirement">No Rust or Python needed for a prebuilt release.</p><a href="/guide/#installation">Full installation guide ↗</a></div>
+    <div class="install-box">
+      <div class="platforms" role="group" aria-label="Installation method"><button type="button" aria-pressed="true" data-platform="unix">macOS / Linux</button><button type="button" aria-pressed="false" data-platform="windows">Windows</button><button type="button" aria-pressed="false" data-platform="source">From source</button></div>
+      <div class="command-heading"><span id="install-shell">BASH / ZSH</span><button type="button" id="copy-install" aria-label="Copy installation commands">Copy commands</button></div>
+      <pre class="install-command"><code id="install-command">curl -fsSL https://twig.wtf/install.sh | bash</code></pre>
+      <p id="install-note">For macOS and Linux with GNU libc. Installs to ~/.local/bin. Requires Bash, curl, and tar.</p>
+      <ol id="install-steps"><li>Run the command in your terminal.</li><li>Add ~/.local/bin to PATH if the installer asks.</li><li>Run twig --version to check the installation.</li></ol>
+      <a id="platform-guide" href="/guide/#linux-and-macos">macOS / Linux instructions ↗</a>
+      <span id="copy-status" role="status" aria-live="polite"></span>
+      <noscript><p>For Windows, use the <a href="/guide/#windows">PowerShell installation guide</a>. For Cargo, see <a href="/guide/#build-from-source">building from source</a>.</p></noscript>
+    </div>
+  </section>
+  <div class="format-band"><div class="wrap"><span>ONE TOOL, FAMILIAR FILES</span><span>JSON <i>{ }</i></span><span>YAML <i>– :</i></span><span>HAR <i>↗</i></span><span>No uploads. No account.</span></div></div>
+  <section class="principles wrap section" aria-label="What Twig does">
+    <div class="principle"><span class="number">FIND</span><h3>A shortcut to the answer.</h3><p>Search keys and values with <kbd>/</kbd>, move between matches with <kbd>n</kbd> and <kbd>N</kbd>, or jump to a known path with <kbd>:</kbd>.</p><a href="/guide/#keyboard-controls">All keyboard controls ↗</a></div>
+    <div class="principle"><span class="number">KEEP</span><h3>Your data stays local.</h3><p>Twig reads files on your machine. Nothing is uploaded. Use <code>--no-cache</code> to avoid a persistent database, or clear stored caches when you are done.</p><a href="/guide/#configuration-and-local-data">Understand local storage ↗</a></div>
+    <div class="principle"><span class="number">COPY</span><h3>Take the useful bit.</h3><p>Copy a path with <kbd>c</kbd> or the selected value with <kbd>y</kbd>. Exports include the complete selection, up to the documented size limit.</p><a href="/guide/#copying-and-preview-limits">Copy and preview limits ↗</a></div>
+  </section>
+  <section class="workflow section">
+    <div class="wrap workflow-inner"><div><span class="eyebrow">02 / BEYOND BROWSING</span><h2>A few commands.<br>Less busywork.</h2><p>Format an API response, repair malformed JSON, or check a file without opening the interface.</p><a class="text-link" href="/guide/#cli-reference">See the CLI reference ↗</a></div>
+      <div class="command-list"><div><span>01</span><p>Format JSON with readable indentation</p><code>twig --print response.json --indent 4</code></div><div><span>02</span><p>Repair JSON into a separate file</p><code>twig --fix broken.json -o repaired.json</code></div><div><span>03</span><p>Check a file without keeping a cache</p><code>twig --check --no-cache data.json</code></div></div>
+    </div>
+  </section>
+
+  <section class="oss wrap"><div class="oss-mark" aria-hidden="true">{<span>↗</span>}</div><div><span class="eyebrow">BUILT IN THE OPEN</span><h2>Useful on its own.<br>Better with your help.</h2><p>Found a bug or an unclear instruction? Open an issue. Want to contribute? The guide covers setup, tests, and the release process.</p></div><a class="button secondary" href="/guide/contributing/">Contribute to Twig ↗</a></section>
+</main>
+<footer class="wrap"><a class="brand" href="/" aria-label="Twig home">twig<span class="brand-dot">.</span></a><p>Clarity for nested data.</p><div><a href="https://github.com/workdone0/twig/releases/latest">Releases ↗</a><a href="https://github.com/workdone0/twig/issues">Issues ↗</a><a href="https://github.com/workdone0/twig/blob/master/LICENSE">MIT License</a></div></footer>
+</body>
+</html>

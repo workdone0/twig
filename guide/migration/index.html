@@ -33,7 +33,7 @@
 <li>Help opens with <code>?</code>; <code>h</code> moves to the parent. Enter opens a container, and <code>j/k/l</code>, <code>g/G</code>, Home/End, and mouse navigation are supported.</li>
 </ul>
 <h2 id="configuration">Configuration</h2>
-<p>Supported themes remain <code>catppuccin-mocha</code> and <code>solarized-dark</code>. Unknown JSON keys are retained; unknown theme names fall back to Catppuccin.</p>
+<p>Themes are now <code>dark</code> and <code>light</code>, shared with the browser explorer. Both old <code>catppuccin-mocha</code> and <code>solarized-dark</code> preferences resolve to <code>dark</code>; toggling with <code>t</code> saves a canonical name. Unknown JSON keys are retained; unknown theme names fall back to Catppuccin.</p>
 <p>Linux and Windows keep their normal platform config locations. Rust uses <code>~/Library/Application Support/twig/config.json</code> on macOS. Python used <code>$XDG_CONFIG_HOME/twig/config.json</code> or <code>~/.config/twig/config.json</code>. Version 3.1 imports the old config when the new file is absent; an existing new config takes precedence. A save failure is reported rather than silently treated as success.</p>
 <h2 id="data-and-resource-contracts">Data and resource contracts</h2>
 <p>Both implementations use SQLite, not a Python flat-file cache. New caches are private but unencrypted, with retention and cleanup controls. <code>--no-cache</code> still uses temporary disk storage. See <a href="/guide/#configuration-and-local-data">local data</a>.</p>

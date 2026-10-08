@@ -3,8 +3,14 @@
   <nav aria-label="Main navigation"><a href="/guide/">Guide</a><a href="/guide/contributing/">Contribute</a><a class="github-link" href="https://github.com/workdone0/twig">GitHub <span aria-hidden="true">↗</span></a></nav>
 </header><div class="docs-grid wrap"><nav class="docs-sidebar" aria-label="Documentation"><strong>TWIG / DOCUMENTATION</strong><a aria-current="page" href="/guide/">User guide</a><a href="/guide/contributing/">Contributing</a><a href="/guide/migration/">Migration</a><a href="/guide/architecture/">Architecture</a><a href="/guide/evaluation/">Release evaluation</a><a href="/guide/release-notes/">Release notes</a></nav><main id="main" class="prose"><h1 id="twig">Twig</h1>
 <p><strong>Inspect. Navigate. Understand.</strong> A local terminal explorer for JSON, YAML, and JSON-based HAR files, written in Rust.</p>
+<p>Try the browser explorer at <a href="https://twig.wtf">twig.wtf</a>, or install the terminal app below. Both interfaces use the same Rust parsing and exploration core.</p>
 <p>Explore nested data with Miller columns, search keys and values, jump to paths, and inspect values without a browser. The TUI never edits your input. Separate CLI modes format data and repair JSON.</p>
 <p><a href="https://twig.wtf">Website</a> · <a href="https://twig.wtf/guide/">Guide</a> · <a href="https://github.com/workdone0/twig/releases">Releases</a> · <a href="/guide/contributing/">Contributing</a></p>
+<h2 id="browser-explorer">Browser explorer</h2>
+<p>Open <a href="https://twig.wtf">twig.wtf</a> to select or drop JSON, YAML, or HAR files, paste data, or explore bundled examples. Files are processed in your browser and are not uploaded. Documents stay in the current tab&#x27;s memory; closing, replacing, or reloading clears them. Only your Dark/Light theme preference is saved in browser local storage. No accounts, tracking, or document persistence.</p>
+<p>The browser accepts inputs up to <strong>20 MiB</strong>, with additional limits of 250,000 nodes and 128 MiB of estimated retained data. Actual memory use is higher and device-dependent. Dense or deeply nested files can hit these limits earlier. Use the installed TUI for larger files, offline use, and terminal workflows.</p>
+<p>Click to inspect a row and click a selected container again to open it. Search keys/values, jump to paths, and copy paths or complete selected values. Arrow keys, <code>j</code>/<code>k</code>, <code>h</code>/<code>l</code>, Home/End, <code>/</code>, <code>:</code>, <code>n</code>/<code>N</code>, <code>c</code>, and <code>y</code> work while the explorer has focus. Press <code>t</code> for Dark/Light, <code>?</code> for help, and <code>q</code> to close the document (the TUI quits). Enter after search or jump returns focus to navigation; Esc cancels entry or returns to the parent. Browser shortcuts are left intact. On narrow screens the current column is shown; breadcrumbs return to ancestors.</p>
+<p>Previews are limited to four levels, 200 nodes, 30 children per container and 64K displayed characters. <strong>Copy value</strong> exports the complete selection, up to 10,000 nodes and 4 MiB. Clipboard access requires browser permission. Formatting and repair remain CLI features. The browser downloads application code from the site; install Twig when you need to work without loading a website.</p>
 <h2 id="installation">Installation</h2>
 <p>Choose the instructions for the terminal you are using. Native Windows uses PowerShell; WSL uses the Linux instructions. No Rust or Python installation is needed for a prebuilt release.</p>
 <h3 id="windows">Windows</h3>
@@ -22,13 +28,13 @@ powershell -NoProfile `
 twig --help
 twig &#x27;C:\path\to\data.json&#x27;</code></pre></div>
 <p>Choose a version or directory, or skip PATH changes:</p>
-<div class="code-block"><div class="code-toolbar"><span>PowerShell</span><button type="button" class="copy-code" aria-label="Copy PowerShell example">Copy</button><span class="copy-feedback" role="status"></span></div><pre tabindex="0"><code>powershell -NoProfile -ExecutionPolicy Bypass -File .\install.ps1 -Version v3.1.0 -InstallDir &quot;$env:LOCALAPPDATA\Programs\Twig\bin&quot;
+<div class="code-block"><div class="code-toolbar"><span>PowerShell</span><button type="button" class="copy-code" aria-label="Copy PowerShell example">Copy</button><span class="copy-feedback" role="status"></span></div><pre tabindex="0"><code>powershell -NoProfile -ExecutionPolicy Bypass -File .\install.ps1 -Version v3.2.0 -InstallDir &quot;$env:LOCALAPPDATA\Programs\Twig\bin&quot;
 powershell -NoProfile -ExecutionPolicy Bypass -File .\install.ps1 -NoPath
 powershell -NoProfile -ExecutionPolicy Bypass -File .\install.ps1 -Help</code></pre></div>
 <p>Close any running Twig process before upgrading, then rerun the installer. Downloads and checksum verification happen before the installed executable is replaced. Failed downloads or mismatched versions leave the old executable intact. Temporary downloads are cleaned up on success and failure.</p>
 <h4 id="windows-manual-download">Windows manual download</h4>
 <p>If scripts are restricted, download and verify the release in PowerShell:</p>
-<div class="code-block"><div class="code-toolbar"><span>PowerShell</span><button type="button" class="copy-code" aria-label="Copy PowerShell example">Copy</button><span class="copy-feedback" role="status"></span></div><pre tabindex="0"><code>$version = &#x27;v3.1.0&#x27;
+<div class="code-block"><div class="code-toolbar"><span>PowerShell</span><button type="button" class="copy-code" aria-label="Copy PowerShell example">Copy</button><span class="copy-feedback" role="status"></span></div><pre tabindex="0"><code>$version = &#x27;v3.2.0&#x27;
 $asset = &#x27;twig-x86_64-pc-windows-msvc.tar.gz&#x27;
 $base = &quot;https://github.com/workdone0/twig/releases/download/$version&quot;
 Invoke-WebRequest -UseBasicParsing &quot;$base/$asset&quot; -OutFile $asset
@@ -59,7 +65,7 @@ if ($LASTEXITCODE -ne 0) { throw &#x27;Extraction failed.&#x27; }
 <p>To inspect the script first or choose a version/directory:</p>
 <div class="code-block"><div class="code-toolbar"><span>Bash / zsh</span><button type="button" class="copy-code" aria-label="Copy Bash / zsh example">Copy</button><span class="copy-feedback" role="status"></span></div><pre tabindex="0"><code>curl -fsSL https://twig.wtf/install.sh -o install.sh
 bash install.sh --help
-bash install.sh --version v3.1.0 --to &quot;$HOME/.local/bin&quot; --yes</code></pre></div>
+bash install.sh --version v3.2.0 --to &quot;$HOME/.local/bin&quot; --yes</code></pre></div>
 <p>If <code>twig</code> is not found, add <code>export PATH=&quot;$HOME/.local/bin:$PATH&quot;</code> to your shell profile (<code>~/.zshrc</code> for zsh or <code>~/.bashrc</code> for Bash), then open a new terminal. Run <code>twig --version</code> and <code>twig --help</code>. For a custom directory, use that path. <code>command -v twig</code> shows which executable your shell resolves.</p>
 <p>Use <code>--method build</code> to compile the selected release with Cargo; it honors the same destination. Interactive invocations ask before installing unless <code>--yes</code> is supplied. Piped invocations run noninteractively. Rerun to upgrade through an atomic executable replacement. To uninstall, remove the installed <code>twig</code> file; configuration and caches are separate.</p>
 <h3 id="release-downloads-and-verification">Release downloads and verification</h3>
@@ -74,7 +80,7 @@ bash install.sh --version v3.1.0 --to &quot;$HOME/.local/bin&quot; --yes</code><
 <p>These are native executables, not universal static binaries. Release <code>.build.txt</code> assets record the commit, compiler, size, and available linkage diagnostics. Clipboard support depends on the host desktop; SSH sessions may not provide it. Binaries and the PowerShell script are not OS code-signed/notarized. Archives have SHA-256 checksums and GitHub build provenance attestations.</p>
 <h3 id="build-from-source">Build from source</h3>
 <p>Requires Rust 1.88+, Cargo, and a C compiler/linker for bundled SQLite. On Windows, use the MSVC Rust toolchain with Visual Studio Build Tools&#x27; C++ workload and Windows SDK; on macOS, install Xcode Command Line Tools; on Linux, use your distribution&#x27;s C build toolchain.</p>
-<div class="code-block"><div class="code-toolbar"><span>Bash / zsh</span><button type="button" class="copy-code" aria-label="Copy Bash / zsh example">Copy</button><span class="copy-feedback" role="status"></span></div><pre tabindex="0"><code>cargo install --locked --git https://github.com/workdone0/twig --tag v3.1.0 twig</code></pre></div>
+<div class="code-block"><div class="code-toolbar"><span>Bash / zsh</span><button type="button" class="copy-code" aria-label="Copy Bash / zsh example">Copy</button><span class="copy-feedback" role="status"></span></div><pre tabindex="0"><code>cargo install --locked --git https://github.com/workdone0/twig --tag v3.2.0 twig</code></pre></div>
 <p>Cargo installs into its own bin directory, usually <code>~/.cargo/bin</code> on Unix or <code>%USERPROFILE%\.cargo\bin</code> on Windows. Ensure that directory is on PATH. Use the Git source explicitly: the <code>twig</code> package on crates.io is unrelated. Python is not needed to run the application.</p>
 <h2 id="usage">Usage</h2>
 <div class="code-block"><div class="code-toolbar"><span>Bash / zsh</span><button type="button" class="copy-code" aria-label="Copy Bash / zsh example">Copy</button><span class="copy-feedback" role="status"></span></div><pre tabindex="0"><code>twig samples/cloud_infrastructure.json
@@ -136,8 +142,8 @@ cat response.json | twig --print -</code></pre></div>
 <h3 id="copying-and-preview-limits">Copying and preview limits</h3>
 <p>The inspector shows a limited preview. Clipboard <code>y</code> exports the <strong>complete selected value</strong>, preserving scalar types and order, up to 10,000 nodes; larger selections give an explicit error directing you to <code>--print</code>. Serialization does not preserve original whitespace, comments, anchors, or quoting.</p>
 <h2 id="configuration-and-local-data">Configuration and local data</h2>
-<p>Themes: <code>catppuccin-mocha</code> (default) and <code>solarized-dark</code>. Press <code>t</code> to save. Unknown config keys are preserved. Unknown theme names fall back to the default; custom theme definitions are not supported.</p>
-<div class="code-block"><div class="code-toolbar"><span>JSON</span><button type="button" class="copy-code" aria-label="Copy JSON example">Copy</button><span class="copy-feedback" role="status"></span></div><pre tabindex="0"><code>{&quot;theme&quot;: &quot;catppuccin-mocha&quot;}</code></pre></div>
+<p>Themes: <code>dark</code> (default) and <code>light</code>, with the same colors in the TUI and web explorer. Press <code>t</code> to toggle and save your preference. Legacy <code>catppuccin-mocha</code> and <code>solarized-dark</code> settings both resolve to <code>dark</code>. Unknown config keys are preserved. Unknown theme names fall back to the default; custom theme definitions are not supported.</p>
+<div class="code-block"><div class="code-toolbar"><span>JSON</span><button type="button" class="copy-code" aria-label="Copy JSON example">Copy</button><span class="copy-feedback" role="status"></span></div><pre tabindex="0"><code>{&quot;theme&quot;: &quot;dark&quot;}</code></pre></div>
 <table>
 <tr><th>Platform</th><th>Config directory (<code>config.json</code>)</th><th>Cache directory</th></tr>
 <tr><td>Linux</td><td><code>$XDG_CONFIG_HOME/twig</code> or <code>~/.config/twig</code></td><td><code>$XDG_CACHE_HOME/twig</code> or <code>~/.cache/twig</code></td></tr>
@@ -165,6 +171,6 @@ python3 scripts/benchmark.py --binary target/release/twig</code></pre></div>
 <li><a href="/guide/evaluation/">Release evaluation</a>: audit findings and their resolution.</li>
 <li><a href="https://github.com/workdone0/twig/blob/master/CHANGELOG.md">Changelog</a> and <a href="/guide/release-notes/">release notes</a>.</li>
 </ul>
-<p>Website source lives in <code>website/</code>. Its guides are generated from these Markdown files, and both deployed installers are copied from this repository&#x27;s <code>install.sh</code> and <code>install.ps1</code>. The Python source remains on <a href="https://github.com/workdone0/twig/tree/legacy-python">legacy-python</a>.</p>
+<p>Browser UI source lives in <code>web/</code>; the shared engine is in <code>crates/twig-core</code>. Installation and documentation templates live in <code>website/</code>. Its guides are generated from these Markdown files, and both deployed installers are copied from this repository&#x27;s <code>install.sh</code> and <code>install.ps1</code>. The Python source remains on <a href="https://github.com/workdone0/twig/tree/legacy-python">legacy-python</a>.</p>
 <h2 id="license">License</h2>
 <p>MIT — see <a href="https://github.com/workdone0/twig/blob/master/LICENSE">LICENSE</a>.</p><p class="edit-page"><a href="https://github.com/workdone0/twig/blob/master/README.md">Edit this page on GitHub ↗</a></p></main></div><footer class="wrap"><a class="brand" href="/" aria-label="Twig home">twig<span class="brand-dot">.</span></a><p>Clarity for nested data.</p><div><a href="https://github.com/workdone0/twig/releases/latest">Releases ↗</a><a href="https://github.com/workdone0/twig/issues">Issues ↗</a><a href="https://github.com/workdone0/twig/blob/master/LICENSE">MIT License</a></div></footer></body></html>
